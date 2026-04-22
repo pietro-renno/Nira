@@ -78,7 +78,7 @@ export default function ArtigoExemplo() {
 
            <div className="p-8 glass-card border border-brand-primary/30 rounded-3xl my-10 bg-brand-primary/5">
               <h3 className="text-brand-primary font-bold text-lg mb-3">Você não está sozinha.</h3>
-              <p className="text-sm font-light text-text-muted">Se você se identifica com qualquer um dos cenários relatados neste artigo, nossa equipe está de prontidão para auxiliar 100% anonimamente no Chat PsiTech.</p>
+              <p className="text-sm font-light text-text-muted">Se você se identifica com qualquer um dos cenários relatados neste artigo, nossa equipe está de prontidão para auxiliar 100% anonimamente pelo Painel Nira de Triagem.</p>
            </div>
         </article>
 

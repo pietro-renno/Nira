@@ -4,7 +4,7 @@ import { ArrowRight, Lock, MessageSquare, MapPin, Search, Map as MapIcon, BarCha
 export default function ComoFunciona() {
   const steps = [
     { num: '01', title: 'Acesso anônimo seguro', desc: 'A vítima abre o app ou site sem precisar se cadastrar...', icon: <Lock size={20} className="text-white" /> },
-    { num: '02', title: 'Triagem Inteligente (PsiTech)', desc: 'Um chatbot guiado faz perguntas estruturadas para entender a situação...', icon: <MessageSquare size={20} className="text-white" /> },
+    { num: '02', title: 'Triagem Inteligente Digital', desc: 'Um painel anonimizado faz perguntas estruturadas para entender a situação...', icon: <MessageSquare size={20} className="text-white" /> },
     { num: '03', title: 'S.O.S. com Geolocalização', desc: 'Em caso de perigo imediato, um único toque no botão de pânico envia a localização...', icon: <MapPin size={20} className="text-white" /> },
     { num: '04', title: 'Atendimento pelo Chat', desc: 'Psicólogos e assistentes sociais recebem o caso no painel web...', icon: <Search size={20} className="text-white" /> },
     { num: '05', title: 'Encaminhamento para Serviços', desc: 'O sistema mapeia delegacias, ONGs e clínicas parceiras próximas...', icon: <MapIcon size={20} className="text-white" /> },

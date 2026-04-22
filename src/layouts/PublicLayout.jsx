@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { NiraContext } from '../context/NiraContext';
+import Footer from '../components/Footer';
 
 export default function PublicLayout() {
   const location = useLocation();
@@ -63,41 +64,7 @@ export default function PublicLayout() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-bg-main-alt border-t border-white/5 py-16 px-8 flex-shrink-0 relative overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16">
-          <div className="space-y-6">
-            <h2 className="text-2xl font-black tracking-tighter text-white">NIRA</h2>
-            <p className="text-text-muted text-sm font-light leading-loose max-w-xs">
-              Núcleo de Identificação e Resposta ao Abuso. Um porto seguro digital para ouvir, acolher e proteger quem mais precisa.
-            </p>
-          </div>
-          
-          <div className="space-y-6">
-            <h3 className="text-[11px] font-extrabold tracking-widest text-[#34D399] uppercase">LINKS DE NAVEGAÇÃO</h3>
-            <div className="flex flex-col gap-4 text-sm text-text-muted font-medium">
-              <Link to="/" className="hover:text-brand-primary hover:translate-x-1 transition-all duration-300 w-fit">Início</Link>
-              <Link to="/como-funciona" className="hover:text-brand-primary hover:translate-x-1 transition-all duration-300 w-fit">Como Funciona</Link>
-              <Link to="/conteudos" className="hover:text-brand-primary hover:translate-x-1 transition-all duration-300 w-fit">Conteúdos</Link>
-              <Link to="/sobre" className="hover:text-brand-primary hover:translate-x-1 transition-all duration-300 w-fit">Sobre nós</Link>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <h3 className="text-[11px] font-extrabold tracking-widest text-brand-emergency uppercase">EMERGÊNCIA</h3>
-            <div className="flex flex-col gap-4 text-sm text-text-muted font-medium">
-              <p className="hover:text-white transition-colors cursor-default">190 - Polícia</p>
-              <p className="hover:text-white transition-colors cursor-default">180 - Central da Mulher</p>
-              <Link to="/chat" className="text-brand-emergency hover:text-[#ff6b6b] hover:translate-x-1 font-bold transition-all duration-300 w-fit flex items-center gap-2">
-                 S.O.S. NIRA
-              </Link>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-text-muted font-medium tracking-wide">© 2026 NIRA • Desenvolvido pela equipe E.Y.E.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

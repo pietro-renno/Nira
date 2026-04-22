@@ -1,6 +1,36 @@
 import { Link } from 'react-router-dom';
-import { Shield, Fingerprint, MapPin, AlertCircle, EyeOff, UserX, Clock, Heart, HeartHandshake } from 'lucide-react';
+import { Shield, Fingerprint, MapPin, AlertCircle, EyeOff, UserX, Clock, Heart, HeartHandshake, Lock, AlertTriangle } from 'lucide-react';
 import { mockStats, mockTeam } from '../data/mockData';
+import { useState } from 'react';
+
+const FAQ_ITEMS = [
+  { tag:'Privacidade', q:'A NIRA é realmente anônima? Meus dados ficam salvos?', a:'Sim. A NIRA foi desenhada com anonimato desde o início. Nenhum dado pessoal como nome, CPF ou telefone é solicitado. As conversas são temporárias e não associadas a qualquer identidade.' },
+  { tag:'Segurança',   q:'E se o meu agressor pegar meu celular e ver o site?',  a:'A NIRA possui um botão de saída rápida que fecha o aplicativo instantaneamente. Recomendamos acessar pelo modo de navegação privada (aba anônima) para não deixar histórico.' },
+  { tag:'S.O.S.',      q:'Como funciona o botão S.O.S.?',                        a:'Com um único toque, o S.O.S. envia sua localização em tempo real para a equipe NIRA e rede de apoio cadastrada. Não é necessário digitar nada ou falar. Em produção, integra diretamente com agentes da região.' },
+  { tag:'Atendimento', q:'Posso conversar com uma pessoa real?',   a:'O painel acolhedor da Nira faz a recepção e a triagem inicial automática, mas você pode solicitar conexão com uma atendente humana — psicóloga ou assistente social — que responde no mesmo chat, de forma segura e confidencial.' },
+  { tag:'Acesso',      q:'Preciso criar uma conta para usar a plataforma?',      a:'Não! Qualquer pessoa usa a triagem, o chat com a IA e os conteúdos sem criar conta. Cadastros existem apenas para profissionais da equipe interna.' },
+  { tag:'Emergência',  q:'O que fazer se estiver em perigo imediato agora?',     a:'Ative o botão S.O.S. dentro da plataforma ou ligue 190 (Polícia) ou 180 (Central da Mulher, 24h). O SAMU pode ser acionado pelo 192.' },
+  { tag:'Suporte',     q:'A NIRA atende apenas mulheres?',                       a:'A plataforma tem foco em violência doméstica e de gênero, mas qualquer pessoa em situação de vulnerabilidade pode buscar apoio. Conteúdos e triagem são inclusivos.' },
+  { tag:'Projeto',     q:'A NIRA é um projeto escolar ou está em produção?',     a:'É um projeto acadêmico da equipe E.Y.E (Ethical Youth Engineers) do SESI-SENAI — 2026 — com objetivo de evoluir para uma plataforma real de impacto social.' },
+];
+
+function FaqItem({ item }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`faq-item${open ? ' faq-item--open' : ''}`}>
+      <button className="faq-item__btn" onClick={() => setOpen(v => !v)}>
+        <span className="faq-item__q">{item.q}</span>
+        <span className="faq-item__icon">+</span>
+      </button>
+      <div className="faq-item__body">
+        <div className="faq-item__a">
+          <span className="faq-item__tag">{item.tag}</span><br />{item.a}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 export default function Home() {
   const dores = [
@@ -13,57 +43,44 @@ export default function Home() {
   return (
     <div className="flex flex-col text-text-main font-sans overflow-x-hidden">
       
-      {/* Hero Section */}
-      <section className="min-h-[90vh] flex items-center justify-center px-8 relative overflow-hidden bg-bg-main animate-fade-in-up">
-        {/* Glow Effects */}
-        <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-brand-primary/10 rounded-full blur-[150px] -translate-y-1/2 -z-10 animate-pulse" style={{ animationDuration: '4s' }}></div>
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-brand-emergency/10 rounded-full blur-[120px] -z-10 animate-pulse" style={{ animationDuration: '5s' }}></div>
-        
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center z-10 w-full py-20">
-          <div className="space-y-6 max-w-2xl">
-            <div className="flex gap-2 text-[10px] font-bold tracking-widest text-text-muted uppercase">
-               <span className="px-3 py-1 rounded-full glass-panel">• GOVTECH</span>
-               <span className="px-3 py-1 rounded-full glass-panel">• SOCIALTECH</span>
-               <span className="px-3 py-1 rounded-full glass-panel">• E.Y.E 2026</span>
+      {/* ── HERO ── */}
+      <section className="home-hero">
+        <div className="home-hero__orb1" /><div className="home-hero__orb2" />
+        <div className="home-hero__inner">
+          <div>
+            <div className="home-hero__badge">
+              <span className="home-hero__badge-dot" />GovTech · SocialTech · E.Y.E 2026
             </div>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1]">
-              Núcleo de<br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary via-purple-300 to-white">
-                Identificação e<br/>Resposta ao Abuso
-              </span>
+            <h1 className="home-hero__title">
+              Núcleo de<br />
+              <span>Identificação e</span><br />
+              <span>Resposta ao</span><br />
+              Abuso
             </h1>
-            <p className="text-xl md:text-2xl font-light italic text-[#E0E0E6] mt-4">
-              Mais do que um app — um porto seguro digital.
-            </p>
-            <p className="text-lg font-light text-text-muted leading-relaxed max-w-lg mt-4">
-              Tecnologia para ouvir, acolher e proteger quem mais precisa. Canal anônimo, seguro e disponível de qualquer lugar.
-            </p>
-            <div className="flex flex-wrap items-center gap-4 pt-6">
-              <Link to="/chat" className="bg-brand-primary hover:bg-[#7a6cf0] text-white px-8 py-4 rounded-full font-bold transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_0_30px_rgba(139,126,250,0.5)] glow-primary text-lg flex items-center gap-3">
-                <span className="w-2 h-2 bg-pink-300 rounded-full animate-pulse"></span> Iniciar Triagem
+            <p className="home-hero__quote">"Mais do que um app — um porto seguro digital."</p>
+            <p className="home-hero__desc">Tecnologia para ouvir, acolher e proteger quem mais precisa. Canal anônimo, seguro e disponível de qualquer lugar.</p>
+            <div className="home-hero__actions">
+              <Link to="/chat" className="home-hero__btn-primary">
+                <span className="home-hero__btn-dot" />Iniciar Triagem
               </Link>
-              <Link to="/como-funciona" className="bg-transparent border border-white/20 hover:bg-white/5 hover:border-white/40 text-white px-8 py-4 rounded-full font-bold transition-all duration-300 ease-in-out text-lg">
-                Como Funciona
-              </Link>
+              <Link to="/como-funciona" className="home-hero__btn-outline">Como Funciona</Link>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-10 border-t border-white/10 mt-8">
-              {mockStats.map((stat, i) => (
-                <div key={i} className="hover:-translate-y-1 transition-transform duration-300">
-                  <p className="text-3xl font-extrabold text-white tracking-tight">{stat.value}</p>
-                  <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 opacity-80">{stat.label}</p>
-                </div>
-              ))}
+            <div className="home-hero__stats">
+              <div className="home-hero__stat"><span className="home-hero__stat-num">1/4</span><span className="home-hero__stat-lbl">Casos denunciados</span></div>
+              <div className="home-hero__stat"><span className="home-hero__stat-num">4min</span><span className="home-hero__stat-lbl">1 vítima a cada</span></div>
+              <div className="home-hero__stat"><span className="home-hero__stat-num">70%</span><span className="home-hero__stat-lbl">Sem registro</span></div>
             </div>
           </div>
-          
-          {/* Hero Illustration */}
-          <div className="relative hidden md:flex justify-center items-center">
-            <div className="relative w-full max-w-[500px] aspect-square rounded-full flex items-center justify-center p-8 transition-transform duration-700 hover:scale-105">
-               <div className="absolute inset-4 rounded-full border border-brand-primary/20 animate-[spin_30s_linear_infinite]"></div>
-               <div className="absolute inset-12 rounded-full border border-brand-primary/10 animate-[spin_20s_linear_infinite_reverse]"></div>
-               <img src="https://placehold.co/500x500/1E1E2E/8B7EFA?text=Coruja+NIRA" alt="NIRA Logo Central" className="w-[85%] rounded-full shadow-[0_0_100px_rgba(139,126,250,0.4)] relative z-10" />
+          <div className="home-hero__visual">
+            <div className="home-hero__orb-ring home-hero__orb-ring--1" />
+            <div className="home-hero__orb-ring home-hero__orb-ring--2" />
+            <div className="home-hero__orb-ring home-hero__orb-ring--3" />
+            <div className="home-hero__orb">
+              <span className="home-hero__orb-label"><Shield size={28} strokeWidth={1.5} /></span>
             </div>
+            <div className="home-hero__fcard home-hero__fcard1"><span className="home-hero__fcard-icon"><Lock size={16} strokeWidth={1.5} /></span><div><p className="home-hero__fcard-title">100% Anônimo</p><p className="home-hero__fcard-sub">Sem identificação</p></div></div>
+            <div className="home-hero__fcard home-hero__fcard2"><span className="home-hero__fcard-icon"><AlertTriangle size={16} strokeWidth={1.5} /></span><div><p className="home-hero__fcard-title">Botão S.O.S.</p><p className="home-hero__fcard-sub">Alerta + GPS</p></div></div>
+            <div className="home-hero__fcard home-hero__fcard3"><span className="home-hero__fcard-icon"><HeartHandshake size={16} strokeWidth={1.5} /></span><div><p className="home-hero__fcard-title">Rede de Apoio</p><p className="home-hero__fcard-sub">Psicólogos · ONGs</p></div></div>
           </div>
         </div>
       </section>
@@ -94,13 +111,13 @@ export default function Home() {
       </section>
 
       {/* Quote */}
-      <section className="bg-bg-main py-24 px-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#181825] to-bg-main opacity-50"></div>
-        <div className="max-w-4xl mx-auto text-center relative z-10 glass-panel p-12 rounded-3xl border border-white/5 shadow-2xl hover:border-white/10 transition-colors duration-500">
-          <p className="text-2xl md:text-3xl font-light leading-relaxed italic text-[#E0E0E6]">
+      <section className="bg-bg-main py-16 px-8 relative overflow-hidden border-y border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#181825] to-bg-main opacity-30"></div>
+        <div className="max-w-3xl mx-auto text-center relative z-10 p-10 rounded-2xl border border-white/5 opacity-80 mix-blend-screen shadow-lg">
+          <p className="text-base md:text-lg font-normal leading-relaxed italic text-[#8B8B9E]">
             "No Brasil, uma mulher é vítima de violência doméstica a cada 4 minutos. Apenas 1 em cada 4 casos é denunciado formalmente. Cerca de 70% das vítimas de feminicídio nunca haviam registrado uma ocorrência."
           </p>
-          <p className="text-sm font-bold tracking-widest text-[#A6A6B0] mt-8 uppercase">— Fórum Brasileiro de Segurança Pública (2023) - Instituto Avon (2021) - IPEA</p>
+          <p className="text-[10px] font-semibold tracking-widest text-[#565666] mt-4 uppercase">— Fórum Brasileiro de Segurança Pública (2023) • Instituto Avon (2021) • IPEA</p>
         </div>
       </section>
 
@@ -188,6 +205,36 @@ export default function Home() {
                </div>
             </div>
          </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="home-faq">
+        <div className="container">
+          <div className="home-faq__layout">
+            <div>
+              <span className="home-faq__side-label">// FAQ</span>
+              <h2 className="home-faq__side-title">Perguntas<br />Frequentes</h2>
+              <p className="home-faq__side-sub">Tire suas dúvidas sobre segurança, privacidade e como a NIRA funciona na prática.</p>
+              <div className="home-faq__side-cta">
+                <Link to="/chat" className="home-faq__contact">
+                  <span className="home-faq__contact-icon">🆘</span>
+                  <div><p className="home-faq__contact-title">Precisa de ajuda agora?</p><p className="home-faq__contact-sub">Acesse a triagem anônima</p></div>
+                </Link>
+                <Link to="/como-funciona" className="home-faq__contact">
+                  <span className="home-faq__contact-icon">📚</span>
+                  <div><p className="home-faq__contact-title">Ver conteúdos informativos</p><p className="home-faq__contact-sub">Artigos e guias das ONGs parceiras</p></div>
+                </Link>
+                <a href="tel:180" className="home-faq__contact">
+                  <span className="home-faq__contact-icon">📞</span>
+                  <div><p className="home-faq__contact-title">Ligue 180</p><p className="home-faq__contact-sub">Central da Mulher — 24 horas</p></div>
+                </a>
+              </div>
+            </div>
+            <div className="home-faq__list">
+              {FAQ_ITEMS.map((item, i) => <FaqItem key={i} item={item} />)}
+            </div>
+          </div>
+        </div>
       </section>
 
     </div>
