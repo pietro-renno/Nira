@@ -14,13 +14,16 @@ import Sobre from '../pages/Sobre';
 import EsqueciSenha from '../pages/EsqueciSenha';
 import ArtigoExemplo from '../pages/ArtigoExemplo';
 
-// Admin Pages
+import AdminHome from '../pages/admin/AdminHome';
+import AdminPage from '../pages/admin/AdminPage';
 import Dashboard from '../pages/admin/Dashboard';
 import Alertas from '../pages/admin/Alertas';
 import AdminConteudos from '../pages/admin/AdminConteudos';
 import Usuarios from '../pages/admin/Usuarios';
 import Mapa from '../pages/admin/Mapa';
 import AtendimentosChat from '../pages/admin/AtendimentosChat';
+import FullMapa from '../pages/admin/FullMapa';
+import FullAtendimentos from '../pages/admin/FullAtendimentos';
 
 export default function AppRoutes() {
   return (
@@ -40,13 +43,18 @@ export default function AppRoutes() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminHome />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="alertas" element={<Alertas />} />
           <Route path="conteudos" element={<AdminConteudos />} />
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="mapa" element={<Mapa />} />
+          <Route path="mapa-completo" element={<FullMapa />} />
           <Route path="atendimentos-chat" element={<AtendimentosChat />} />
+          <Route path="atendimentos-completo" element={<FullAtendimentos />} />
         </Route>
+
+        <Route path="/admin-unified" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -5,6 +5,7 @@ export default function AdminLayout() {
   const location = useLocation();
 
   const navLinks = [
+    { name: 'Início', path: '/admin', icon: <Home size={18} /> },
     { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={18} /> },
     { name: 'Alertas S.O.S.', path: '/admin/alertas', icon: <AlertCircle size={18} /> },
   ];
@@ -19,6 +20,7 @@ export default function AdminLayout() {
   // Helper to map route path to header title
   const getHeaderTitle = () => {
     switch(location.pathname) {
+      case '/admin': return 'Início';
       case '/admin/dashboard': return 'Dashboard';
       case '/admin/alertas': return 'Alertas S.O.S.';
       case '/admin/conteudos': return 'Gestão de Conteúdos';

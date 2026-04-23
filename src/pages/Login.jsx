@@ -1,21 +1,31 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Users, Settings } from 'lucide-react';
-import { useState, useContext } from 'react';
-import { NiraContext } from '../context/NiraContext';
+import { ArrowLeft, User, Users, Settings, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState('ADM');
-  const { login } = useContext(NiraContext);
+  const [usuario, setUsuario] = useState('');
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+  const { login } = useAuth();
 
   const handleLogin = (e) => {
     e.preventDefault();
     setLoading(true);
+    setErro('');
+    
     setTimeout(() => {
-      login(selectedRole);
-      navigate('/admin/dashboard');
-    }, 1500);
+      const resp = login(usuario, senha);
+      if (resp.ok) {
+        navigate('/');
+      } else {
+        setErro('Usuário ou senha incorretos.');
+        setLoading(false);
+      }
+    }, 1200);
   };
 
   return (
@@ -37,6 +47,11 @@ export default function Login() {
           </div>
 
           <div className="space-y-8">
+            {erro && (
+              <div className="bg-brand-emergency/10 border border-brand-emergency/20 text-brand-emergency px-4 py-3 rounded-xl text-xs font-bold animate-pulse">
+                {erro}
+              </div>
+            )}
             <div>
               <p className="text-[10px] font-extrabold tracking-widest uppercase text-text-muted mb-4">Acesso como</p>
               <div className="flex flex-wrap gap-4">
@@ -55,27 +70,46 @@ export default function Login() {
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-text-muted ml-2 tracking-wide">Usuário</label>
-                <input 
-                  type="text" 
-                  required
-                  className="w-full bg-[#181825]/80 glass-panel border border-white/5 rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-brand-primary transition-all shadow-inner focus:shadow-[0_0_20px_rgba(139,126,250,0.1)] text-white"
-                  placeholder="Seu login"
-                />
+                <div className="relative">
+                  <User size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                  <input 
+                    type="text" 
+                    required
+                    value={usuario}
+                    onChange={e => setUsuario(e.target.value)}
+                    className="w-full bg-[#181825]/80 glass-panel border border-white/5 rounded-xl pl-12 pr-5 py-4 text-sm focus:outline-none focus:border-brand-primary transition-all shadow-inner focus:shadow-[0_0_20px_rgba(139,126,250,0.1)] text-white"
+                    placeholder="Seu login"
+                  />
+                </div>
               </div>
               
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-text-muted ml-2 tracking-wide">Senha</label>
-                <input 
-                  type="password" 
-                  required
-                  className="w-full bg-[#181825]/80 glass-panel border border-white/5 rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-brand-primary transition-all shadow-inner focus:shadow-[0_0_20px_rgba(139,126,250,0.1)] text-white"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                  <input 
+                    type="password" 
+                    required
+                    value={senha}
+                    onChange={e => setSenha(e.target.value)}
+                    className="w-full bg-[#181825]/80 glass-panel border border-white/5 rounded-xl pl-12 pr-5 py-4 text-sm focus:outline-none focus:border-brand-primary transition-all shadow-inner focus:shadow-[0_0_20px_rgba(139,126,250,0.1)] text-white"
+                    placeholder="••••••••"
+                  />
+                </div>
               </div>
               
               <button disabled={loading} type="submit" className="block w-full bg-brand-primary hover:bg-[#7a6cf0] text-center text-white px-5 py-4 rounded-xl text-sm font-bold transition-all glow-primary hover:-translate-y-1 mt-6 disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading ? 'Autenticando...' : 'Entrar →'}
               </button>
+
+              <div className="pt-4 flex flex-col gap-2">
+                <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest text-center">Contas de demonstração</p>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setUsuario('admin'); setSenha('123'); }} className="text-[10px] text-text-muted hover:text-white border border-white/5 px-2 py-1 rounded-md transition-colors">Admin</button>
+                  <button type="button" onClick={() => { setUsuario('ong_vida'); setSenha('123'); }} className="text-[10px] text-text-muted hover:text-white border border-white/5 px-2 py-1 rounded-md transition-colors">ONG</button>
+                  <button type="button" onClick={() => { setUsuario('psicologa01'); setSenha('123'); }} className="text-[10px] text-text-muted hover:text-white border border-white/5 px-2 py-1 rounded-md transition-colors">Psi</button>
+                </div>
+              </div>
             </form>
           </div>
 
