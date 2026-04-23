@@ -41,6 +41,9 @@ export default function AppRoutes() {
           <Route path="/sobre" element={<Sobre />} />
         </Route>
 
+        {/* Full Screen Admin Apps (Priority) */}
+        <Route path="/admin/atendimentos-completo" element={<FullAtendimentos />} />
+
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminHome />} />
@@ -51,7 +54,6 @@ export default function AppRoutes() {
           <Route path="mapa" element={<Mapa />} />
           <Route path="mapa-completo" element={<FullMapa />} />
           <Route path="atendimentos-chat" element={<AtendimentosChat />} />
-          <Route path="atendimentos-completo" element={<FullAtendimentos />} />
         </Route>
 
         <Route path="/admin-unified" element={<AdminPage />} />

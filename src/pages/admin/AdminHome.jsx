@@ -11,163 +11,190 @@ import {
   ArrowRight,
   TrendingUp,
   Activity,
-  ShieldCheck
+  ShieldCheck,
+  Zap,
+  Globe,
+  Lock
 } from 'lucide-react';
 
 const AdminHome = () => {
   const { user } = useAuth();
   
-  const allCards = [
+  const modules = [
     {
-      title: 'Dashboard',
-      desc: 'Visão geral métricas, estatísticas e monitoramento em tempo real.',
-      path: '/admin/dashboard',
-      icon: <LayoutDashboard size={24} />,
-      color: 'from-blue-500/20 to-indigo-500/20',
-      borderColor: 'border-blue-500/30',
-      iconColor: 'text-blue-400',
-      roles: ['adm', 'ong']
-    },
-    {
-      title: 'Alertas S.O.S.',
-      desc: 'Gerenciamento de chamados de emergência e canais de ajuda ativa.',
+      title: 'Monitoramento S.O.S.',
+      desc: 'Gestão crítica de acionamentos de emergência e triagem tática.',
       path: '/admin/alertas',
-      icon: <AlertCircle size={24} />,
-      color: 'from-red-500/20 to-orange-500/20',
-      borderColor: 'border-red-500/30',
-      iconColor: 'text-red-400',
-      badge: '2 Novos',
+      icon: <AlertCircle size={22} />,
+      color: 'from-[#FF4B4B] to-[#FF8E8E]',
+      bg: 'rgba(255, 75, 75, 0.05)',
+      roles: ['adm', 'ong'],
+      badge: 'Ativo'
+    },
+    {
+      title: 'GeoMonitor Ultra',
+      desc: 'Visualização tática em tempo real de equipes e ocorrências.',
+      path: '/admin/mapa',
+      icon: <MapIcon size={22} />,
+      color: 'from-[#F59E0B] to-[#FCD34D]',
+      bg: 'rgba(245, 158, 11, 0.05)',
       roles: ['adm', 'ong']
     },
     {
-      title: 'Gerenciar Conteúdos',
-      desc: 'Publicação de artigos, guias e materiais de apoio para a plataforma.',
-      path: '/admin/conteudos',
-      icon: <FileText size={24} />,
-      color: 'from-emerald-500/20 to-teal-500/20',
-      borderColor: 'border-emerald-500/30',
-      iconColor: 'text-emerald-400',
+      title: 'Central de Atendimento',
+      desc: 'Apoio humano e chat psicológico de alta performance.',
+      path: '/admin/atendimentos-chat',
+      icon: <MessagesSquare size={22} />,
+      color: 'from-brand-primary to-[#7a6cf0]',
+      bg: 'rgba(139, 126, 250, 0.05)',
       roles: ['adm', 'ong']
     },
     {
-      title: 'Usuários & ONGs',
-      desc: 'Controle de acesso, gestão de permissões e vínculo institucional.',
+      title: 'Controle de Acesso',
+      desc: 'Gestão de identidades, ONGs e níveis de permissão.',
       path: '/admin/usuarios',
-      icon: <Users size={24} />,
-      color: 'from-purple-500/20 to-pink-500/20',
-      borderColor: 'border-purple-500/30',
-      iconColor: 'text-purple-400',
+      icon: <Users size={22} />,
+      color: 'from-[#A855F7] to-[#D946EF]',
+      bg: 'rgba(168, 85, 247, 0.05)',
       roles: ['adm']
     },
     {
-      title: 'Mapa de Equipes',
-      desc: 'Localização geográfica e alocação de profissionais em campo.',
-      path: '/admin/mapa',
-      icon: <MapIcon size={24} />,
-      color: 'from-amber-500/20 to-yellow-500/20',
-      borderColor: 'border-amber-500/30',
-      iconColor: 'text-amber-400',
+      title: 'Biblioteca Hub',
+      desc: 'Curadoria de conteúdos, guias e protocolos de segurança.',
+      path: '/admin/conteudos',
+      icon: <FileText size={22} />,
+      color: 'from-[#10B981] to-[#34D399]',
+      bg: 'rgba(16, 185, 129, 0.05)',
       roles: ['adm', 'ong']
     },
     {
-      title: 'Painel de Atendimento',
-      desc: 'Interface unificada para chat psicológico e assistência direta.',
-      path: '/admin/atendimentos-chat',
-      icon: <MessagesSquare size={24} />,
-      color: 'from-cyan-500/20 to-sky-500/20',
-      borderColor: 'border-cyan-500/30',
-      iconColor: 'text-cyan-400',
+      title: 'Analytics Dashboard',
+      desc: 'Métricas avançadas e relatórios de impacto da plataforma.',
+      path: '/admin/dashboard',
+      icon: <LayoutDashboard size={22} />,
+      color: 'from-[#3B82F6] to-[#60A5FA]',
+      bg: 'rgba(59, 130, 246, 0.05)',
       roles: ['adm', 'ong']
     }
   ];
 
-  const adminCards = allCards.filter(card => !card.roles || card.roles.includes(user?.role));
+  const filteredModules = modules.filter(m => !m.roles || m.roles.includes(user?.role));
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 animate-fade-in-up">
-      {/* Header Seção */}
-      <div className="relative overflow-hidden rounded-3xl bg-bg-secondary border border-border-subtle p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl">
-        <div className="z-10 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-primary text-xs font-bold uppercase tracking-widest">
-            <ShieldCheck size={14} />
-            Acesso Administrativo
-          </div>
-          <h2 className="text-4xl font-extrabold tracking-tight text-white leading-tight">
-            Bem-vindo ao Centro de <span className="text-brand-primary">Comando NIRA</span>
-          </h2>
-          <p className="text-text-muted max-w-xl text-lg">
-            Selecione um dos módulos abaixo para gerenciar a plataforma, monitorar atendimentos ou configurar equipes de campo.
-          </p>
-        </div>
-        
-        <div className="relative group perspective-1000 hidden lg:block">
-          <div className="w-48 h-48 bg-brand-primary/10 rounded-full flex items-center justify-center border border-brand-primary/20 group-hover:scale-105 transition-transform duration-500 shadow-glow shadow-brand-primary/20">
-             <div className="w-32 h-32 bg-brand-primary/20 rounded-full flex items-center justify-center animate-pulse-slow">
-                <LayoutDashboard className="text-brand-primary w-16 h-16" />
-             </div>
-          </div>
-        </div>
-        
-        {/* Background Decorative */}
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-brand-primary/10 rounded-full blur-[80px] pointer-events-none" />
-      </div>
+    <div className="max-w-7xl mx-auto space-y-12 animate-fade-in-up">
+      
+      {/* ── HERO BANNER (REESTILIZADO) ── */}
+      <section className="relative group perspective-1000">
+         <div className="absolute inset-0 bg-gradient-to-r from-brand-primary/20 via-transparent to-brand-primary/20 blur-[100px] opacity-30 group-hover:opacity-50 transition-opacity"></div>
+         
+         <div className="relative overflow-hidden bg-[#11111B]/80 backdrop-blur-3xl border border-white/5 rounded-[3rem] p-12 lg:p-20 flex flex-col lg:flex-row items-center justify-between gap-12 shadow-2xl">
+            <div className="z-10 space-y-6 max-w-2xl text-center lg:text-left">
+               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-[10px] font-black uppercase tracking-[0.2em]">
+                  <ShieldCheck size={14} className="text-brand-primary" />
+                  Terminal de Comando NIRA v2.0
+               </div>
+               <h2 className="text-4xl lg:text-6xl font-black tracking-tighter text-white leading-[1.1]">
+                 Acelerando a <span className="bg-gradient-to-r from-brand-primary to-[#A855F7] bg-clip-text text-transparent">Proteção</span> que salva vidas.
+               </h2>
+               <p className="text-text-muted text-lg font-medium leading-relaxed opacity-80">
+                 Bem-vindo de volta, <span className="text-white font-black">{user?.nome.split(' ')[0]}</span>. Sua central de inteligência está operacional e monitorando {alertsCountStub()} protocolos ativos no momento.
+               </p>
+               <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-4">
+                  <Link to="/admin/alertas" className="bg-brand-primary hover:bg-[#7a6cf0] text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl glow-primary transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-2">
+                     Ver Alertas Urgentes <ArrowRight size={16} />
+                  </Link>
+                  <button className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
+                     Configurações Base
+                  </button>
+               </div>
+            </div>
 
-      {/* Grid de Atalhos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {adminCards.map((card, index) => (
-          <Link 
-            key={card.path} 
-            to={card.path}
-            className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.color} border ${card.borderColor} p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20 flex flex-col gap-4`}
-          >
-            <div className="flex justify-between items-start">
-              <div className={`p-3 rounded-xl bg-bg-main/50 ${card.iconColor} border border-white/5`}>
-                {card.icon}
+            <div className="relative w-64 h-64 flex items-center justify-center">
+               {/* Orbits */}
+               <div className="absolute inset-0 border border-brand-primary/10 rounded-full animate-[spin_15s_linear_infinite]"></div>
+               <div className="absolute inset-4 border border-brand-primary/5 rounded-full animate-[spin_20s_linear_infinite_reverse]"></div>
+               
+               <div className="relative w-40 h-40 bg-brand-primary/10 rounded-full flex items-center justify-center border border-brand-primary/20 shadow-glow shadow-brand-primary/10 transition-transform duration-700 group-hover:scale-110">
+                  <div className="relative z-10">
+                     <ShieldCheck size={64} className="text-brand-primary animate-pulse" />
+                  </div>
+                  <div className="absolute inset-0 bg-brand-primary/20 rounded-full blur-2xl animate-pulse"></div>
+               </div>
+               
+               {/* Floating Data Nodes */}
+               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-brand-primary rounded-full shadow-glow"></div>
+               <div className="absolute bottom-10 right-0 w-2 h-2 bg-purple-500 rounded-full shadow-glow"></div>
+            </div>
+         </div>
+      </section>
+
+      {/* ── GRID DE MÓDULOS (MODERNIZADO) ── */}
+      <section className="space-y-6">
+         <div className="flex items-center justify-between px-4">
+            <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Módulos de Operação</h3>
+            <span className="h-[1px] flex-1 mx-8 bg-white/5"></span>
+         </div>
+         
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredModules.map((m, i) => (
+              <Link 
+                key={m.path}
+                to={m.path}
+                className="group relative overflow-hidden bg-[#11111B] border border-white/5 rounded-[2rem] p-8 flex flex-col gap-6 transition-all duration-300 hover:border-brand-primary/30 hover:-translate-y-2 hover:shadow-3xl"
+              >
+                 <div className="flex justify-between items-start">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${m.color} text-white shadow-lg`}>
+                       {m.icon}
+                    </div>
+                    {m.badge && (
+                      <span className="px-3 py-1 rounded-full bg-brand-emergency/10 border border-brand-emergency/20 text-brand-emergency text-[9px] font-black uppercase tracking-widest animate-pulse">
+                         {m.badge}
+                      </span>
+                    )}
+                 </div>
+
+                 <div className="space-y-2">
+                    <h4 className="text-xl font-bold text-white group-hover:text-brand-primary transition-colors">{m.title}</h4>
+                    <p className="text-text-muted text-sm leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
+                      {m.desc}
+                    </p>
+                 </div>
+
+                 <div className="mt-auto flex items-center gap-2 text-[10px] font-black text-brand-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all">
+                    Acessar Módulo <ArrowRight size={14} />
+                 </div>
+
+                 {/* Decoração Background */}
+                 <div className="absolute -right-4 -bottom-4 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity scale-150 group-hover:scale-110 duration-500 text-white pointer-events-none">
+                    {m.icon}
+                 </div>
+              </Link>
+            ))}
+         </div>
+      </section>
+
+      {/* ── LIVE FEED SUMMARY ── */}
+      <section className="bg-white/5 border border-white/5 rounded-[2.5rem] p-4 lg:p-8">
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Uso de CPU', value: '4%', color: 'text-emerald-400' },
+              { label: 'Uptime Sistema', value: '99.9%', color: 'text-blue-400' },
+              { label: 'Regiões Cobertas', value: 'São Paulo', color: 'text-white' },
+              { label: 'API Status', value: 'Latência 12ms', color: 'text-emerald-400' }
+            ].map(stat => (
+              <div key={stat.label} className="bg-black/20 p-6 rounded-3xl border border-white/5 flex flex-col items-center text-center gap-1 group hover:border-brand-primary/20 transition-all">
+                 <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">{stat.label}</span>
+                 <span className={`text-xl font-black ${stat.color}`}>{stat.value}</span>
               </div>
-              {card.badge && (
-                <span className="px-2 py-1 rounded-lg bg-brand-emergency/20 border border-brand-emergency/30 text-brand-emergency text-[10px] font-bold uppercase tracking-wider animate-pulse">
-                  {card.badge}
-                </span>
-              )}
-            </div>
-            
-            <div className="space-y-1">
-              <h3 className="text-xl font-bold text-white group-hover:text-brand-primary transition-colors flex items-center gap-2">
-                {card.title}
-                <ArrowRight size={16} className="opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-              </h3>
-              <p className="text-text-muted text-sm leading-relaxed">
-                {card.desc}
-              </p>
-            </div>
+            ))}
+         </div>
+      </section>
 
-            {/* Micro-interaction hover effect */}
-            <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-500 text-white select-none pointer-events-none">
-              {card.icon}
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Quick Stats Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10">
-        {[
-          { label: 'Usuárias Ativas', value: '1.2k', icon: <TrendingUp size={14} />, color: 'text-emerald-400' },
-          { label: 'Casos em Aberto', value: '42', icon: <Activity size={14} />, color: 'text-orange-400' },
-          { label: 'Profissionais Online', value: '18', icon: <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />, color: 'text-emerald-400' },
-          { label: 'Tempo Médio Resposta', value: '4 min', icon: <ShieldCheck size={14} />, color: 'text-blue-400' },
-        ].map(stat => (
-          <div key={stat.label} className="bg-bg-secondary p-4 rounded-xl border border-border-subtle flex flex-col items-center text-center gap-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{stat.label}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-black text-white">{stat.value}</span>
-              <span className={stat.color}>{stat.icon}</span>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };
+
+// Stub function for visual only
+const alertsCountStub = () => 14;
 
 export default AdminHome;

@@ -21,7 +21,8 @@ const USUARIOS_INIT = [
   { id: 1, usuario: 'admin', senha: '123', role: 'adm', nome: 'Administrador NIRA', ativo: true },
   { id: 2, usuario: 'ong_vida', senha: '123', role: 'ong', nome: 'ONG Vida Nova', ativo: true },
   { id: 3, usuario: 'psicologa01', senha: '123', role: 'funcionario', nome: 'Dra. Ana', especialidade: 'psicologo', vinculo: 'ong:2', ongId: 2, ativo: true },
-  { id: 4, usuario: 'policial01', senha: '123', role: 'funcionario', nome: 'Cb. Marques', especialidade: 'policial', vinculo: 'nira', ativo: false }
+  { id: 4, usuario: 'policial01', senha: '123', role: 'funcionario', nome: 'Cb. Marques', especialidade: 'policial', vinculo: 'nira', ativo: false },
+  { id: 5, usuario: 'agente01', senha: '123', role: 'funcionario', nome: 'Sgt. Fontes', especialidade: 'agente', vinculo: 'nira', ativo: true }
 ];
 
 const ONGS_INIT = [
@@ -40,7 +41,7 @@ export function AuthProvider({ children }) {
     const encontrado = usuarios.find(u => u.usuario === usuario && u.senha === senha && u.ativo !== false);
     if (encontrado) {
       setUser(encontrado);
-      return { ok: true, role: encontrado.role };
+      return { ok: true, role: encontrado.role, user: encontrado };
     }
     return { ok: false };
   }

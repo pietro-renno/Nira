@@ -1,94 +1,175 @@
-import { Filter, Search, ShieldAlert, BadgeInfo } from 'lucide-react';
-import { mockAlerts } from '../../data/mockData';
+import React, { useState, useContext } from 'react';
+import { 
+  ShieldAlert, 
+  Search, 
+  Filter, 
+  Clock, 
+  MapPin, 
+  ArrowRight, 
+  AlertTriangle, 
+  Activity,
+  CheckCircle2,
+  MoreVertical,
+  MessageSquare,
+  Map as MapIcon
+} from 'lucide-react';
+import { NiraContext } from '../../context/NiraContext';
 
 export default function Alertas() {
-  const alertsFull = [
-    ...mockAlerts,
-    { id: '0038', user: 'Usuária #0038', location: 'Rio de Janeiro, RJ', time: 'Ontem', status: 'ativo', risk: 'alto', logs: ['S.O.S. ativado - 18:30'] },
-    { id: '0037', user: 'Usuária anônima', location: 'Curitiba, PR', time: 'Há 2 dias', status: 'ativo', risk: 'baixo', logs: ['Início de triagem - 14:15'] }
-  ];
+  const { alerts, updateChatStatus } = useContext(NiraContext);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRisco, setFilterRisco] = useState('todos');
+  const [activeType, setActiveType] = useState('todos');
+
+  const filteredAlerts = alerts.filter(alert => {
+    const matchesSearch = alert.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          alert.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          alert.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRisco = filterRisco === 'todos' || alert.risk === filterRisco;
+    const matchesType = activeType === 'todos' || alert.type === activeType;
+    return matchesSearch && matchesRisco && matchesType;
+  });
+
+  const activeAlerts = alerts.filter(a => a.status === 'ativo');
+  const criticalMap = alerts.filter(a => a.risk === 'alto' && a.status === 'ativo' && a.type === 'map');
+  const criticalChat = alerts.filter(a => a.risk === 'alto' && a.status === 'ativo' && a.type === 'chat');
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-6 animate-fade-in-up pb-10">
       
-      {/* Top Actions - Glass */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#11111B]/60 glass-panel border border-white/5 p-4 rounded-2xl shadow-xl">
-        <div className="flex gap-2">
-           <button onClick={() => alert('Filtro: Todos os chamados')} className="bg-brand-primary text-white border border-brand-primary px-5 py-2.5 rounded-xl text-xs font-bold shadow-[0_0_15px_rgba(139,126,250,0.3)] transition-all flex items-center gap-2">
-              Ver Todos
-           </button>
-           <button onClick={() => alert('Filtro: S.O.S isolado')} className="bg-white/5 hover:bg-white/10 text-text-muted hover:text-white border border-white/5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
-              Apenas S.O.S. (Alto Risco)
-           </button>
+      {/* ── Mini Stats Header ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          { label: 'S.O.S Mapa', value: criticalMap.length, color: 'text-brand-emergency', bg: 'from-brand-emergency/10 to-transparent', icon: <MapIcon size={18}/> },
+          { label: 'S.O.S Chat', value: criticalChat.length, color: 'text-brand-primary', bg: 'from-brand-primary/10 to-transparent', icon: <MessageSquare size={18}/> },
+          { label: 'Estáveis', value: activeAlerts.length - criticalMap.length - criticalChat.length, color: 'text-[#34D399]', bg: 'from-[#34D399]/10 to-transparent', icon: <Activity size={18}/> }
+        ].map(stat => (
+          <div key={stat.label} className={`bg-gradient-to-r ${stat.bg} border border-white/5 rounded-3xl p-5 flex items-center justify-between`}>
+            <div>
+               <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-1">{stat.label}</p>
+               <h3 className={`text-2xl font-black ${stat.color}`}>{stat.value}</h3>
+            </div>
+            <div className={`p-3 rounded-xl bg-white/5 ${stat.color}`}>{stat.icon}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Filters Bar ── */}
+      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between border-b border-white/5 pb-6">
+        <div className="flex bg-[#11111B]/60 p-1 rounded-2xl border border-white/5 w-full lg:w-auto">
+          {['todos', 'map', 'chat'].map(type => (
+            <button 
+              key={type}
+              onClick={() => setActiveType(type)}
+              className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeType === type ? 'bg-brand-primary text-white shadow-lg' : 'text-text-muted hover:text-white'}`}
+            >
+              {type === 'map' ? <MapIcon size={12}/> : type === 'chat' ? <MessageSquare size={12}/> : <ShieldAlert size={12}/>}
+              {type === 'map' ? 'Equipes' : type === 'chat' ? 'Chat' : 'Todos'}
+            </button>
+          ))}
         </div>
-        
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
+
+        <div className="flex items-center gap-3 w-full lg:w-auto">
+          <div className="relative flex-1 lg:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={14} />
             <input 
               type="text" 
-              placeholder="Pesquisar ID..." 
-              className="w-full bg-[#181825]/80 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-primary/50 transition-all shadow-inner"
+              placeholder="Pesquisar protocolo..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-[#181825] border border-white/5 rounded-xl py-2.5 pl-10 pr-4 text-[11px] text-white focus:outline-none focus:border-brand-primary/50"
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
           </div>
-          <button onClick={() => alert('Abrir janela de filtros avançados')} className="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-text-muted hover:text-white rounded-xl transition-all">
-            <Filter size={18} />
-          </button>
+          <div className="flex gap-1.5">
+            {['alto', 'médio', 'baixo'].map(r => (
+              <button 
+                key={r}
+                onClick={() => setFilterRisco(filterRisco === r ? 'todos' : r)}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${filterRisco === r ? 'bg-brand-primary text-white' : 'bg-[#181825] border border-white/5 text-text-muted'}`}
+                title={`Risco ${r}`}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${r === 'alto' ? 'bg-brand-emergency' : r === 'médio' ? 'bg-yellow-500' : 'bg-brand-primary'}`}></div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Main Table Container */}
-      <div className="glass-panel border-white/5 rounded-[2rem] overflow-hidden shadow-2xl relative">
-        <div className="overflow-x-auto min-h-[500px]">
-          <table className="w-full text-left text-sm text-text-muted">
-            <thead className="bg-[#11111B] border-b border-white/5">
-              <tr>
-                <th className="px-8 py-5 text-[10px] font-extrabold tracking-widest uppercase text-text-muted">ID / Risco</th>
-                <th className="px-6 py-5 text-[10px] font-extrabold tracking-widest uppercase text-text-muted">Status do Caso</th>
-                <th className="px-6 py-5 text-[10px] font-extrabold tracking-widest uppercase text-text-muted">Usuária</th>
-                <th className="px-6 py-5 text-[10px] font-extrabold tracking-widest uppercase text-text-muted">Localização Aprox.</th>
-                <th className="px-6 py-5 text-[10px] font-extrabold tracking-widest uppercase text-text-muted">Último Log</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {alertsFull.map((item, i) => (
-                <tr key={i} className="hover:bg-white/5 transition-colors group cursor-pointer">
-                  <td className="px-8 py-5">
-                     <div className="flex items-center gap-4">
-                       <div className="font-bold text-white tracking-widest">{item.id}</div>
-                       {item.risk === 'alto' && <span className="bg-brand-emergency/10 text-brand-emergency px-2 py-1 rounded text-[10px] font-bold border border-brand-emergency/30 flex items-center gap-1 uppercase tracking-wider"><ShieldAlert size={10}/> Alto r.</span>}
-                       {item.risk === 'médio' && <span className="bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded text-[10px] font-bold border border-yellow-500/30 flex items-center gap-1 uppercase tracking-wider"><BadgeInfo size={10}/> Médio</span>}
-                       {item.risk === 'baixo' && <span className="px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 uppercase tracking-wider text-[#34D399]"><span className="w-1.5 h-1.5 bg-[#34D399] rounded-full"></span> Baixo</span>}
-                     </div>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    {item.status === 'ativo' ? (
-                      <span className="flex items-center gap-2 text-brand-primary text-[10px] font-extrabold uppercase tracking-widest">
-                        <span className="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span> Ativo
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2 text-text-muted text-[10px] font-extrabold uppercase tracking-widest">
-                        <span className="w-2 h-2 rounded-full bg-[#3A3A5A]"></span> Concluído
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-5 font-bold text-white whitespace-nowrap">
-                     {item.user}
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    {item.location}
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="bg-[#11111B]/80 px-4 py-2.5 rounded-xl border border-white/5 font-mono text-[11px] text-text-muted truncate group-hover:border-brand-primary/30 group-hover:text-white transition-colors">
-                      {`> `}{item.logs[0]}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* ── Alertas Cards ── */}
+      <div className="space-y-4">
+        {filteredAlerts.length > 0 ? (
+          filteredAlerts.map((alert, i) => (
+            <div 
+              key={alert.id}
+              className={`group bg-[#11111B]/60 border ${alert.risk === 'alto' ? 'border-brand-emergency/20' : 'border-white/5'} rounded-[2rem] p-5 lg:p-7 flex flex-col lg:flex-row lg:items-center gap-6 transition-all duration-300 hover:bg-[#11111B]/80 hover:shadow-2xl relative overflow-hidden`}
+            >
+              {/* Type Pin */}
+              <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${alert.type === 'map' ? 'bg-brand-emergency' : 'bg-brand-primary'}`}></div>
+              
+              <div className="flex flex-col lg:flex-row flex-1 lg:items-center gap-6 lg:gap-10">
+                
+                {/* ID & User */}
+                <div className="lg:w-1/4 min-w-[180px]">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[9px] font-mono font-black text-text-muted uppercase tracking-widest opacity-40">#{alert.id}</span>
+                    <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${alert.type === 'map' ? 'bg-brand-emergency/10 text-brand-emergency' : 'bg-brand-primary/10 text-brand-primary'}`}>
+                       {alert.type === 'map' ? 'S.O.S Mapa' : 'S.O.S Chat'}
+                    </span>
+                  </div>
+                  <h4 className="text-lg font-black text-white truncate mb-1">{alert.user.split('•')[0]}</h4>
+                  <p className="flex items-center gap-1.5 text-text-muted font-bold text-[10px] tracking-tight truncate">
+                    <MapPin size={12} className="text-brand-primary" />
+                    {alert.location}
+                  </p>
+                </div>
+
+                {/* Risk & Time */}
+                <div className="lg:w-40 flex flex-col gap-2">
+                   <div className={`px-2.5 py-1 rounded-full border w-max flex items-center gap-2 ${alert.risk === 'alto' ? 'border-brand-emergency/30 bg-brand-emergency/5 text-brand-emergency' : 'border-white/10 bg-white/5 text-text-muted'}`}>
+                      <div className={`w-1 h-1 rounded-full ${alert.risk === 'alto' ? 'bg-brand-emergency animate-pulse' : 'bg-brand-primary'}`}></div>
+                      <span className="text-[9px] font-black uppercase tracking-widest">{alert.risk} Risco</span>
+                   </div>
+                   <div className="flex items-center gap-1.5 font-bold text-text-muted text-[10px] tracking-widest uppercase">
+                    <Clock size={12} /> {alert.time.includes('há') ? alert.time : `há ${alert.time}`}
+                  </div>
+                </div>
+
+                {/* Log Atividade */}
+                <div className="flex-1 min-w-0">
+                   <div className="bg-[#181825]/60 border border-white/5 rounded-2xl p-4 font-mono text-[10px] text-brand-primary/80 leading-relaxed group-hover:border-brand-primary/20 transition-colors">
+                      <span className="opacity-30 mr-2">Monitoramento:</span>
+                      {alert.logs[0]}
+                   </div>
+                </div>
+
+                {/* Ações */}
+                <div className="lg:w-auto flex flex-wrap items-center gap-2 mt-2 lg:mt-0 pt-4 lg:pt-0 border-t lg:border-none border-white/5">
+                   <button 
+                     onClick={() => updateChatStatus(alert.id, 'concluido')}
+                     className="w-12 h-12 flex items-center justify-center bg-white/5 border border-white/10 rounded-2xl text-text-muted hover:text-[#34D399] transition-all" 
+                     title="Encerrar"
+                   >
+                     <CheckCircle2 size={20} />
+                   </button>
+                   <button className="flex-1 lg:flex-none bg-brand-primary hover:bg-[#7a6cf0] text-white px-7 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all hover:-translate-y-0.5 active:scale-95">
+                     Assumir Atendimento
+                   </button>
+                   <button className="w-12 h-12 flex items-center justify-center bg-white/5 border border-white/10 rounded-2xl text-text-muted hover:text-white transition-all">
+                     <MoreVertical size={20} />
+                   </button>
+                </div>
+
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-20 bg-[#11111B]/40 rounded-[3rem] border border-dashed border-white/5 flex flex-col items-center justify-center space-y-4">
+             <ShieldAlert size={48} className="text-text-muted opacity-10" />
+             <p className="text-text-muted font-bold tracking-widest uppercase text-xs">Nenhum alerta pendente</p>
+          </div>
+        )}
       </div>
+
     </div>
   );
 }

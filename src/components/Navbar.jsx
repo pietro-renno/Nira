@@ -17,6 +17,7 @@ const Navbar = () => {
     { name: 'Como funciona', path: '/como-funciona' },
     { name: 'Conteúdos', path: '/conteudos' },
     { name: 'Sobre', path: '/sobre' },
+    { name: 'Login', path: '/login' },
   ];
 
   const adminLinks = [
@@ -66,14 +67,9 @@ const Navbar = () => {
           </button>
 
           {!user ? (
-            <>
-              <Link to="/login" className="text-[13px] font-bold tracking-wider uppercase text-text-muted hover:text-white transition-colors">
-                Login
-              </Link>
-              <Link to="/chat" className="bg-brand-primary hover:bg-[#7a6cf0] text-white px-6 py-2.5 rounded-full text-[13px] font-bold tracking-wider transition-all duration-300 shadow-lg glow-primary">
-                PsiTech
-              </Link>
-            </>
+            <Link to="/chat" className="bg-brand-primary hover:bg-[#7a6cf0] text-white px-6 py-2.5 rounded-full text-[13px] font-bold tracking-wider transition-all duration-300 shadow-lg glow-primary">
+              PsiTech
+            </Link>
           ) : (
             <div className="relative">
               <button 

@@ -137,8 +137,9 @@ export function NiraProvider({ children }) {
       deleteArticle,
       toggleArticleStatus,
       toggleUserStatus,
-      deleteUser,
-      allocateMapAgent
+      allocateMapAgent,
+      addArticle: (art) => setArticles(prev => [{...art, id: Date.now()}, ...prev]),
+      updateArticle: (id, data) => setArticles(prev => prev.map(a => a.id === id ? {...a, ...data} : a))
     }}>
       {children}
     </NiraContext.Provider>

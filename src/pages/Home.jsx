@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Shield, Fingerprint, MapPin, AlertCircle, EyeOff, UserX, Clock, Heart, HeartHandshake, Lock, AlertTriangle } from 'lucide-react';
+import { Shield, Fingerprint, MapPin, AlertCircle, EyeOff, UserX, Clock, Heart, HeartHandshake, Lock, AlertTriangle, ArrowRight, BookOpen } from 'lucide-react';
 import { mockStats, mockTeam } from '../data/mockData';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { NiraContext } from '../context/NiraContext';
 
 const FAQ_ITEMS = [
   { tag:'Privacidade', q:'A NIRA é realmente anônima? Meus dados ficam salvos?', a:'Sim. A NIRA foi desenhada com anonimato desde o início. Nenhum dado pessoal como nome, CPF ou telefone é solicitado. As conversas são temporárias e não associadas a qualquer identidade.' },
@@ -33,6 +34,9 @@ function FaqItem({ item }) {
 
 
 export default function Home() {
+  const { articles } = useContext(NiraContext);
+  const featuredArticles = articles.slice(0, 3);
+
   const dores = [
     { title: 'O SILÊNCIO', desc: 'Medo de represália, vergonha e dependência do agressor tornam o silêncio uma armadilha, não uma escolha.', icon: <EyeOff size={24} className="text-brand-emergency" /> },
     { title: 'FALTA DE ACESSO', desc: 'Ir a uma delegacia ou psicólogo presencialmente é impossível para quem vive sob vigilância constante.', icon: <UserX size={24} className="text-brand-emergency" /> },
@@ -110,15 +114,45 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Quote */}
-      <section className="bg-bg-main py-16 px-8 relative overflow-hidden border-y border-white/5">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#181825] to-bg-main opacity-30"></div>
-        <div className="max-w-3xl mx-auto text-center relative z-10 p-10 rounded-2xl border border-white/5 opacity-80 mix-blend-screen shadow-lg">
-          <p className="text-base md:text-lg font-normal leading-relaxed italic text-[#8B8B9E]">
-            "No Brasil, uma mulher é vítima de violência doméstica a cada 4 minutos. Apenas 1 em cada 4 casos é denunciado formalmente. Cerca de 70% das vítimas de feminicídio nunca haviam registrado uma ocorrência."
-          </p>
-          <p className="text-[10px] font-semibold tracking-widest text-[#565666] mt-4 uppercase">— Fórum Brasileiro de Segurança Pública (2023) • Instituto Avon (2021) • IPEA</p>
+      {/* ── CONTEÚDOS QUE EMPODERAM (NOVO) ── */}
+      <section className="bg-bg-main py-32 px-8 border-b border-white/5 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto space-y-16 relative z-10">
+           <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+              <div className="space-y-4">
+                 <p className="text-[10px] font-black tracking-[0.3em] text-brand-primary uppercase">Informação e Apoio</p>
+                 <h2 className="text-4xl md:text-5xl font-black tracking-tight">Conteúdos que <span className="text-brand-primary">Empoderam</span></h2>
+                 <p className="text-text-muted text-lg max-w-xl font-light leading-relaxed">Conheça seus direitos e saiba como se proteger com guias produzidos por especialistas da rede NIRA.</p>
+              </div>
+              <Link to="/conteudos" className="flex items-center gap-3 text-sm font-black uppercase tracking-widest text-white hover:text-brand-primary transition-all group">
+                 Ver todas as matérias <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+              </Link>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {featuredArticles.map((art, idx) => (
+                <div key={idx} className="group flex flex-col bg-[#11111B]/40 border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-brand-primary/30 transition-all duration-500 hover:shadow-2xl">
+                   <div className="relative h-56 overflow-hidden">
+                      <img src={art.image} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" alt={art.title} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#11111B] to-transparent" />
+                      <span className="absolute top-6 left-6 px-4 py-1.5 bg-[#07070B]/80 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-widest text-brand-primary border border-brand-primary/20">
+                         {art.category}
+                      </span>
+                   </div>
+                   <div className="p-8 flex flex-col flex-1">
+                      <h3 className="text-xl font-black text-white mb-4 group-hover:text-brand-primary transition-colors line-clamp-2">{art.title}</h3>
+                      <p className="text-sm text-text-muted leading-relaxed font-medium line-clamp-3 mb-8 italic">{art.description}</p>
+                      <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
+                         <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{art.author}</span>
+                         <span className="flex items-center gap-1.5 text-[10px] font-black text-white/20 uppercase">
+                            <Clock size={12} /> {art.readTime}
+                         </span>
+                      </div>
+                   </div>
+                </div>
+              ))}
+           </div>
         </div>
+        <div className="absolute top-1/2 left-0 w-[600px] h-[600px] bg-brand-primary/5 rounded-full blur-[150px] -translate-x-1/2 -translate-y-1/2" />
       </section>
 
       {/* Solução */}
@@ -220,7 +254,7 @@ export default function Home() {
                   <span className="home-faq__contact-icon">🆘</span>
                   <div><p className="home-faq__contact-title">Precisa de ajuda agora?</p><p className="home-faq__contact-sub">Acesse a triagem anônima</p></div>
                 </Link>
-                <Link to="/como-funciona" className="home-faq__contact">
+                <Link to="/conteudos" className="home-faq__contact">
                   <span className="home-faq__contact-icon">📚</span>
                   <div><p className="home-faq__contact-title">Ver conteúdos informativos</p><p className="home-faq__contact-sub">Artigos e guias das ONGs parceiras</p></div>
                 </Link>
