@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Lock, Shield, User, AlertTriangle, HeartHandshake, Zap } from 'lucide-react';
+import { Lock, Shield, User, AlertTriangle, HeartHandshake, Zap, Paintbrush, Code2, MonitorPlay, Wrench, ClipboardCheck } from 'lucide-react';
 
 const css = `
 /* ══ HERO ══ */
@@ -265,11 +265,11 @@ const VALORES = [
 ];
 
 const EQUIPE = [
-  { nome:'Giovanna', papel:'UX / Design',      emoji:'🎨' },
-  { nome:'Samuel',   papel:'Backend / PHP',    emoji:'⚙️' },
-  { nome:'Kauã',     papel:'Frontend / React', emoji:'💻' },
-  { nome:'Pietro',   papel:'Full Stack',        emoji:'🔧' },
-  { nome:'Lucas',    papel:'QA / Docs',         emoji:'📋' },
+  { nome:'Giovanna', papel:'UX / Design',      icon: <Paintbrush size={32} className="mx-auto" /> },
+  { nome:'Samuel',   papel:'Backend / PHP',    icon: <Code2 size={32} className="mx-auto" /> },
+  { nome:'Kauã',     papel:'Frontend / React', icon: <MonitorPlay size={32} className="mx-auto" /> },
+  { nome:'Pietro',   papel:'Full Stack',       icon: <Wrench size={32} className="mx-auto" /> },
+  { nome:'Lucas',    papel:'QA / Docs',        icon: <ClipboardCheck size={32} className="mx-auto" /> },
 ];
 
 const TECH = [
@@ -426,7 +426,7 @@ export default function SobrePage() {
             <div className="sb-equipe__grid">
               {EQUIPE.map(m => (
                 <div key={m.nome} className="sb-membro">
-                  <span className="sb-membro__emoji">{m.emoji}</span>
+                  <span className="sb-membro__emoji text-brand-primary">{m.icon}</span>
                   <p className="sb-membro__nome">{m.nome}</p>
                   <p className="sb-membro__papel">{m.papel}</p>
                   <p className="sb-membro__school">SESI-SENAI · 2026</p>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Shield, Fingerprint, MapPin, AlertCircle, EyeOff, UserX, Clock, Heart, HeartHandshake, Lock, AlertTriangle, ArrowRight, BookOpen, Zap } from 'lucide-react';
+import { Shield, Fingerprint, MapPin, AlertCircle, EyeOff, UserX, Clock, Heart, HeartHandshake, Lock, AlertTriangle, ArrowRight, BookOpen, LifeBuoy, PhoneCall, Zap} from 'lucide-react';
 import { mockStats, mockTeam } from '../data/mockData';
 import { useState, useContext } from 'react';
 import { NiraContext } from '../context/NiraContext';
@@ -280,16 +280,16 @@ export default function Home() {
               <p className="home-faq__side-sub">Tire suas dúvidas sobre segurança, privacidade e como a Nira funciona na prática.</p>
               <div className="home-faq__side-cta">
                 <Link to="/chat" className="home-faq__contact">
-                  <span className="home-faq__contact-icon">🆘</span>
+                  <span className="home-faq__contact-icon text-brand-emergency"><LifeBuoy size={24} /></span>
                   <div><p className="home-faq__contact-title">Precisa de ajuda agora?</p><p className="home-faq__contact-sub">Acesse a triagem anônima</p></div>
                 </Link>
                 <Link to="/conteudos" className="home-faq__contact">
-                  <span className="home-faq__contact-icon">📚</span>
+                  <span className="home-faq__contact-icon text-brand-primary"><BookOpen size={24} /></span>
                   <div><p className="home-faq__contact-title">Ver conteúdos informativos</p><p className="home-faq__contact-sub">Artigos e guias das ONGs parceiras</p></div>
                 </Link>
                 <a href="tel:180" className="home-faq__contact">
-                  <span className="home-faq__contact-icon">📞</span>
-                  <div><p className="home-faq__contact-title">Ligue 180</p><p className="home-faq__contact-sub">Central de Apoio à Mulher — 24 horas</p></div>
+                  <span className="home-faq__contact-icon text-[#34D399]"><PhoneCall size={24} /></span>
+                  <div><p className="home-faq__contact-title">Ligue 180</p><p className="home-faq__contact-sub">Central da Mulher — 24 horas</p></div>
                 </a>
               </div>
             </div>

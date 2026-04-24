@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, ShieldCheck, UserX } from 'lucide-react';
+import { Trash2, ShieldCheck, UserX, Brain, HeartHandshake, Building2 } from 'lucide-react';
 
 const UserRow = ({ user, onToggle, onDelete }) => {
   return (
@@ -16,14 +16,14 @@ const UserRow = ({ user, onToggle, onDelete }) => {
       <td className="px-4 py-4 whitespace-nowrap">
         {user.specialty !== '-' ? (
           <span className="flex items-center gap-1.5 font-bold text-[11px] text-white/80">
-            <span className="opacity-60">{user.specialty.includes('Psicólogo') ? '🧠' : '🤝'}</span> {user.specialty}
+            <span className="opacity-60 text-brand-primary flex items-center justify-center">{user.specialty.includes('Psicólogo') ? <Brain size={14} /> : <HeartHandshake size={14} />}</span> {user.specialty}
           </span>
         ) : <span className="opacity-20 text-xs">-</span>}
       </td>
       <td className="px-4 py-4 whitespace-nowrap">
         {user.link !== '-' ? (
           <span className="flex items-center gap-2 text-text-muted font-bold text-[10px]">
-            🏢 {user.link}
+            <Building2 size={12} className="text-brand-primary" /> {user.link}
           </span>
         ) : <span className="opacity-20 text-xs">-</span>}
       </td>
