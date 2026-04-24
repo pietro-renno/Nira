@@ -36,15 +36,15 @@ export default function Login() {
     <div className="min-h-screen flex text-text-main font-sans selection:bg-brand-primary/30 selection:text-white">
       
       {/* Left Form Area */}
-      <div className="flex-1 flex flex-col justify-center px-8 md:px-20 bg-bg-main relative z-10 animate-fade-in-up">
+      <div className="flex-1 flex flex-col justify-center px-8 md:px-20 bg-bg-main relative z-10 animate-fade-in-up pt-32 pb-20">
         
         <div className="max-w-md w-full mx-auto space-y-12">
           
           <div className="space-y-4">
-            <Link to="/" className="inline-flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase text-text-muted hover:text-white transition-colors mb-4 group">
+            <Link to="/" className="inline-flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase text-text-muted hover:text-white transition-colors group">
                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Voltar
             </Link>
-            <h1 className="text-4xl font-black tracking-tight text-white mb-2">Acesso Restrito</h1>
+            <h1 className="text-5xl font-black tracking-tight text-white mb-2 leading-tight">Acesso Restrito</h1>
             <p className="text-text-muted text-sm font-light max-w-sm leading-relaxed">
               Autenticação obrigatória para psicólogos, agentes e administradores da rede NIRA.
             </p>
@@ -108,15 +108,6 @@ export default function Login() {
               <button disabled={loading} type="submit" className="block w-full bg-brand-primary hover:bg-[#7a6cf0] text-center text-white px-5 py-5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all glow-primary hover:-translate-y-1 mt-6 disabled:opacity-50">
                 {loading ? 'Validando Acesso...' : 'Autorizar Entrada'}
               </button>
-
-              <div className="pt-4 space-y-3">
-                <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] text-center">Acesso Rápido (DEMO)</p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  <button type="button" onClick={() => { setUsuario('admin'); setSenha('123'); }} className="text-[9px] font-bold text-text-muted hover:text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">ADMIN</button>
-                  <button type="button" onClick={() => { setUsuario('psicologa01'); setSenha('123'); }} className="text-[9px] font-bold text-brand-primary hover:text-white bg-brand-primary/5 px-3 py-1.5 rounded-lg border border-brand-primary/10">PSICÓLOGO</button>
-                  <button type="button" onClick={() => { setUsuario('agente01'); setSenha('123'); }} className="text-[9px] font-bold text-blue-400 hover:text-white bg-blue-400/5 px-3 py-1.5 rounded-lg border border-blue-400/10">AGENTE</button>
-                </div>
-              </div>
             </form>
           </div>
 

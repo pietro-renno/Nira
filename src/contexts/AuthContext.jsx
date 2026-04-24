@@ -73,6 +73,49 @@ export function AuthProvider({ children }) {
     return '—';
   }
 
+  function getFuncionarios() {
+    return usuarios.filter(u => u.role === 'funcionario');
+  }
+
+  function alocarFuncionario(id, area, lat, lng) {
+    setUsuarios(us => us.map(u => {
+      if (u.id === id) {
+        const novaNotif = {
+          id: Date.now(),
+          titulo: 'Nova Alocação',
+          texto: `Você foi alocado(a) para a zona ${area}.`,
+          data: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          lida: false
+        };
+        return { 
+          ...u, 
+          area, 
+          lat, 
+          lng, 
+          notificacoes: [novaNotif, ...(u.notificacoes || [])] 
+        };
+      }
+      return u;
+    }));
+  }
+
+  function marcarNotifLida(notifId) {
+    if (!user) return;
+    setUser(curr => ({
+      ...curr,
+      notificacoes: curr.notificacoes.map(n => n.id === notifId ? { ...n, lida: true } : n)
+    }));
+    // Sincronizar na lista global
+    setUsuarios(us => us.map(u => u.id === user.id ? {
+      ...u,
+      notificacoes: u.notificacoes.map(n => n.id === notifId ? { ...n, lida: true } : n)
+    } : u));
+  }
+
+  function getNotifsNaoLidas() {
+    return user?.notificacoes?.filter(n => !n.lida) || [];
+  }
+
   function getONGs() {
     return ongs;
   }
@@ -87,7 +130,11 @@ export function AuthProvider({ children }) {
       toggleAtivo,
       removerUsuario,
       getVinculoLabel,
-      getONGs
+      getONGs,
+      getFuncionarios,
+      alocarFuncionario,
+      marcarNotifLida,
+      getNotifsNaoLidas
     }}>
       {children}
     </AuthContext.Provider>

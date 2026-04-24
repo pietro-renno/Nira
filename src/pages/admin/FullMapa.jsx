@@ -1,228 +1,757 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { 
-  MapPin, 
-  Users, 
-  Shield, 
-  Navigation, 
-  Search, 
-  Activity,
-  AlertTriangle,
-  Layers,
-  ArrowLeft
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  MapPin, Users, Shield, Navigation, Search,
+  Activity, AlertTriangle, ChevronRight, Crosshair,
+  Maximize2, Scan, ArrowLeft, Filter
 } from 'lucide-react';
-import { NiraContext } from '../../context/NiraContext';
-import { useNavigate } from 'react-router-dom';
 
-export default function FullMapa() {
-  const { mapAgents, alerts } = useContext(NiraContext);
-  const navigate = useNavigate();
+/* ─────────────────────────────────────────
+   MOCK DATA  (substitua pelos hooks reais)
+───────────────────────────────────────── */
+const MOCK_FUNCIONARIOS = [
+  { id: 1, nome: 'André Ferreira', especialidade: 'assistente', area: 'Norte', ativo: true,  lat: -23.1620, lng: -45.8750 },
+  { id: 2, nome: 'Pedro Almeida',  especialidade: 'psicologo',  area: 'Sul',   ativo: true,  lat: -23.1950, lng: -45.8900 },
+  { id: 3, nome: 'Carla Souza',    especialidade: 'assistente', area: 'Leste', ativo: false, lat: -23.1788, lng: -45.8200 },
+  { id: 4, nome: 'Lucas Mendes',   especialidade: 'psicologo',  area: null,    ativo: true,  lat: null,     lng: null      },
+];
+
+const MOCK_ONGS = [
+  { id: 10, nome: 'ONG Vida Nova',      area: 'Norte', lat: -23.1500, lng: -45.8800 },
+  { id: 11, nome: 'Instituto Renascer', area: 'Sul',   lat: -23.2000, lng: -45.8700 },
+];
+
+const MOCK_ALERTS = [
+  { id: 101, user: 'Vítima Anônima', location: 'R. das Flores, 52', lat: -23.1700, lng: -45.8600 },
+  { id: 102, user: 'Maria S.',       location: 'Av. Brasil, 310',   lat: -23.1900, lng: -45.9000 },
+];
+
+const ZONAS = [
+  { label: 'Norte',  color: '#9B8FFF', lat: -23.1100, lng: -45.8950 },
+  { label: 'Sul',    color: '#2ED573', lat: -23.2100, lng: -45.8750 },
+  { label: 'Leste',  color: '#FFC800', lat: -23.1700, lng: -45.8100 },
+  { label: 'Oeste',  color: '#FF8C42', lat: -23.1700, lng: -45.9600 },
+  { label: 'Centro', color: '#8B88B8', lat: -23.1788, lng: -45.8852 },
+];
+
+const ESPEC_LABEL = { assistente: 'Assistente Social', psicologo: 'Psicólogo(a)' };
+
+/* ─────────────────────────────────────────
+   CSS INJETADO
+───────────────────────────────────────── */
+const GLOBAL_CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { background: #050508; overflow: hidden; }
+
+  .nira-root {
+    position: fixed; inset: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    background: #050508;
+    color: #fff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── glassmorphism ── */
+  .glass {
+    background: rgba(11, 11, 22, 0.82);
+    backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(139, 126, 250, 0.13);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .glass-lo {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* ── map engine ── */
+  #nira-map-engine {
+    position: absolute; inset: 0; z-index: 0;
+  }
+  .leaflet-container {
+    background: #060610 !important;
+    filter: contrast(1.1) brightness(0.65) saturate(1.2) hue-rotate(200deg);
+  }
+  .leaflet-control-zoom {
+    border: none !important;
+    margin: 40px !important;
+  }
+  .leaflet-control-zoom a {
+    background: rgba(11,11,22,0.92) !important;
+    color: #fff !important;
+    border: 1px solid rgba(139,126,250,0.35) !important;
+    backdrop-filter: blur(10px);
+    width: 44px !important; height: 44px !important;
+    line-height: 44px !important;
+    border-radius: 14px !important;
+    margin-bottom: 10px !important;
+    display: flex !important;
+    align-items: center; justify-content: center;
+    font-weight: 700;
+    transition: all 0.3s;
+  }
+  .leaflet-control-zoom a:hover {
+    background: #8B7EFA !important;
+    transform: scale(1.1);
+  }
+  .leaflet-popup-content-wrapper {
+    background: rgba(10,10,20,0.97) !important;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139,126,250,0.5) !important;
+    border-radius: 20px !important;
+    color: #fff !important;
+    padding: 0; overflow: hidden;
+    box-shadow: 0 0 40px rgba(139,126,250,0.25) !important;
+  }
+  .leaflet-popup-tip { background: rgba(139,126,250,0.5) !important; }
+  .leaflet-popup-close-button { color: rgba(255,255,255,0.3) !important; right: 12px !important; top: 12px !important; }
+  .leaflet-routing-container { display: none !important; }
+  .leaflet-attribution-flag { display: none !important; }
+  .leaflet-control-attribution { display: none !important; }
+
+  /* ── neon route ── */
+  .neon-route {
+    filter: drop-shadow(0 0 8px #8B7EFA);
+    stroke-dasharray: 12 10;
+    animation: dash-move 20s linear infinite;
+  }
+  @keyframes dash-move { to { stroke-dashoffset: -1000; } }
+
+  /* ── scan line overlay ── */
+  .scan-line {
+    position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+    background: linear-gradient(to right, transparent, rgba(139,126,250,0.6), transparent);
+    animation: scan 7s linear infinite;
+    pointer-events: none; z-index: 20;
+  }
+  @keyframes scan {
+    0%   { top: 0;    opacity: 0; }
+    5%   { opacity: 1; }
+    95%  { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  /* ── vignette ── */
+  .vignette {
+    position: absolute; inset: 0; pointer-events: none; z-index: 10;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.72) 100%);
+    box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
+  }
+
+  /* ── grid dots ── */
+  .map-grid {
+    position: absolute; inset: 0; pointer-events: none; z-index: 11; opacity: 0.07;
+    background-image: radial-gradient(circle, #8B7EFA 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  /* ── interface overlay ── */
+  .overlay {
+    position: absolute; inset: 0; z-index: 30;
+    padding: 24px;
+    display: flex; flex-direction: column;
+    pointer-events: none;
+  }
+  .overlay > * { pointer-events: auto; }
+
+  /* ── marker glow ── */
+  .marker-glow { filter: drop-shadow(0 0 12px #8B7EFA) drop-shadow(0 0 4px #fff); }
+  .marker-sos  { filter: drop-shadow(0 0 14px #FF3D6B) drop-shadow(0 0 4px #fff); }
+  .marker-ong  { filter: drop-shadow(0 0 12px #34D399); }
+
+  /* ── scrollbar ── */
+  .custom-scroll::-webkit-scrollbar { width: 3px; }
+  .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+  .custom-scroll::-webkit-scrollbar-thumb { background: rgba(139,126,250,0.35); border-radius: 10px; }
+
+  /* ── pulse ── */
+  @keyframes ping {
+    0%    { transform: scale(1); opacity: 0.6; }
+    100%  { transform: scale(2.8); opacity: 0; }
+  }
+  .sos-ping { animation: ping 1.6s ease-out infinite; }
+  .sos-ping2 { animation: ping 1.6s ease-out 0.5s infinite; }
+
+  /* ── toast ── */
+  @keyframes slide-in {
+    from { transform: translateX(120%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  .toast-anim { animation: slide-in 0.5s cubic-bezier(.16,1,.3,1) forwards; }
+
+  /* ── status dot ── */
+  .dot-online  { background: #10b981; box-shadow: 0 0 10px #10b981; }
+  .dot-busy    { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+  .dot-offline { background: rgba(255,255,255,0.15); }
+
+  /* ── brand colors ── */
+  :root {
+    --brand:    #8B7EFA;
+    --emer:     #FF3D6B;
+    --success:  #34D399;
+    --warn:     #f59e0b;
+    --bg-main:  #050508;
+    --bg-panel: #0B0B16;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  input::placeholder { color: rgba(255,255,255,0.2); }
+  input:focus { outline: none; }
+`;
+
+/* ─────────────────────────────────────────
+   POPUP HTML
+───────────────────────────────────────── */
+const agentPopup = (f) => `
+  <div style="padding:16px 18px; background:#0B0B16; min-width:190px; font-family:'Space Grotesk',sans-serif">
+    <p style="margin:0 0 2px; font-size:9px; font-weight:900; color:#8B7EFA; text-transform:uppercase; letter-spacing:2.5px">Unidade de Campo</p>
+    <p style="margin:0; font-size:15px; font-weight:800; color:#fff">${f.nome}</p>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:8px">
+      <div style="width:7px; height:7px; background:#34D399; border-radius:50%; flex-shrink:0; box-shadow: 0 0 8px #34D399"></div>
+      <p style="margin:0; font-size:9px; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:1.5px">${f.area || 'STANDBY'}</p>
+    </div>
+  </div>`;
+
+const ongPopup = (o) => `
+  <div style="padding:16px 18px; background:#0B0B16; min-width:190px; font-family:'Space Grotesk',sans-serif">
+    <p style="margin:0 0 2px; font-size:9px; font-weight:900; color:#34D399; text-transform:uppercase; letter-spacing:2.5px">ONG Parceira</p>
+    <p style="margin:0; font-size:15px; font-weight:800; color:#fff">${o.nome}</p>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:8px">
+      <div style="width:7px; height:7px; background:#34D399; border-radius:50%; box-shadow: 0 0 8px #34D399"></div>
+      <p style="margin:0; font-size:9px; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:1.5px">Disponível — ${o.area}</p>
+    </div>
+  </div>`;
+
+const sosPopup = (a) => `
+  <div style="padding:16px 18px; background:#0B0B16; min-width:190px; font-family:'Space Grotesk',sans-serif">
+    <p style="margin:0 0 2px; font-size:9px; font-weight:900; color:#FF3D6B; text-transform:uppercase; letter-spacing:2.5px">⚠ Alerta S.O.S</p>
+    <p style="margin:0; font-size:15px; font-weight:800; color:#fff">${a.user}</p>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08)">
+      <p style="margin:0; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.5px">${a.location}</p>
+    </div>
+  </div>`;
+
+/* ═══════════════════════════════════════════
+   COMPONENTE PRINCIPAL
+═══════════════════════════════════════════ */
+export default function FullMapa({ onBack }) {
   const [activeLayer, setActiveLayer] = useState('todos');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab,   setActiveTab]   = useState('agentes');
+  const [search,      setSearch]      = useState('');
+  const [toast,       setToast]       = useState(null);
+  const [leafletReady, setLeafletReady] = useState(false);
 
-  // Simulação de Agentes Operativos
-  const agents = [
-    { id: 1, name: 'Agente André', pos: { x: 32, y: 45 }, status: 'Patrulha', type: 'agente' },
-    { id: 2, name: 'Agente Pedro', pos: { x: 58, y: 28 }, status: 'Resgate', type: 'agente' },
-    { id: 3, name: 'ONG Vida Nova', pos: { x: 42, y: 68 }, status: 'Disponível', type: 'ong' },
-    { id: 4, name: 'Instituto Renascer', pos: { x: 18, y: 75 }, status: 'Ocupado', type: 'ong' },
-  ];
+  const lMap       = useRef(null);
+  const markersRef = useRef({});
+  const routeRef   = useRef(null);
 
-  // Ocorrências de Campo (Filtro por Mapa)
-  const mapAlerts = alerts.filter(a => a.type === 'map' && a.status === 'ativo').map((a, i) => ({
-    ...a,
-    pos: { x: 25 + (i * 22), y: 35 + (i * 18) }
-  }));
+  const [funcionarios, setFuncionarios] = useState(MOCK_FUNCIONARIOS);
 
+  const filtered = funcionarios.filter(f =>
+    f.nome.toLowerCase().includes(search.toLowerCase())
+  );
+
+  /* ── visibilidade por layer ── */
+  const layerVisible = (type) => {
+    if (activeLayer === 'todos') return true;
+    return activeLayer === type;
+  };
+
+  /* ── 1. Carregar Leaflet ── */
+  useEffect(() => {
+    if (window.L && window.L.Routing) { setLeafletReady(true); return; }
+
+    const addLink = (id, href) => {
+      if (!document.getElementById(id)) {
+        const el = document.createElement('link');
+        el.id = id; el.rel = 'stylesheet'; el.href = href;
+        document.head.appendChild(el);
+      }
+    };
+    addLink('lf-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+    addLink('lf-rm-css', 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css');
+
+    const s1 = document.createElement('script');
+    s1.src   = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s1.onload = () => {
+      const s2 = document.createElement('script');
+      s2.src   = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js';
+      s2.onload = () => setLeafletReady(true);
+      document.head.appendChild(s2);
+    };
+    document.head.appendChild(s1);
+  }, []);
+
+  /* ── 2. Inicializar Mapa ── */
+  useEffect(() => {
+    if (!leafletReady || lMap.current) return;
+    const L = window.L;
+
+    const map = L.map('nira-map-engine', {
+      center: [-23.1788, -45.8852],
+      zoom: 14,
+      zoomControl: false,
+      attributionControl: false,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 20 }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    lMap.current = map;
+    updateMarkers(map);
+  }, [leafletReady]);
+
+  /* ── 3. Atualizar marcadores ── */
+  useEffect(() => {
+    if (lMap.current) updateMarkers(lMap.current);
+  }, [funcionarios, activeLayer]);
+
+  const makeCircleIcon = (color, cls) => {
+    if (!window.L) return null;
+    const L = window.L;
+    return L.divIcon({
+      className: '',
+      html: `
+        <div style="position:relative;width:36px;height:36px">
+          <div style="position:absolute;inset:0;background:${color};border-radius:50%;opacity:0.25;animation:ping 1.8s ease-out infinite"></div>
+          <div style="position:absolute;inset:4px;background:${color};border:2.5px solid rgba(255,255,255,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 10px ${color})"></div>
+        </div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+    });
+  };
+
+  const updateMarkers = (map) => {
+    if (!map || !window.L) return;
+    const L = window.L;
+
+    /* limpar marcadores removidos */
+    Object.keys(markersRef.current).forEach(key => {
+      map.removeLayer(markersRef.current[key]);
+      delete markersRef.current[key];
+    });
+
+    /* agentes */
+    if (layerVisible('agentes')) {
+      funcionarios.forEach(f => {
+        if (!f.lat || !f.lng) return;
+        const m = L.circleMarker([f.lat, f.lng], {
+          radius: 11, fillColor: '#8B7EFA', color: '#fff',
+          weight: 2.5, fillOpacity: 1, className: 'marker-glow',
+        }).addTo(map).bindPopup(agentPopup(f), { closeButton: false, offset: [0, -14] });
+        markersRef.current[`ag-${f.id}`] = m;
+      });
+    }
+
+    /* ongs */
+    if (layerVisible('ongs')) {
+      MOCK_ONGS.forEach(o => {
+        const m = L.circleMarker([o.lat, o.lng], {
+          radius: 11, fillColor: '#34D399', color: '#fff',
+          weight: 2.5, fillOpacity: 1, className: 'marker-ong',
+        }).addTo(map).bindPopup(ongPopup(o), { closeButton: false, offset: [0, -14] });
+        markersRef.current[`ong-${o.id}`] = m;
+      });
+    }
+
+    /* SOS */
+    if (layerVisible('sos')) {
+      MOCK_ALERTS.forEach(a => {
+        const m = L.circleMarker([a.lat, a.lng], {
+          radius: 13, fillColor: '#FF3D6B', color: '#fff',
+          weight: 2.5, fillOpacity: 1, className: 'marker-sos',
+        }).addTo(map).bindPopup(sosPopup(a), { closeButton: false, offset: [0, -14] });
+        markersRef.current[`sos-${a.id}`] = m;
+      });
+    }
+  };
+
+  /* ── GPS routing ── */
+  const startGPS = (f) => {
+    if (!lMap.current || !window.L?.Routing) return;
+    const L = window.L;
+    const dest = ZONAS[Math.floor(Math.random() * ZONAS.length)];
+    const start = f.lat ? [f.lat, f.lng] : [-23.1788, -45.8852];
+
+    if (routeRef.current) lMap.current.removeControl(routeRef.current);
+
+    routeRef.current = L.Routing.control({
+      waypoints: [L.latLng(...start), L.latLng(dest.lat, dest.lng)],
+      lineOptions: {
+        styles: [
+          { color: '#8B7EFA', opacity: 0.25, weight: 14 },
+          { color: '#fff',    opacity: 1,    weight: 2.5, className: 'neon-route' },
+        ],
+      },
+      addWaypoints: false, draggableWaypoints: false,
+      fitSelectedRoutes: true, createMarker: () => null,
+    }).addTo(lMap.current);
+
+    setFuncionarios(prev =>
+      prev.map(x => x.id === f.id ? { ...x, area: dest.label, lat: dest.lat, lng: dest.lng } : x)
+    );
+    showToast(`GPS ATIVO // Rota: ${f.nome} → ${dest.label}`);
+  };
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 5000);
+  };
+
+  const sosCount = MOCK_ALERTS.length;
+  const onlineCount = funcionarios.filter(f => f.ativo).length;
+
+  /* ─────────── RENDER ─────────── */
   return (
-    <div className="h-screen w-full bg-[#0A0A10] flex flex-col overflow-hidden fixed inset-0 z-[9999]">
-      
-      {/* ── Background Mapa (Abstrato/Grid) ── */}
-      <div className="absolute inset-0 z-0 bg-[#0F0F1A]">
-        {/* Grid de Coordenadas */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#8B7EFA 1px, transparent 1px), linear-gradient(90deg, #8B7EFA 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
-        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle, #8B7EFA 1.5px, transparent 1.5px)', backgroundSize: '30px 30px' }}></div>
-        
-        {/* SVG Decorative Paths */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.02]">
-           <path d="M 0 400 Q 300 350 600 450 T 1200 400" stroke="#8B7EFA" strokeWidth="3" fill="none" />
-           <path d="M 400 0 Q 450 300 400 600 T 400 1200" stroke="#8B7EFA" strokeWidth="3" fill="none" />
-        </svg>
+    <>
+      <style>{GLOBAL_CSS}</style>
 
-        {/* Marcadores de Agentes */}
-        {(activeLayer === 'todos' || activeLayer === 'agentes' || activeLayer === 'ongs') && agents.map(agent => (
-           <div 
-             key={agent.id}
-             className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20"
-             style={{ left: `${agent.pos.x}%`, top: `${agent.pos.y}%` }}
-           >
-              <div className="relative">
-                 <div className={`w-10 h-10 ${agent.type==='agente'?'bg-brand-primary':'bg-[#34D399]'} border-4 border-[#0A0A10] rounded-2xl flex items-center justify-center shadow-2xl transform group-hover:scale-125 transition-all duration-300`}>
-                    {agent.type==='agente' ? <Shield size={16} className="text-white"/> : <Users size={16} className="text-white"/>}
-                 </div>
-                 
-                 {/* Label Flutuante */}
-                 <div className="absolute top-1/2 left-full translate-y-[-50%] ml-4 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-                    <div className="bg-[#11111B]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-3xl w-52">
-                       <p className="text-[9px] font-black text-brand-primary uppercase tracking-widest mb-1">{agent.type === 'agente' ? 'Segurança/Campo' : 'Entidade Parceira'}</p>
-                       <p className="text-sm font-black text-white">{agent.name}</p>
-                       <div className="flex items-center gap-2 mt-2">
-                          <div className={`w-1.5 h-1.5 rounded-full ${agent.status === 'Patrulha' || agent.status === 'Disponível' ? 'bg-[#34D399]' : 'bg-yellow-500'} animate-pulse`}></div>
-                          <p className="text-[10px] font-bold text-text-muted">{agent.status}</p>
-                       </div>
-                    </div>
-                 </div>
-              </div>
-           </div>
-        ))}
+      <div className="nira-root">
+        {/* MAP ENGINE */}
+        <div id="nira-map-engine" />
 
-        {/* Marcadores de S.O.S (Ocorrências) */}
-        {(activeLayer === 'todos' || activeLayer === 'sos') && mapAlerts.map(alert => (
-          <div 
-            key={alert.id}
-            className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-30"
-            style={{ left: `${alert.pos.x}%`, top: `${alert.pos.y}%` }}
-          >
-             <div className="relative">
-                {/* Rings de Alerta */}
-                <div className="absolute inset-0 bg-brand-emergency rounded-full animate-ping opacity-20 scale-[2.5]"></div>
-                <div className="absolute inset-0 bg-brand-emergency rounded-full animate-ping opacity-10 scale-[3.5] [animation-delay:0.5s]"></div>
-                
-                <div className="w-14 h-14 bg-brand-emergency border-4 border-[#0A0A10] rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(239,68,68,0.5)] transform group-hover:scale-110 transition-transform">
-                   <AlertTriangle size={24} className="text-white animate-pulse" />
-                </div>
-                
-                {/* Popover Detalhes */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
-                  <div className="bg-[#11111B] border-2 border-brand-emergency rounded-[2rem] p-6 shadow-3xl w-64">
-                     <div className="flex justify-between items-start mb-4">
-                        <span className="bg-brand-emergency/10 text-brand-emergency border border-brand-emergency/20 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest">S.O.S Urgente</span>
-                        <span className="text-[10px] font-mono text-white/50">#{alert.id}</span>
-                     </div>
-                     <p className="text-lg font-black text-white mb-1">{alert.user}</p>
-                     <p className="text-[11px] text-text-muted mb-4 flex items-center gap-2"><MapPin size={12}/> {alert.location}</p>
-                     <button 
-                       onClick={(e) => { e.stopPropagation(); navigate('/admin/atendimentos-chat'); }} 
-                       className="w-full bg-brand-emergency py-3 rounded-xl text-[10px] font-black text-white uppercase tracking-widest hover:brightness-110 transition-all"
-                     >
-                       Iniciar Intervenção
-                     </button>
-                  </div>
-                </div>
-             </div>
-          </div>
-        ))}
-      </div>
+        {/* OVERLAYS */}
+        <div className="vignette" />
+        <div className="map-grid" />
+        <div className="scan-line" />
 
-      {/* ── Header Monitor ── */}
-      <div className="relative z-50 p-6 flex items-start justify-between pointer-events-none">
-        
-        <div className="flex items-start gap-4 pointer-events-auto">
-           <button 
-             onClick={() => navigate(-1)} 
-             className="w-12 h-12 bg-[#11111B]/80 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white hover:bg-brand-primary transition-all shadow-2xl"
-           >
-             <ArrowLeft size={20} />
-           </button>
-           
-           <div className="bg-[#11111B]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center gap-6 shadow-2xl">
-             <div className="flex items-center gap-4 pr-6 border-r border-white/10">
-                <div className="bg-brand-primary p-2.5 rounded-xl">
-                  <Navigation size={22} className="text-white rotate-45" />
+        {/* INTERFACE */}
+        <div className="overlay">
+
+          {/* ════ TOP BAR ════ */}
+          <header style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:16 }}>
+
+            {/* Back + Brand */}
+            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+              <button
+                onClick={() => onBack?.()}
+                className="glass"
+                style={{
+                  width:52, height:52, borderRadius:16,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  cursor:'pointer', border:'1px solid rgba(139,126,250,0.2)',
+                  transition:'all 0.3s', flexShrink:0,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(139,126,250,0.25)'}
+                onMouseLeave={e => e.currentTarget.style.background=''}
+              >
+                <ArrowLeft size={22} color="#fff" />
+              </button>
+
+              <div className="glass" style={{
+                borderRadius:24, padding:'12px 22px',
+                borderLeft:'5px solid var(--brand)',
+                display:'flex', alignItems:'center', gap:14,
+              }}>
+                <div style={{
+                  width:40, height:40, borderRadius:12,
+                  background:'rgba(139,126,250,0.15)',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                }}>
+                  <Navigation size={20} color="var(--brand)" style={{ transform:'rotate(45deg)' }} />
                 </div>
                 <div>
-                   <h2 className="text-sm font-black text-white uppercase tracking-widest">GeoMonitor Ultra</h2>
-                   <p className="text-[10px] text-text-muted font-bold">SP :: Unidade Metropolitana</p>
+                  <h1 style={{ fontSize:11, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.35em', lineHeight:1 }}>
+                    GeoMonitor v3.0
+                  </h1>
+                  <p style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.18em', marginTop:5, display:'flex', alignItems:'center', gap:6 }}>
+                    <span style={{ width:6, height:6, borderRadius:'50%', background:'#10b981', boxShadow:'0 0 8px #10b981', display:'inline-block', animation:'none' }} />
+                    Sistema Online · Link Estável
+                  </p>
                 </div>
-             </div>
-             
-             <div className="flex gap-4">
-                <div className="text-center">
-                   <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">Lat: 23°33'12" S</p>
-                   <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">Long: 46°38'02" W</p>
-                </div>
-                <div className="text-center">
-                   <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">Alt: 760m</p>
-                   <p className="text-[9px] font-black text-[#34D399] uppercase tracking-tighter">Signal: Stable</p>
-                </div>
-             </div>
-           </div>
-        </div>
+              </div>
+            </div>
 
-        <div className="pointer-events-auto flex gap-3">
-           <div className="bg-[#11111B]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-2 flex gap-1 shadow-2xl">
-              {[
-                { id: 'todos', label: 'Unificado', icon: <Layers size={14}/> },
-                { id: 'agentes', label: 'Agentes', icon: <Shield size={14}/> },
-                { id: 'ongs', label: 'Entidades', icon: <Users size={14}/> },
-                { id: 'sos', label: 'S.O.S', icon: <AlertTriangle size={14}/> }
-              ].map(layer => (
-                <button 
-                  key={layer.id}
-                  onClick={() => setActiveLayer(layer.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeLayer === layer.id ? 'bg-brand-primary text-white shadow-lg' : 'text-text-muted hover:text-white'}`}
+            {/* Search */}
+            <div className="glass" style={{ flex:1, maxWidth:380, borderRadius:20, padding:'10px 18px', display:'flex', alignItems:'center', gap:12 }}>
+              <Search size={16} color="var(--brand)" style={{ flexShrink:0 }} />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="IDENTIFICAR UNIDADE..."
+                style={{
+                  background:'transparent', border:'none', color:'#fff',
+                  fontSize:10, fontWeight:700, fontFamily:'Space Grotesk',
+                  letterSpacing:'0.15em', textTransform:'uppercase', width:'100%',
+                }}
+              />
+            </div>
+
+            {/* Layer Filters */}
+            <div className="glass" style={{ borderRadius:20, padding:6, display:'flex', gap:6 }}>
+              {['todos','agentes','ongs','sos'].map(l => (
+                <button
+                  key={l}
+                  onClick={() => setActiveLayer(l)}
+                  style={{
+                    padding:'8px 16px', borderRadius:14, border:'none', cursor:'pointer',
+                    fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em',
+                    fontFamily:'Space Grotesk',
+                    background: activeLayer === l ? 'var(--brand)' : 'rgba(255,255,255,0.05)',
+                    color:      activeLayer === l ? '#fff' : 'rgba(255,255,255,0.35)',
+                    transition:'all 0.25s',
+                  }}
                 >
-                  {layer.icon} <span className="hidden sm:inline">{layer.label}</span>
+                  {l}
                 </button>
               ))}
-           </div>
-        </div>
-      </div>
-
-      {/* ── Painel de Informações Lateral ── */}
-      <div className="absolute left-6 bottom-6 z-50 w-80 space-y-4">
-         <div className="bg-[#11111B]/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 shadow-3xl space-y-8">
-            <div>
-               <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                  <Activity size={14} className="text-brand-primary"/> Live Analytics
-               </h3>
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                     <p className="text-[9px] font-black text-text-muted uppercase">Conectados</p>
-                     <p className="text-3xl font-black text-white">12</p>
-                  </div>
-                  <div className="space-y-1">
-                     <p className="text-[9px] font-black text-brand-emergency uppercase">Críticos</p>
-                     <p className="text-3xl font-black text-brand-emergency">{mapAlerts.length}</p>
-                  </div>
-               </div>
             </div>
 
-            <div className="space-y-4">
-               <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest">Histórico de Movimentação</h4>
-               <div className="space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="flex gap-4 items-start border-l border-white/10 ml-1 pl-4 relative">
-                       <div className="absolute -left-[4.5px] top-1 w-2 h-2 rounded-full bg-brand-primary shadow-[0_0_10px_#8B7EFA]"></div>
-                       <div>
-                          <p className="text-[11px] font-bold text-white leading-tight">Posição Agente #{i} atualizada</p>
-                          <p className="text-[10px] text-text-muted mt-1 uppercase">ZONA SUL - {12 + i}:4{i}h</p>
-                       </div>
+            {/* Live counter */}
+            <div className="glass" style={{ borderRadius:20, padding:'12px 22px', display:'flex', alignItems:'center', gap:18, flexShrink:0 }}>
+              <div>
+                <p style={{ fontSize:8, fontWeight:900, color:'var(--brand)', textTransform:'uppercase', letterSpacing:'0.2em' }}>Online</p>
+                <p style={{ fontSize:28, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
+                  {String(onlineCount).padStart(2,'0')}
+                </p>
+              </div>
+              <div style={{ width:1, height:36, background:'rgba(255,255,255,0.08)' }} />
+              <div>
+                <p style={{ fontSize:8, fontWeight:900, color:'var(--emer)', textTransform:'uppercase', letterSpacing:'0.2em' }}>S.O.S</p>
+                <p style={{ fontSize:28, fontWeight:900, color:'var(--emer)', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
+                  {String(sosCount).padStart(2,'0')}
+                </p>
+              </div>
+              <Activity size={24} color="var(--brand)" style={{ opacity:0.7 }} />
+            </div>
+          </header>
+
+          {/* ════ BODY ════ */}
+          <div style={{ flex:1, display:'flex', gap:20, marginTop:20, minHeight:0 }}>
+
+            {/* ─── SIDEBAR ─── */}
+            <aside style={{ width:360, display:'flex', flexDirection:'column', gap:14, overflow:'hidden' }}>
+
+              {/* Stats rápidos */}
+              <div className="glass" style={{ borderRadius:24, padding:'18px 22px' }}>
+                <p style={{ fontSize:9, fontWeight:900, color:'var(--brand)', textTransform:'uppercase', letterSpacing:'0.22em', marginBottom:14, display:'flex', alignItems:'center', gap:8 }}>
+                  <Activity size={13} color="var(--brand)" /> Status em Tempo Real
+                </p>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  {[
+                    { label:'Equipes Campo', value:'08', color:'#fff' },
+                    { label:'S.O.S Ativos',  value:String(sosCount), color:'var(--emer)' },
+                    { label:'ONGs Ativas',   value:String(MOCK_ONGS.length), color:'var(--success)' },
+                    { label:'Zonas Cobertas',value:'05', color:'var(--warn)' },
+                  ].map(s => (
+                    <div key={s.label} className="glass-lo" style={{ borderRadius:16, padding:'12px 14px' }}>
+                      <p style={{ fontSize:8, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:4 }}>{s.label}</p>
+                      <p style={{ fontSize:26, fontWeight:900, color:s.color, lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{s.value}</p>
                     </div>
                   ))}
-               </div>
-            </div>
-         </div>
-      </div>
+                </div>
+              </div>
 
-      {/* ── Footer / Info Coords ── */}
-      <div className="absolute right-6 bottom-6 z-50">
-         <div className="bg-[#11111B]/60 backdrop-blur-md border border-white/10 px-6 py-3 rounded-2xl flex items-center gap-8 shadow-2xl">
-            <div className="flex gap-4">
-               <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-brand-primary"></div>
-                  <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Campo</span>
-               </div>
-               <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#34D399]"></div>
-                  <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Parceiros</span>
-               </div>
-            </div>
-            <div className="text-[10px] font-mono text-white/30 font-bold">
-               UPDATE :: T-SEC {new Date().toLocaleTimeString()}
-            </div>
-         </div>
-      </div>
+              {/* Tabs */}
+              <div className="glass" style={{ borderRadius:18, padding:5, display:'flex', gap:4 }}>
+                {[
+                  { id:'agentes', label:'Unidades', icon:<Shield size={14}/> },
+                  { id:'zonas',   label:'Perímetros', icon:<Scan size={14}/> },
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveTab(t.id)}
+                    style={{
+                      flex:1, padding:'12px 8px', borderRadius:14, border:'none', cursor:'pointer',
+                      display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+                      fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em',
+                      fontFamily:'Space Grotesk',
+                      background: activeTab === t.id ? 'var(--brand)' : 'transparent',
+                      color:      activeTab === t.id ? '#fff' : 'rgba(255,255,255,0.28)',
+                      transition:'all 0.35s',
+                      boxShadow:  activeTab === t.id ? '0 0 20px rgba(139,126,250,0.35)' : 'none',
+                    }}
+                  >
+                    {t.icon} {t.label}
+                  </button>
+                ))}
+              </div>
 
-    </div>
+              {/* Lista */}
+              <div
+                className="glass custom-scroll"
+                style={{ flex:1, borderRadius:28, padding:'20px 16px', overflowY:'auto', display:'flex', flexDirection:'column', gap:10 }}
+              >
+                {activeTab === 'agentes' ? filtered.map(f => {
+                  const isOnline = f.ativo;
+                  const dotClass = isOnline ? (f.area ? 'dot-online' : 'dot-busy') : 'dot-offline';
+                  return (
+                    <div
+                      key={f.id}
+                      className="glass-lo"
+                      style={{
+                        borderRadius:20, padding:'16px 18px', cursor:'pointer',
+                        transition:'all 0.3s', position:'relative', overflow:'hidden',
+                        border:'1px solid rgba(255,255,255,0.05)',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = 'rgba(139,126,250,0.4)';
+                        e.currentTarget.style.background = 'rgba(139,126,250,0.07)';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                      }}
+                    >
+                      {/* BG deco */}
+                      <div style={{ position:'absolute', top:-20, right:-20, width:80, height:80, borderRadius:'50%', background:'rgba(139,126,250,0.05)', pointerEvents:'none' }} />
+
+                      <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:14 }}>
+                        {/* Avatar */}
+                        <div style={{
+                          width:44, height:44, borderRadius:14,
+                          background:'rgba(139,126,250,0.12)',
+                          border:'1px solid rgba(139,126,250,0.22)',
+                          display:'flex', alignItems:'center', justifyContent:'center',
+                          fontSize:18, fontWeight:900, color:'var(--brand)', flexShrink:0,
+                        }}>
+                          {f.nome.charAt(0)}
+                        </div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <p style={{ fontSize:12, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.12em', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                            {f.nome}
+                          </p>
+                          <p style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.15em', marginTop:3, display:'flex', alignItems:'center', gap:6 }}>
+                            <Shield size={9} color="var(--brand)" />
+                            {ESPEC_LABEL[f.especialidade] || f.especialidade}
+                          </p>
+                        </div>
+                        <div className={dotClass} style={{ width:10, height:10, borderRadius:'50%', flexShrink:0 }} />
+                      </div>
+
+                      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                        <div style={{
+                          display:'flex', alignItems:'center', gap:6,
+                          background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.07)',
+                          borderRadius:10, padding:'6px 10px', flex:1,
+                        }}>
+                          <MapPin size={12} color={f.lat ? 'var(--brand)' : 'rgba(255,255,255,0.2)'} />
+                          <span style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.55)', textTransform:'uppercase', letterSpacing:'0.15em' }}>
+                            {f.area || 'STANDBY'}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => startGPS(f)}
+                          style={{
+                            padding:'8px 14px', borderRadius:12, cursor:'pointer',
+                            background:'rgba(139,126,250,0.15)', border:'1px solid rgba(139,126,250,0.35)',
+                            color:'var(--brand)', fontSize:9, fontWeight:900, fontFamily:'Space Grotesk',
+                            textTransform:'uppercase', letterSpacing:'0.15em',
+                            display:'flex', alignItems:'center', gap:6,
+                            transition:'all 0.25s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background='var(--brand)'; e.currentTarget.style.color='#fff'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background='rgba(139,126,250,0.15)'; e.currentTarget.style.color='var(--brand)'; }}
+                        >
+                          GPS <ChevronRight size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }) : ZONAS.map(z => (
+                  <div
+                    key={z.label}
+                    className="glass-lo"
+                    style={{
+                      borderRadius:20, padding:'16px 20px',
+                      border:'1px solid rgba(255,255,255,0.05)',
+                      display:'flex', alignItems:'center', justifyContent:'space-between',
+                      transition:'border-color 0.3s', cursor:'default',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor='rgba(139,126,250,0.3)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.05)'}
+                  >
+                    <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+                      <div style={{ width:4, height:44, borderRadius:4, background:z.color, boxShadow:`0 0 14px ${z.color}55`, flexShrink:0 }} />
+                      <div>
+                        <p style={{ fontSize:13, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.18em' }}>{z.label}</p>
+                        <p style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.2)', textTransform:'uppercase', letterSpacing:'0.15em', marginTop:3 }}>Setor de Operação</p>
+                      </div>
+                    </div>
+                    <div style={{ textAlign:'right' }}>
+                      <p style={{ fontSize:28, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
+                        {String(funcionarios.filter(f=>f.area===z.label).length).padStart(2,'0')}
+                      </p>
+                      <p style={{ fontSize:8, fontWeight:900, color:'var(--brand)', textTransform:'uppercase', letterSpacing:'0.15em' }}>UNID.</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </aside>
+
+            {/* ─── TOAST ─── */}
+            <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'flex-end', justifyContent:'flex-start', gap:12 }}>
+              {toast && (
+                <div
+                  className="glass toast-anim"
+                  style={{
+                    borderRadius:24, padding:'20px 28px',
+                    borderLeft:'7px solid var(--brand)',
+                    display:'flex', alignItems:'center', gap:18,
+                    maxWidth:480, boxShadow:'0 0 40px rgba(139,126,250,0.2)',
+                  }}
+                >
+                  <div style={{
+                    width:56, height:56, borderRadius:18,
+                    background:'rgba(139,126,250,0.15)', border:'1px solid rgba(139,126,250,0.3)',
+                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+                  }}>
+                    <Navigation size={28} color="var(--brand)" />
+                  </div>
+                  <div>
+                    <p style={{ fontSize:9, fontWeight:900, color:'var(--brand)', textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:6 }}>Comando NIRA</p>
+                    <p style={{ fontSize:13, fontWeight:900, color:'#fff', letterSpacing:'0.1em', textTransform:'uppercase' }}>{toast}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ════ FOOTER ════ */}
+          <footer style={{ marginTop:20, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div className="glass" style={{ borderRadius:20, padding:'12px 24px', display:'flex', alignItems:'center', gap:24 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ width:8, height:8, borderRadius:'50%', background:'var(--brand)', boxShadow:'0 0 10px var(--brand)' }} />
+                <span style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.18em' }}>Agentes em Campo</span>
+              </div>
+              <div style={{ width:1, height:20, background:'rgba(255,255,255,0.08)' }} />
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ width:8, height:8, borderRadius:'50%', background:'var(--emer)', boxShadow:'0 0 10px var(--emer)' }} />
+                <span style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.18em' }}>Emergências Ativas</span>
+              </div>
+              <div style={{ width:1, height:20, background:'rgba(255,255,255,0.08)' }} />
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <Shield size={11} color="var(--success)" />
+                <span style={{ fontFamily:'var(--mono)', fontSize:9, fontWeight:700, color:'var(--success)', textTransform:'uppercase', letterSpacing:'0.15em' }}>AES-256 ACTIVE</span>
+              </div>
+            </div>
+
+            <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+              <span style={{ fontFamily:'var(--mono)', fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.2)', textTransform:'uppercase', letterSpacing:'0.1em' }}>
+                23°10'43"S  45°53'6"W
+              </span>
+              {[Maximize2, Crosshair].map((Icon, i) => (
+                <button
+                  key={i}
+                  className="glass"
+                  style={{
+                    width:48, height:48, borderRadius:14, border:'1px solid rgba(255,255,255,0.07)',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    cursor:'pointer', color:'rgba(255,255,255,0.35)', transition:'all 0.3s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(139,126,250,0.45)'; e.currentTarget.style.color='#fff'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}
+                >
+                  <Icon size={20} />
+                </button>
+              ))}
+            </div>
+          </footer>
+        </div>
+      </div>
+    </>
   );
 }

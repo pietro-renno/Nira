@@ -1,18 +1,21 @@
 import { Link } from 'react-router-dom';
-import { Shield, Fingerprint, MapPin, AlertCircle, EyeOff, UserX, Clock, Heart, HeartHandshake, Lock, AlertTriangle, ArrowRight, BookOpen } from 'lucide-react';
+import { Shield, Fingerprint, MapPin, AlertCircle, EyeOff, UserX, Clock, Heart, HeartHandshake, Lock, AlertTriangle, ArrowRight, BookOpen, Zap } from 'lucide-react';
 import { mockStats, mockTeam } from '../data/mockData';
 import { useState, useContext } from 'react';
 import { NiraContext } from '../context/NiraContext';
 
+import VideoScrollSection from '../components/VideoScrollSection';
+import { motion } from 'framer-motion';
+
 const FAQ_ITEMS = [
-  { tag:'Privacidade', q:'A NIRA é realmente anônima? Meus dados ficam salvos?', a:'Sim. A NIRA foi desenhada com anonimato desde o início. Nenhum dado pessoal como nome, CPF ou telefone é solicitado. As conversas são temporárias e não associadas a qualquer identidade.' },
-  { tag:'Segurança',   q:'E se o meu agressor pegar meu celular e ver o site?',  a:'A NIRA possui um botão de saída rápida que fecha o aplicativo instantaneamente. Recomendamos acessar pelo modo de navegação privada (aba anônima) para não deixar histórico.' },
-  { tag:'S.O.S.',      q:'Como funciona o botão S.O.S.?',                        a:'Com um único toque, o S.O.S. envia sua localização em tempo real para a equipe NIRA e rede de apoio cadastrada. Não é necessário digitar nada ou falar. Em produção, integra diretamente com agentes da região.' },
+  { tag:'Privacidade', q:'A Nira é realmente anônima? Meus dados ficam salvos?', a:'Sim. A Nira foi desenhada com anonimato desde o início. Nenhum dado pessoal como nome, CPF ou telefone é solicitado. As conversas são temporárias e não associadas a qualquer identidade.' },
+  { tag:'Segurança',   q:'E se o meu agressor pegar meu celular e ver o site?',  a:'A Nira possui um botão de saída rápida que fecha o aplicativo instantaneamente. Recomendamos acessar pelo modo de navegação privada (aba anônima) para não deixar histórico.' },
+  { tag:'S.O.S.',      q:'Como funciona o botão S.O.S.?',                        a:'Com um único toque, o S.O.S. envia sua localização em tempo real para a equipe Nira e rede de apoio cadastrada. Não é necessário digitar nada ou falar. Em produção, integra diretamente com agentes da região.' },
   { tag:'Atendimento', q:'Posso conversar com uma pessoa real?',   a:'O painel acolhedor da Nira faz a recepção e a triagem inicial automática, mas você pode solicitar conexão com uma atendente humana — psicóloga ou assistente social — que responde no mesmo chat, de forma segura e confidencial.' },
   { tag:'Acesso',      q:'Preciso criar uma conta para usar a plataforma?',      a:'Não! Qualquer pessoa usa a triagem, o chat com a IA e os conteúdos sem criar conta. Cadastros existem apenas para profissionais da equipe interna.' },
-  { tag:'Emergência',  q:'O que fazer se estiver em perigo imediato agora?',     a:'Ative o botão S.O.S. dentro da plataforma ou ligue 190 (Polícia) ou 180 (Central da Mulher, 24h). O SAMU pode ser acionado pelo 192.' },
-  { tag:'Suporte',     q:'A NIRA atende apenas mulheres?',                       a:'A plataforma tem foco em violência doméstica e de gênero, mas qualquer pessoa em situação de vulnerabilidade pode buscar apoio. Conteúdos e triagem são inclusivos.' },
-  { tag:'Projeto',     q:'A NIRA é um projeto escolar ou está em produção?',     a:'É um projeto acadêmico da equipe E.Y.E (Ethical Youth Engineers) do SESI-SENAI — 2026 — com objetivo de evoluir para uma plataforma real de impacto social.' },
+  { tag:'Emergência',  q:'O que fazer se estiver em perigo imediato agora?',     a:'Ative o botão S.O.S. dentro da plataforma ou ligue 190 (Polícia). O canal 180 (Central da Mulher) também está disponível 24h para suporte específico.' },
+  { tag:'Suporte',     q:'A Nira atende apenas mulheres?',                       a:'Embora o foco inicial tenha sido violência doméstica, a Nira acolhe toda e qualquer pessoa em situação de vulnerabilidade que precise de apoio. Nossa tecnologia e acolhimento são universais e inclusivos.' },
+  { tag:'Projeto',     q:'A Nira é um projeto escolar ou está em produção?',     a:'É um projeto acadêmico da equipe E.Y.E (Ethical Youth Engineers) do SESI-SENAI — 2026 — com objetivo de evoluir para uma plataforma real de impacto social.' },
 ];
 
 function FaqItem({ item }) {
@@ -45,7 +48,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex flex-col text-text-main font-sans overflow-x-hidden">
+    <div className="flex flex-col text-text-main font-sans">
       
       {/* ── HERO ── */}
       <section className="home-hero">
@@ -57,12 +60,12 @@ export default function Home() {
             </div>
             <h1 className="home-hero__title">
               Núcleo de<br />
-              <span>Identificação e</span><br />
-              <span>Resposta ao</span><br />
-              Abuso
+              <span>identificação e</span><br />
+              <span>resposta ao</span><br />
+              abuso
             </h1>
-            <p className="home-hero__quote">"Mais do que um app — um porto seguro digital."</p>
-            <p className="home-hero__desc">Tecnologia para ouvir, acolher e proteger quem mais precisa. Canal anônimo, seguro e disponível de qualquer lugar.</p>
+            <p className="home-hero__quote">"Mais do que um app, um porto seguro digital."</p>
+            <p className="home-hero__desc">Tecnologia para ouvir, acolher e proteger quem mais precisa. Um canal anônimo, seguro e disponível de qualquer lugar.</p>
             <div className="home-hero__actions">
               <Link to="/chat" className="home-hero__btn-primary">
                 <span className="home-hero__btn-dot" />Iniciar Triagem
@@ -89,26 +92,53 @@ export default function Home() {
         </div>
       </section>
 
+      <VideoScrollSection />
+
       {/* Dor que nos move */}
-      <section className="bg-bg-main-alt py-32 px-8 border-y border-white/5 relative z-10">
-        <div className="max-w-7xl mx-auto space-y-20 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          <div className="text-center space-y-4">
-             <p className="text-[10px] font-bold tracking-widest text-brand-emergency uppercase">Problemática</p>
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Qual a Dor que nos Move?</h2>
-            <p className="text-lg font-light text-text-muted max-w-2xl mx-auto leading-relaxed">
-              Muitas pessoas em vulnerabilidade enfrentam barreiras enormes para pedir ajuda.
+      <section className="bg-bg-main-alt py-40 px-8 border-y border-white/5 relative z-0 overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-emergency/20 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-brand-primary/20 rounded-full blur-[120px]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center space-y-6 mb-24">
+            <motion.p 
+              initial={{ opacity: 0, letterSpacing: '0.2em' }} 
+              whileInView={{ opacity: 1, letterSpacing: '0.5em' }} 
+              className="text-[10px] font-black text-brand-emergency uppercase"
+            >
+              Problemática Social
+            </motion.p>
+            <h2 className="text-5xl md:text-8xl font-black text-white tracking-tighter leading-none">
+              Qual a dor que <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-emergency to-orange-500">nos move?</span>
+            </h2>
+            <p className="text-xl font-light text-text-muted max-w-2xl mx-auto leading-relaxed">
+              O silêncio é o combustível da violência. Criamos a Nira para ser a voz de quem precisa de proteção imediata e anônima.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {dores.map((item, index) => (
-              <div key={index} className="glass-card p-10 rounded-3xl hover:bg-white/5 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(139,126,250,0.1)] hover:border-brand-primary/40 transition-all duration-300 ease-in-out group flex flex-col">
-                <div className="w-14 h-14 rounded-2xl bg-[#11111B] flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-brand-primary/10 transition-all duration-300 border border-white/5">
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.8 }}
+                viewport={{ once: true }}
+                className="glass-card p-10 rounded-[2.5rem] border border-white/5 hover:border-brand-emergency/40 transition-all duration-500 group relative"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-bg-main flex items-center justify-center mb-8 border border-white/10 group-hover:bg-brand-emergency/10 group-hover:border-brand-emergency/30 transition-all">
                   {item.icon}
                 </div>
-                <h3 className="text-sm font-extrabold tracking-widest uppercase mb-4 text-white group-hover:text-brand-primary transition-colors">{item.title}</h3>
-                <p className="text-text-muted text-sm leading-loose font-light flex-1">{item.desc}</p>
-              </div>
+                <h3 className="text-lg font-black text-white mb-4 group-hover:text-brand-emergency transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-text-muted text-sm leading-relaxed font-light">
+                  {item.desc}
+                </p>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -119,9 +149,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto space-y-16 relative z-10">
            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-4">
-                 <p className="text-[10px] font-black tracking-[0.3em] text-brand-primary uppercase">Informação e Apoio</p>
-                 <h2 className="text-4xl md:text-5xl font-black tracking-tight">Conteúdos que <span className="text-brand-primary">Empoderam</span></h2>
-                 <p className="text-text-muted text-lg max-w-xl font-light leading-relaxed">Conheça seus direitos e saiba como se proteger com guias produzidos por especialistas da rede NIRA.</p>
+                 <p className="text-[10px] font-black tracking-[0.3em] text-brand-primary uppercase">Informação e apoio</p>
+                 <h2 className="text-4xl md:text-5xl font-black tracking-tight">Conteúdos que <span className="text-brand-primary">empoderam</span></h2>
+                 <p className="text-text-muted text-lg max-w-xl font-light leading-relaxed">Conheça seus direitos e saiba como se proteger com guias produzidos por especialistas da rede Nira.</p>
               </div>
               <Link to="/conteudos" className="flex items-center gap-3 text-sm font-black uppercase tracking-widest text-white hover:text-brand-primary transition-all group">
                  Ver todas as matérias <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
@@ -156,55 +186,54 @@ export default function Home() {
       </section>
 
       {/* Solução */}
-      <section className="bg-bg-main-alt py-32 px-8 border-y border-white/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-primary/5 rounded-full blur-[100px] -translate-y-1/2"></div>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-          <div className="space-y-10">
-            <div>
-               <p className="text-[10px] font-bold tracking-widest text-brand-primary uppercase mb-3">Nossa Solução</p>
-               <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">A Solução que <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-brand-primary">Faz a Diferença</span></h2>
-               <p className="text-lg font-light text-text-muted leading-relaxed">
-                 Uma plataforma digital que reduz as barreiras para a denúncia.
-               </p>
-            </div>
-            
-            <div className="space-y-4">
-              {[
-                { title: 'Celular como ferramenta de defesa', desc: 'O celular já na mão da vítima vira proteção silenciosa...' },
-                { title: 'Canal 100% anônimo', desc: 'Nenhuma identificação necessária. Elimina o medo inicial...' },
-                { title: 'S.O.S. — um toque, GPS em tempo real', desc: 'Um único toque envia localização para a rede de apoio...' },
-                { title: 'Acolhimento e encaminhamento integrados', desc: 'Suporte emocional, conteúdo informativo...' }
-              ].map((sol, idx) => (
-                <div key={idx} className="glass-card p-6 rounded-2xl hover:bg-white/5 hover:border-brand-primary/50 transition-all duration-300 cursor-pointer group flex flex-col justify-center">
-                  <h3 className="text-lg font-bold tracking-tight text-white group-hover:text-brand-primary transition-colors">{sol.title}</h3>
-                  <p className="text-sm font-light text-text-muted mt-2 group-hover:text-white/80 transition-colors">{sol.desc}</p>
-                </div>
-              ))}
+      <section className="bg-bg-main-alt py-40 px-8 border-y border-white/5 relative overflow-hidden">
+          <div className="max-w-4xl mx-auto space-y-16 relative z-10">
+            <div className="text-center space-y-8">
+              <div>
+                <p className="text-[10px] font-black tracking-widest text-brand-primary uppercase mb-4">
+                  Nossa resposta
+                </p>
+                <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 text-white leading-tight">
+                  A solução que <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-brand-primary to-purple-400">faz a diferença</span>
+                </h2>
+                <p className="text-xl font-light text-text-muted leading-relaxed max-w-2xl mx-auto">
+                  Unimos tecnologia de ponta e acolhimento humano para garantir que ninguém fique sem resposta em momentos críticos.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                {[
+                  { title: 'Celular como Ferramenta de Defesa', desc: 'Proteção silenciosa na palma da mão para quem vive sob vigilância.' },
+                  { title: 'Canal 100% Anônimo', desc: 'Segurança absoluta para o primeiro passo rumo à liberdade.' },
+                  { title: 'S.O.S. Instantâneo', desc: 'Localização em tempo real para a rede de apoio em um clique.' },
+                  { title: 'Acolhimento Integrado', desc: 'Suporte emocional, jurídico e encaminhamento imediato.' }
+                ].map((sol, idx) => (
+                  <motion.div 
+                    key={idx} 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="glass-card hover:bg-white/5 p-8 rounded-[2rem] border border-white/5 hover:border-brand-primary/40 transition-all cursor-default group"
+                  >
+                    <h3 className="text-lg font-bold text-white group-hover:text-brand-primary transition-colors flex items-center gap-3">
+                      <Zap size={18} className="text-brand-primary mb-1" />
+                      {sol.title}
+                    </h3>
+                    <p className="text-sm font-light text-text-muted mt-3 group-hover:text-white/80 transition-colors leading-relaxed">{sol.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
-
-          <div className="flex justify-center items-center py-10 relative">
-             <div className="relative glass-panel rounded-[40px] p-12 text-center shadow-2xl overflow-hidden hover:shadow-[0_0_50px_rgba(139,126,250,0.15)] transition-all duration-700">
-               <div className="absolute inset-0 bg-gradient-to-b from-brand-primary/10 to-transparent"></div>
-               <img src="https://placehold.co/400x300/1E1E2E/8B7EFA?text=Coruja" alt="Coruja NIRA" className="w-[300px] h-[300px] object-cover rounded-3xl mx-auto mb-8 shadow-xl hover:scale-105 transition-transform duration-500" />
-               <h3 className="text-2xl font-black tracking-tight text-white mb-2">NIRA</h3>
-               <p className="text-sm font-bold tracking-widest text-text-muted uppercase mb-6">Núcleo de Identificação e Resposta ao Abuso</p>
-               <div className="flex gap-2 justify-center">
-                  <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white tracking-widest uppercase">GovTech</span>
-                  <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white tracking-widest uppercase">SocialTech</span>
-                  <span className="px-3 py-1 bg-brand-primary/20 border border-brand-primary/30 rounded-full text-[10px] font-bold text-brand-primary tracking-widest uppercase">E.Y.E 2026</span>
-               </div>
-             </div>
-          </div>
-        </div>
       </section>
 
       {/* Para Quem é */}
       <section className="bg-bg-main py-32 px-8">
          <div className="max-w-7xl mx-auto space-y-16">
             <div className="text-center">
-               <p className="text-[10px] font-bold tracking-widest text-[#34D399] uppercase mb-3">A Quem É Destinado?</p>
-               <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Para quem é a NIRA?</h2>
+               <p className="text-[10px] font-bold tracking-widest text-[#34D399] uppercase mb-3">A quem é destinado?</p>
+               <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Para quem é a Nira?</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -217,8 +246,8 @@ export default function Home() {
                    <h3 className="text-2xl font-bold tracking-tight text-white">USUÁRIOS FINAIS</h3>
                  </div>
                  <ul className="space-y-6 text-lg font-light text-text-muted">
-                   <li className="flex gap-4 items-start"><span className="text-brand-primary mt-1">✔</span> Mulheres em situação de violência ou risco.</li>
-                   <li className="flex gap-4 items-start"><span className="text-brand-primary mt-1">✔</span> Pessoas em vulnerabilidade social.</li>
+                   <li className="flex gap-4 items-start"><span className="text-brand-primary mt-1">✔</span> Pessoas em situação de violência ou risco.</li>
+                   <li className="flex gap-4 items-start"><span className="text-brand-primary mt-1">✔</span> Indivíduos em vulnerabilidade social e emocional.</li>
                    <li className="flex gap-4 items-start"><span className="text-brand-primary mt-1">✔</span> Quem precisa de ajuda mas teme se expor.</li>
                  </ul>
                </div>
@@ -246,9 +275,9 @@ export default function Home() {
         <div className="container">
           <div className="home-faq__layout">
             <div>
-              <span className="home-faq__side-label">// FAQ</span>
-              <h2 className="home-faq__side-title">Perguntas<br />Frequentes</h2>
-              <p className="home-faq__side-sub">Tire suas dúvidas sobre segurança, privacidade e como a NIRA funciona na prática.</p>
+              <span className="home-faq__side-label">// Perguntas frequentes</span>
+              <h2 className="home-faq__side-title">Dúvidas<br />comuns</h2>
+              <p className="home-faq__side-sub">Tire suas dúvidas sobre segurança, privacidade e como a Nira funciona na prática.</p>
               <div className="home-faq__side-cta">
                 <Link to="/chat" className="home-faq__contact">
                   <span className="home-faq__contact-icon">🆘</span>
@@ -260,7 +289,7 @@ export default function Home() {
                 </Link>
                 <a href="tel:180" className="home-faq__contact">
                   <span className="home-faq__contact-icon">📞</span>
-                  <div><p className="home-faq__contact-title">Ligue 180</p><p className="home-faq__contact-sub">Central da Mulher — 24 horas</p></div>
+                  <div><p className="home-faq__contact-title">Ligue 180</p><p className="home-faq__contact-sub">Central de Apoio à Mulher — 24 horas</p></div>
                 </a>
               </div>
             </div>
