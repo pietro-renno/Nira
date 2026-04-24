@@ -444,7 +444,7 @@ export default function SobrePage() {
               <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/10 to-transparent"></div>
               <div className="relative z-10">
                 <h2 className="text-[10px] font-extrabold tracking-widest text-[#34D399] uppercase mb-4 inline-block px-3 py-1 bg-[#34D399]/10 rounded-full border border-[#34D399]/20">Pronto para começar?</h2>
-                <p className="text-4xl font-black text-white mb-8 tracking-tight">Você não está sozinha</p>
+                <p className="text-4xl font-black text-white mb-8 tracking-tight">Você não está só</p>
                 
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                    <Link to="/conteudos" className="bg-transparent border border-white/20 hover:bg-white/5 text-white px-8 py-3.5 rounded-full font-bold transition-all duration-300 text-sm">

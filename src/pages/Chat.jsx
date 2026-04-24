@@ -297,7 +297,7 @@ const css = `
 const FLOW = [
   {
     id: 'start',
-    msg: 'Olá. Bem-vinda ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?',
+    msg: 'Olá. Boas-vindas ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?',
     options: [
       { text: 'Estou em perigo imediato',        next: 'perigo'   },
       { text: 'Preciso conversar',             next: 'conversar' },
@@ -324,7 +324,7 @@ const FLOW = [
   },
   {
     id: 'aguardando',
-    msg: 'Nossa equipe está a caminho. Tente respirar de forma pausada.\n\nVocê não está passando por isso sozinha.',
+    msg: 'Nossa equipe está a caminho. Tente respirar de forma pausada.\n\nVocê não está passando por isso só.',
     options: [],
     final: true,
     risco: 'alto',
@@ -541,7 +541,7 @@ export default function TriagemPage() {
   const [histAtivo, setHistAtivo] = useState(1);
   const [chatAtivo, setChatAtivo] = useState(true); 
   const [messages,  setMessages]  = useState([
-    { role: 'ia', text: "Olá. Bem-vinda ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?", time: '19:47' },
+    { role: 'ia', text: "Olá. Boas-vindas ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?", time: '19:47' },
     { role: 'user', text: "Preciso conversar", time: '20:33' },
     { role: 'ia', text: "Nós estamos aqui para ouvir você de forma empática e sem julgamentos.\n\nPor favor, essa situação está acontecendo agora, ou é algo relacionado ao passado?", time: '20:34', 
       options: [
@@ -708,7 +708,7 @@ export default function TriagemPage() {
                     <AlertTriangle size={13}/> Acionar S.O.S.
                   </button>
                   <button className="chat-header__btn" onClick={() => alert('Conectando com atendente humano...')}>
-                    <MessageSquare size={13}/> Analista Humana
+                    <MessageSquare size={13}/> Atendimento Humano
                   </button>
                   <button className="chat-header__btn" onClick={novoChat}><RefreshCcw size={13}/> Atualizar caso</button>
                 </div>
@@ -739,7 +739,7 @@ export default function TriagemPage() {
                 <div className="chat-welcome__starts">
                   {[
                     { Icon:AlertTriangle, title:'Estou em perigo', desc:'Preciso de ajuda agora' },
-                    { Icon:MessageSquare, title:'Quero conversar',  desc:'Preciso ser ouvida'     },
+                    { Icon:MessageSquare, title:'Quero conversar',  desc:'Preciso ser ouvido(a)'     },
                     { Icon:BookOpen,      title:'Meus direitos',    desc:'Quero me informar'      },
                     { Icon:MapPin,        title:'Buscar apoio',     desc:'Serviços próximos'      },
                   ].map(s => (

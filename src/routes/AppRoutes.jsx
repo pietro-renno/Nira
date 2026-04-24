@@ -43,6 +43,7 @@ export default function AppRoutes() {
 
         {/* Full Screen Admin Apps (Priority) */}
         <Route path="/admin/atendimentos-completo" element={<FullAtendimentos />} />
+        <Route path="/admin/mapa-completo" element={<FullMapa />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -52,7 +53,6 @@ export default function AppRoutes() {
           <Route path="conteudos" element={<AdminConteudos />} />
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="mapa" element={<Mapa />} />
-          <Route path="mapa-completo" element={<FullMapa />} />
           <Route path="atendimentos-chat" element={<AtendimentosChat />} />
         </Route>
 
