@@ -24,6 +24,7 @@ import Mapa from '../pages/admin/Mapa';
 import AtendimentosChat from '../pages/admin/AtendimentosChat';
 import FullMapa from '../pages/admin/FullMapa';
 import FullAtendimentos from '../pages/admin/FullAtendimentos';
+import AdminRelatorios from '../pages/admin/AdminRelatorios';
 
 export default function AppRoutes() {
   return (
@@ -54,6 +55,7 @@ export default function AppRoutes() {
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="mapa" element={<Mapa />} />
           <Route path="atendimentos-chat" element={<AtendimentosChat />} />
+          <Route path="relatorios" element={<AdminRelatorios />} />
         </Route>
 
         <Route path="/admin-unified" element={<AdminPage />} />
