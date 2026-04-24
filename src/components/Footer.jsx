@@ -84,7 +84,7 @@ export default function Footer() {
                 <a href="tel:180" className="footer__link">180 — Central da Mulher</a>
                 <a href="tel:192" className="footer__link">192 — SAMU</a>
                 <a href="tel:100" className="footer__link">100 — Direitos Humanos</a>
-                <Link to="/chat" className="footer__link" style={{ color:'#FF4757' }}>🆘 S.O.S. NIRA</Link>
+                <Link to="/chat" className="footer__link flex items-center gap-1.5" style={{ color:'#FF4757' }}><AlertCircle size={14} /> S.O.S. NIRA</Link>
               </div>
             </div>
           </div>

@@ -36,7 +36,7 @@ export default function Login() {
     <div className="min-h-screen flex text-text-main font-sans selection:bg-brand-primary/30 selection:text-white">
       
       {/* Left Form Area */}
-      <div className="flex-1 flex flex-col justify-center px-8 md:px-20 bg-bg-main relative z-10 animate-fade-in-up">
+      <div className="flex-1 flex flex-col justify-center px-8 md:px-20 pt-24 md:pt-32 pb-10 bg-bg-main relative z-10 animate-fade-in-up">
         
         <div className="max-w-md w-full mx-auto space-y-12">
           
