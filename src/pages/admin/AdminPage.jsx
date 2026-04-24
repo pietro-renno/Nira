@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
-import { useAuth, ESPECIALIDADES, ESPEC_CHAT, ESPEC_MAPA, VINCULOS } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { ESPECIALIDADES, ESPEC_CHAT, ESPEC_MAPA, VINCULOS } from '../../contexts/AuthConstants';
+import { 
+  BarChart3, AlertCircle, BookOpen, Users, Map, MessageSquare, LineChart,
+  Shield, Check, Edit2, Download, Trash, FileText, Eye, AlertTriangle, Link as LinkIcon, Plus
+} from 'lucide-react';
+import TabRelatorios from '../../components/admin/TabRelatorios';
 
 /* ══════════════════════════════════════════════════════════
    ADMIN PAGE — Painel Unificado
@@ -268,9 +274,12 @@ function TabDashboard() {
 
       {ALERTAS_MOCK.filter(a=>a.tipo==='sos'&&a.status==='new').map(a => (
         <div key={a.id} className="adm-sos-card">
-          <div>
-            <p className="adm-sos-label">🆘 S.O.S. {a.id}</p>
-            <p className="adm-sos-sub">{a.anon} · {a.local} · {a.hora}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertCircle size={18} className="text-brand-emergency" />
+            <div>
+              <p className="adm-sos-label">S.O.S. {a.id}</p>
+              <p className="adm-sos-sub">{a.anon} · {a.local} · {a.hora}</p>
+            </div>
           </div>
           <button className="btn btn-danger btn-sm" onClick={()=>alert(`Abrindo caso ${a.id}...`)}>
             Atender agora →
@@ -288,7 +297,10 @@ function TabDashboard() {
             {ALERTAS_MOCK.map(a => (
               <tr key={a.id}>
                 <td style={{fontFamily:"'Anonymous Pro',monospace",fontSize:'.77rem'}}>{a.id}</td>
-                <td><span className={`adm-pill adm-pill--${a.tipo}`}>{a.tipo==='sos'?'🆘 SOS':'💬 Chat'}</span></td>
+                <td><span className={`adm-pill adm-pill--${a.tipo}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {a.tipo==='sos'?<AlertCircle size={12}/>:<MessageSquare size={12}/>} 
+                  {a.tipo==='sos'?'SOS':'Chat'}
+                </span></td>
                 <td style={{color:'rgba(239,238,234,.45)',fontSize:'.78rem'}}>{a.anon}</td>
                 <td>{a.local}</td>
                 <td style={{color:'rgba(239,238,234,.35)',fontSize:'.75rem'}}>{a.hora}</td>
@@ -326,14 +338,20 @@ function TabConteudos({ user }) {
     setForm(false);
   }
 
-  const statusLabel = { pub:'✅ Publicado', draft:'📝 Rascunho', rev:'🔍 Revisão' };
+  const statusLabel = { 
+    pub: <span style={{display:'flex', gap: '4px', alignItems: 'center'}}><Check size={14}/> Publicado</span>, 
+    draft: <span style={{display:'flex', gap: '4px', alignItems: 'center'}}><FileText size={14}/> Rascunho</span>, 
+    rev: <span style={{display:'flex', gap: '4px', alignItems: 'center'}}><Eye size={14}/> Revisão</span> 
+  };
   const statusClass = { pub:'pub', draft:'draft', rev:'rev' };
 
   return (
     <>
       {mostrarForm && (
         <div className="adm-form-box">
-          <p style={{fontWeight:700,fontSize:'1rem',color:'#F4F6F8',marginBottom:18}}>✏️ Novo Conteúdo</p>
+          <p style={{fontWeight:700,fontSize:'1rem',color:'#F4F6F8',marginBottom:18, display:'flex', alignItems:'center', gap:'8px'}}>
+            <Edit2 size={16}/> Novo Conteúdo
+          </p>
           <form onSubmit={handleCriar}>
             <div className="adm-form-grid">
               <div className="form-group">
@@ -348,7 +366,7 @@ function TabConteudos({ user }) {
               </div>
             </div>
             <div style={{display:'flex',gap:10}}>
-              <button type="submit" className="btn btn-primary btn-sm">💾 Salvar Rascunho</button>
+              <button type="submit" className="btn btn-primary btn-sm" style={{display:'flex', alignItems:'center', gap:'6px'}}><Download size={14}/> Salvar Rascunho</button>
               <button type="button" className="btn btn-ghost btn-sm" onClick={()=>setForm(false)}>Cancelar</button>
             </div>
           </form>
@@ -356,7 +374,7 @@ function TabConteudos({ user }) {
       )}
 
       <div className="adm-filters">
-        {[['todos','Todos'],['pub','✅ Publicados'],['draft','📝 Rascunhos'],['rev','🔍 Revisão']].map(([k,l])=>(
+        {[['todos','Todos'],['pub','Publicados'],['draft','Rascunhos'],['rev','Revisão']].map(([k,l])=>(
           <button key={k} className={`adm-filter${filtro===k?' adm-filter--active':''}`} onClick={()=>setFiltro(k)}>{l}</button>
         ))}
         <span style={{marginLeft:'auto',fontSize:'.72rem',color:'rgba(239,238,234,.28)',fontFamily:"'Anonymous Pro',monospace",alignSelf:'center'}}>
@@ -379,23 +397,23 @@ function TabConteudos({ user }) {
               </span>
             </div>
             <div className="adm-cont-actions" style={{display:'flex',gap:7}}>
-              <button className="adm-act-btn">✏️ Editar</button>
+              <button className="adm-act-btn" style={{display:'flex',alignItems:'center',gap:'4px'}}><Edit2 size={12}/> Editar</button>
               {c.status==='draft'||c.status==='rev'
-                ? <button className="adm-act-btn" onClick={()=>toggleStatus(c.id,'pub')}>✅ Publicar</button>
-                : <button className="adm-act-btn" onClick={()=>toggleStatus(c.id,'draft')}>⬇️ Rascunho</button>
+                ? <button className="adm-act-btn" onClick={()=>toggleStatus(c.id,'pub')} style={{display:'flex',alignItems:'center',gap:'4px'}}><Check size={12}/> Publicar</button>
+                : <button className="adm-act-btn" onClick={()=>toggleStatus(c.id,'draft')} style={{display:'flex',alignItems:'center',gap:'4px'}}><Download size={12}/> Rascunho</button>
               }
-              <button className="adm-act-btn adm-act-btn--del" onClick={()=>deletar(c.id)}>🗑️</button>
+              <button className="adm-act-btn adm-act-btn--del" onClick={()=>deletar(c.id)} style={{display:'flex',alignItems:'center',gap:'4px'}}><Trash size={12}/></button>
             </div>
           </div>
         ))}
       </div>
 
       {filtrados.length === 0 && (
-        <div className="adm-empty"><span className="adm-empty__icon">📚</span><p>Nenhum conteúdo aqui.</p></div>
+        <div className="adm-empty"><span className="adm-empty__icon"><BookOpen size={48} className="mx-auto opacity-50"/></span><p>Nenhum conteúdo aqui.</p></div>
       )}
 
       <p style={{fontWeight:700,fontSize:'.88rem',color:'#F4F6F8',margin:'28px 0 12px',display:'flex',alignItems:'center',gap:8}}>
-        🔗 Encaminhar Casos para ONGs
+        <LinkIcon size={16} /> Encaminhar Casos para ONGs
       </p>
       {ENC_MOCK.map(e => (
         <div key={e.nome} className="adm-enc-item">
@@ -444,7 +462,9 @@ function TabUsuarios({ user, usuarios, adicionarUsuario, toggleAtivo, removerUsu
     <>
       {mostrarForm && (
         <div className="adm-form-box">
-          <p style={{fontWeight:700,fontSize:'1rem',color:'#F4F6F8',marginBottom:18}}>➕ Novo Usuário / Profissional</p>
+          <p style={{fontWeight:700,fontSize:'1rem',color:'#F4F6F8',marginBottom:18, display:'flex', alignItems:'center', gap:'8px'}}>
+            <Plus size={18}/> Novo Usuário / Profissional
+          </p>
           {erroForm && <div style={{background:'rgba(255,71,87,.1)',border:'1px solid rgba(255,71,87,.28)',borderRadius:8,padding:'9px 14px',fontSize:'.82rem',color:'#FF4757',marginBottom:14}}>{erroForm}</div>}
           <form onSubmit={handleCriar}>
             <div className="adm-form-grid">
@@ -480,15 +500,15 @@ function TabUsuarios({ user, usuarios, adicionarUsuario, toggleAtivo, removerUsu
                 <div className="form-group adm-form-full">
                   <label className="form-label">Vínculo Institucional</label>
                   <select className="form-select" value={form.vinculo} onChange={e=>setF(f=>({...f,vinculo:e.target.value}))}>
-                    <option value="nira">🦉 Equipe NIRA</option>
-                    <option value="autonomo">🏷️ Autônomo(a)</option>
-                    {ongs.map(o=><option key={o.id} value={`ong:${o.id}`}>🤝 {o.nome}</option>)}
+                    <option value="nira">Equipe NIRA</option>
+                    <option value="autonomo">Autônomo(a)</option>
+                    {ongs.map(o=><option key={o.id} value={`ong:${o.id}`}>{o.nome}</option>)}
                   </select>
                 </div>
               )}
             </div>
             <div style={{display:'flex',gap:10}}>
-              <button type="submit" className="btn btn-primary btn-sm">✅ Criar</button>
+              <button type="submit" className="btn btn-primary btn-sm" style={{display:'flex', alignItems:'center', gap:'4px'}}><Check size={14}/> Criar</button>
               <button type="button" className="btn btn-ghost btn-sm" onClick={()=>{setForm(false);setErroForm('');}}>Cancelar</button>
             </div>
           </form>
@@ -496,7 +516,7 @@ function TabUsuarios({ user, usuarios, adicionarUsuario, toggleAtivo, removerUsu
       )}
 
       <div className="adm-filters">
-        {[['todos','Todos'],['adm','ADM'],['ong','ONGs'],['chat','💬 Psicólogos'],['mapa','🗺️ Agentes']].map(([k,l])=>(
+        {[['todos','Todos'],['adm','ADM'],['ong','ONGs'],['chat','Psicólogos'],['mapa','Agentes']].map(([k,l])=>(
           <button key={k} className={`adm-filter${filtroRole===k?' adm-filter--active':''}`} onClick={()=>setFiltroRole(k)}>{l}</button>
         ))}
         <span style={{marginLeft:'auto',fontSize:'.72rem',color:'rgba(239,238,234,.28)',fontFamily:"'Anonymous Pro',monospace",alignSelf:'center'}}>
@@ -519,15 +539,15 @@ function TabUsuarios({ user, usuarios, adicionarUsuario, toggleAtivo, removerUsu
                   <td style={{fontSize:'.75rem',color:'rgba(239,238,234,.55)'}}>{getVinculoLabel(u.vinculo,u.ongId)}</td>
                   <td>
                     {u.role==='adm' ? <span className="adm-espec-badge adm-espec-badge--none">Tudo</span>
-                    : u.role==='ong' ? <span className="adm-espec-badge adm-espec-badge--chat">💬 Chat</span>
-                    : esp ? <span className={`adm-espec-badge adm-espec-badge--${esp.acesso}`}>{esp.acesso==='chat'?'💬 Chat':'🗺️ Mapa'}</span>
+                    : u.role==='ong' ? <span className="adm-espec-badge adm-espec-badge--chat"><MessageSquare size={10} className="mr-1"/> Chat</span>
+                    : esp ? <span className={`adm-espec-badge adm-espec-badge--${esp.acesso}`}>{esp.acesso==='chat'?<><MessageSquare size={10} className="mr-1"/> Chat</>:<><Map size={10} className="mr-1"/> Mapa</>}</span>
                     : '—'}
                   </td>
                   <td><span className={`adm-pill adm-pill--${u.ativo?'new':'done'}`}>{u.ativo?'● Ativo':'○ Inativo'}</span></td>
                   <td>
                     <div style={{display:'flex',gap:6}}>
                       <button className="adm-act-btn" onClick={()=>toggleAtivo(u.id)}>{u.ativo?'Desativar':'Ativar'}</button>
-                      <button className="adm-act-btn adm-act-btn--del" onClick={()=>{ if(u.id===user?.id){alert('Não pode remover sua conta.');return;} if(window.confirm('Remover?')) removerUsuario(u.id); }}>🗑️</button>
+                      <button className="adm-act-btn adm-act-btn--del" onClick={()=>{ if(u.id===user?.id){alert('Não pode remover sua conta.');return;} if(window.confirm('Remover?')) removerUsuario(u.id); }}><Trash size={12}/></button>
                     </div>
                   </td>
                 </tr>
@@ -541,12 +561,13 @@ function TabUsuarios({ user, usuarios, adicionarUsuario, toggleAtivo, removerUsu
 }
 
 const NAV = [
-  { key:'dashboard', icon:'📊', label:'Dashboard',     section:'Principal' },
-  { key:'alertas',   icon:'🆘', label:'Alertas S.O.S.',section:'Principal', badge:2 },
-  { key:'conteudos', icon:'📚', label:'Conteúdos',     section:'Gestão'    },
-  { key:'usuarios',  icon:'👥', label:'Usuários & Profissionais', section:'Gestão' },
-  { key:'mapa',      icon:'🗺️', label:'Mapa / Equipes',section:'Gestão'    },
-  { key:'chat',      icon:'💬', label:'Atendimentos',  section:'Gestão'    },
+  { key:'dashboard', icon: <BarChart3 size={18} />, label:'Dashboard',     section:'Principal' },
+  { key:'alertas',   icon: <AlertCircle size={18} />, label:'Alertas S.O.S.',section:'Principal', badge:2 },
+  { key:'relatorios',icon: <LineChart size={18} />, label:'Relatórios de IA',section:'Principal' },
+  { key:'conteudos', icon: <BookOpen size={18} />, label:'Conteúdos',     section:'Gestão'    },
+  { key:'usuarios',  icon: <Users size={18} />, label:'Usuários & Profissionais', section:'Gestão' },
+  { key:'mapa',      icon: <Map size={18} />, label:'Mapa / Equipes',section:'Gestão'    },
+  { key:'chat',      icon: <MessageSquare size={18} />, label:'Atendimentos',  section:'Gestão'    },
 ];
 
 export default function AdminPage() {
@@ -577,7 +598,7 @@ export default function AdminPage() {
         <aside className="adm-sidebar">
           <div className="adm-sidebar__brand">
             <div className="adm-sidebar__brand-row">
-              <span className="adm-sidebar__brand-owl">🦉</span>
+              <Shield size={20} className="text-brand-primary" />
               <span className="adm-sidebar__brand-name">NIRA Admin</span>
             </div>
             <span className="adm-sidebar__brand-role">{user?.role?.toUpperCase()} — {user?.nome}</span>
@@ -598,7 +619,7 @@ export default function AdminPage() {
         <main className="adm-main">
           <div className="adm-tab-header">
             <div>
-              <h1 className="adm-tab-title">{tabInfo.icon} {tabInfo.label}</h1>
+              <h1 className="adm-tab-title" style={{display:'flex', alignItems:'center', gap:'10px'}}>{tabInfo.icon} {tabInfo.label}</h1>
               <p className="adm-tab-sub">NIRA Admin · E.Y.E 2026 (Painel Unificado)</p>
             </div>
             <div className="adm-tab-actions">
@@ -619,7 +640,10 @@ export default function AdminPage() {
                     {ALERTAS_MOCK.map(a=>(
                       <tr key={a.id}>
                         <td style={{fontFamily:"'Anonymous Pro',monospace",fontSize:'.77rem'}}>{a.id}</td>
-                        <td><span className={`adm-pill adm-pill--${a.tipo}`}>{a.tipo==='sos'?'🆘 SOS':'💬 Chat'}</span></td>
+                        <td><span className={`adm-pill adm-pill--${a.tipo}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          {a.tipo==='sos'?<AlertCircle size={12}/>:<MessageSquare size={12}/>} 
+                          {a.tipo==='sos'?'SOS':'Chat'}
+                        </span></td>
                         <td style={{color:'rgba(239,238,234,.45)',fontSize:'.78rem'}}>{a.anon}</td>
                         <td>{a.local}</td>
                         <td style={{color:'rgba(239,238,234,.35)',fontSize:'.75rem'}}>{a.hora}</td>
@@ -643,16 +667,17 @@ export default function AdminPage() {
                 getONGs={getONGs}
               />
             )}
+            {tabAtiva === 'relatorios' && <TabRelatorios />}
             {tabAtiva === 'mapa' && (
               <div style={{textAlign:'center',padding:'60px 0'}}>
-                <p style={{fontSize:'3rem',marginBottom:14}}>🗺️</p>
+                <Map size={48} className="mx-auto mb-4 opacity-50" />
                 <p style={{fontWeight:700,fontSize:'1.1rem',color:'#F4F6F8',marginBottom:8}}>Mapa de Equipes</p>
                 <Link to="/mapa" className="btn btn-primary">Abrir Mapa Completo →</Link>
               </div>
             )}
             {tabAtiva === 'chat' && (
               <div style={{textAlign:'center',padding:'60px 0'}}>
-                <p style={{fontSize:'3rem',marginBottom:14}}>💬</p>
+                <MessageSquare size={48} className="mx-auto mb-4 opacity-50" />
                 <p style={{fontWeight:700,fontSize:'1.1rem',color:'#F4F6F8',marginBottom:8}}>Atendimentos</p>
                 <Link to="/chat" className="btn btn-primary">Abrir Atendimentos →</Link>
               </div>
