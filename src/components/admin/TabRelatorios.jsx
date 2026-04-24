@@ -3,7 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend 
 } from 'recharts';
-import { BrainCircuit, Loader2, Sparkles, AlertTriangle, CheckCircle, TrendingUp, TrendingDown } from 'lucide-react';
+import { BrainCircuit, Loader2, Sparkles, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, Map } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // --- MOCK DATA ---
@@ -88,38 +88,41 @@ export default function TabRelatorios() {
     <div style={{ animation: 'fadeIn 0.4s ease' }}>
       
       {/* Indicadores Principais */}
-      <div className="adm-stats-row">
-        <div className="adm-stat-card adm-stat-card--danger">
-          <p className="adm-stat-lbl">Pico de Casos (Horário)</p>
-          <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-            <p className="adm-stat-num">20:00</p>
-            <TrendingUp size={24} className="text-brand-emergency" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div className="bg-[#16142c] border border-[#6b6898]/20 rounded-[14px] p-5 hover:border-[#9b8fff]/40 transition-colors">
+          <p className="text-[10.5px] text-[#efeeea]/40 uppercase tracking-widest font-mono mb-2">Pico de Casos (Horário)</p>
+          <div className="flex items-center gap-3 mb-1">
+            <p className="text-[1.9rem] font-black text-[#F4F6F8] leading-none tracking-tight">20:00</p>
+            <TrendingUp size={24} className="text-[#FF4757]" />
           </div>
-          <p className="adm-stat-delta" style={{color: '#FF4757'}}>Horário Crítico</p>
+          <p className="text-[11px] text-[#FF4757] font-bold mt-1.5">Horário Crítico</p>
         </div>
-        <div className="adm-stat-card">
-          <p className="adm-stat-lbl">Região mais afetada</p>
-          <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-            <p className="adm-stat-num">Z. Leste</p>
+        
+        <div className="bg-[#16142c] border border-[#6b6898]/20 rounded-[14px] p-5 hover:border-[#9b8fff]/40 transition-colors">
+          <p className="text-[10.5px] text-[#efeeea]/40 uppercase tracking-widest font-mono mb-2">Região mais afetada</p>
+          <div className="flex items-center gap-3 mb-1">
+            <p className="text-[1.9rem] font-black text-[#F4F6F8] leading-none tracking-tight">Z. Leste</p>
             <AlertTriangle size={24} className="text-brand-primary" />
           </div>
-          <p className="adm-stat-delta">150 incidentes</p>
+          <p className="text-[11px] text-[#2ED573] font-bold mt-1.5">150 incidentes</p>
         </div>
-        <div className="adm-stat-card">
-          <p className="adm-stat-lbl">Média Diária</p>
-          <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-            <p className="adm-stat-num">214</p>
-            <TrendingDown size={24} className="text-green-500" />
+
+        <div className="bg-[#16142c] border border-[#6b6898]/20 rounded-[14px] p-5 hover:border-[#9b8fff]/40 transition-colors">
+          <p className="text-[10.5px] text-[#efeeea]/40 uppercase tracking-widest font-mono mb-2">Média Diária</p>
+          <div className="flex items-center gap-3 mb-1">
+            <p className="text-[1.9rem] font-black text-[#F4F6F8] leading-none tracking-tight">214</p>
+            <TrendingDown size={24} className="text-[#2ED573]" />
           </div>
-          <p className="adm-stat-delta" style={{color: '#2ED573'}}>-5% vs Mês Anterior</p>
+          <p className="text-[11px] text-[#2ED573] font-bold mt-1.5">-5% vs Mês Anterior</p>
         </div>
-        <div className="adm-stat-card">
-          <p className="adm-stat-lbl">Status do Sistema</p>
-          <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-            <p className="adm-stat-num">Estável</p>
-            <CheckCircle size={24} className="text-brand-primary" />
+
+        <div className="bg-[#16142c] border border-[#6b6898]/20 rounded-[14px] p-5 hover:border-[#9b8fff]/40 transition-colors">
+          <p className="text-[10.5px] text-[#efeeea]/40 uppercase tracking-widest font-mono mb-2">Status do Sistema</p>
+          <div className="flex items-center gap-3 mb-1">
+            <p className="text-[1.9rem] font-black text-[#F4F6F8] leading-none tracking-tight">Estável</p>
+            <CheckCircle size={24} className="text-[#9B8FFF]" />
           </div>
-          <p className="adm-stat-delta" style={{color: '#9B8FFF'}}>Todas ONGs conectadas</p>
+          <p className="text-[11px] text-[#9B8FFF] font-bold mt-1.5">Todas ONGs conectadas</p>
         </div>
       </div>
 
@@ -131,7 +134,7 @@ export default function TabRelatorios() {
             Volume de Casos por Horário
           </h3>
           <div style={{ width: '100%', height: 280 }}>
-            <ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart data={casesByHour}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(107,104,152,0.1)" />
                 <XAxis dataKey="hour" stroke="rgba(239,238,234,0.4)" fontSize={12} tickMargin={10} />
@@ -150,7 +153,7 @@ export default function TabRelatorios() {
             Incidentes por Região
           </h3>
           <div style={{ width: '100%', height: 280 }}>
-            <ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={casesByRegion} layout="vertical" margin={{ left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(107,104,152,0.1)" horizontal={true} vertical={false} />
                 <XAxis type="number" stroke="rgba(239,238,234,0.4)" fontSize={12} />
