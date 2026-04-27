@@ -19,7 +19,7 @@ const ONGS_INIT = [
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(USUARIOS_INIT[0]); // Por padrão logado no Admin
+  const [user, setUser] = useState(null); // Inicia deslogado
   const [usuarios, setUsuarios] = useState(USUARIOS_INIT);
   const [ongs, setOngs] = useState(ONGS_INIT);
 

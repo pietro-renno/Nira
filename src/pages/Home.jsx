@@ -7,12 +7,16 @@ import { NiraContext } from '../context/NiraContext';
 import VideoScrollSection from '../components/VideoScrollSection';
 import { motion } from 'framer-motion';
 
+import owlVideo from '../assets/owl_hero.mp4';
+
+
 const FAQ_ITEMS = [
   { tag:'Privacidade', q:'A Nira é realmente anônima? Meus dados ficam salvos?', a:'Sim. A Nira foi desenhada com anonimato desde o início. Nenhum dado pessoal como nome, CPF ou telefone é solicitado. As conversas são temporárias e não associadas a qualquer identidade.' },
   { tag:'Segurança',   q:'E se o meu agressor pegar meu celular e ver o site?',  a:'A Nira possui um botão de saída rápida que fecha o aplicativo instantaneamente. Recomendamos acessar pelo modo de navegação privada (aba anônima) para não deixar histórico.' },
   { tag:'S.O.S.',      q:'Como funciona o botão S.O.S.?',                        a:'Com um único toque, o S.O.S. envia sua localização em tempo real para a equipe Nira e rede de apoio cadastrada. Não é necessário digitar nada ou falar. Em produção, integra diretamente com agentes da região.' },
   { tag:'Atendimento', q:'Posso conversar com uma pessoa real?',   a:'O painel acolhedor da Nira faz a recepção e a triagem inicial automática, mas você pode solicitar conexão com uma atendente humana — psicóloga ou assistente social — que responde no mesmo chat, de forma segura e confidencial.' },
-  { tag:'Acesso',      q:'Preciso criar uma conta para usar a plataforma?',      a:'Não! Qualquer pessoa usa a triagem, o chat com a IA e os conteúdos sem criar conta. Cadastros existem apenas para profissionais da equipe interna.' },
+  { tag:'Acesso',      q:'Preciso criar uma conta para usar a plataforma?',      a:'Não! Qualquer pessoa usa a triagem, o chat com o chatbot e os conteúdos sem criar conta. Cadastros existem apenas para profissionais da equipe interna.' },
+
   { tag:'Emergência',  q:'O que fazer se estiver em perigo imediato agora?',     a:'Ative o botão S.O.S. dentro da plataforma ou ligue 190 (Polícia). O canal 180 (Central da Mulher) também está disponível 24h para suporte específico.' },
   { tag:'Suporte',     q:'A Nira atende apenas mulheres?',                       a:'Embora o foco inicial tenha sido violência doméstica, a Nira acolhe toda e qualquer pessoa em situação de vulnerabilidade que precise de apoio. Nossa tecnologia e acolhimento são universais e inclusivos.' },
   { tag:'Projeto',     q:'A Nira é um projeto escolar ou está em produção?',     a:'É um projeto acadêmico da equipe E.Y.E (Ethical Youth Engineers) do SESI-SENAI — 2026 — com objetivo de evoluir para uma plataforma real de impacto social.' },
@@ -83,7 +87,17 @@ export default function Home() {
             <div className="home-hero__orb-ring home-hero__orb-ring--2" />
             <div className="home-hero__orb-ring home-hero__orb-ring--3" />
             <div className="home-hero__orb">
-              <span className="home-hero__orb-label"><Shield size={28} strokeWidth={1.5} /></span>
+              <div className="home-hero__video-container">
+                <video 
+                  src={owlVideo} 
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline
+                  className="home-hero__video"
+                />
+                <div className="home-hero__video-mask" />
+              </div>
             </div>
             <div className="home-hero__fcard home-hero__fcard1"><span className="home-hero__fcard-icon"><Lock size={16} strokeWidth={1.5} /></span><div><p className="home-hero__fcard-title">100% Anônimo</p><p className="home-hero__fcard-sub">Sem identificação</p></div></div>
             <div className="home-hero__fcard home-hero__fcard2"><span className="home-hero__fcard-icon"><AlertTriangle size={16} strokeWidth={1.5} /></span><div><p className="home-hero__fcard-title">Botão S.O.S.</p><p className="home-hero__fcard-sub">Alerta + GPS</p></div></div>

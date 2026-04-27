@@ -27,6 +27,28 @@ const css = `
   animation: fadeIn 0.3s ease;
 }
 .blog-modal { animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.article-body-content h3 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: white;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+.article-body-content p {
+  margin-bottom: 1.5rem;
+}
+.article-body-content ul, .article-body-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 2rem;
+  space-y: 1rem;
+}
+.article-body-content li {
+  margin-bottom: 0.75rem;
+}
+.article-body-content strong {
+  color: #8A7EF8;
+}
 
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(40px); }
@@ -234,15 +256,23 @@ export default function Conteudos() {
                     </div>
 
                     <div className="prose prose-invert max-w-none text-text-muted text-lg leading-[1.8] font-light space-y-8">
-                       <p className="text-xl font-medium text-white italic opacity-80 leading-relaxed">
+                       <p className="text-xl font-medium text-white italic opacity-90 leading-relaxed border-l-4 border-brand-primary pl-6 py-2">
                           {artigoAtivo.description}
                        </p>
-                       <p>
-                          Este é um conteúdo informativo fornecido para auxiliar mulheres em situação de risco. O NIRA não substitui o aconselhamento jurídico formal, mas oferece as primeiras diretrizes de segurança e suporte emocional.
-                       </p>
-                       <div className="p-10 bg-brand-primary/5 border border-brand-primary/20 rounded-[2rem] space-y-6">
-                          <h4 className="text-white font-black uppercase tracking-widest text-sm">Próximos Passos Sugeridos:</h4>
-                          <ul className="space-y-4">
+                       <div 
+                         className="article-body-content space-y-6 text-white/80"
+                         dangerouslySetInnerHTML={{ __html: artigoAtivo.content }}
+                       />
+                       
+                       <div className="p-10 bg-brand-primary/5 border border-brand-primary/20 rounded-[2rem] space-y-6 mt-12">
+                          <h4 className="text-white font-black uppercase tracking-widest text-sm flex items-center gap-2">
+                            <Shield size={16} className="text-brand-primary" />
+                            Aviso de Segurança:
+                          </h4>
+                          <p className="text-sm leading-relaxed">
+                            Este é um conteúdo informativo fornecido para auxiliar mulheres em situação de risco. O NIRA não substitui o aconselhamento jurídico formal, mas oferece as primeiras diretrizes de segurança e suporte emocional.
+                          </p>
+                          <ul className="space-y-4 text-sm">
                              <li className="flex gap-4">
                                <div className="w-6 h-6 rounded-full bg-brand-primary text-white flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-1">1</div>
                                <span>Busque um local seguro e silencioso antes de continuar a leitura ou solicitar ajuda.</span>
@@ -257,7 +287,7 @@ export default function Conteudos() {
 
                     <div className="mt-16 flex flex-col sm:flex-row gap-4 pt-12 border-t border-white/5">
                        <Link 
-                        to="/atendimentos" 
+                        to="/chat" 
                         onClick={() => setArtigoAtivo(null)}
                         className="flex-1 bg-brand-primary hover:bg-[#7a6cf0] text-center text-white px-8 py-5 rounded-[1.5rem] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all hover:scale-[1.02]"
                        >

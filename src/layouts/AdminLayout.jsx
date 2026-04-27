@@ -1,8 +1,18 @@
+import { useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+
 import { LayoutDashboard, AlertCircle, FileText, Users, Map as MapIcon, MessagesSquare, Home } from 'lucide-react';
 
 export default function AdminLayout() {
   const location = useLocation();
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
+
 
   const navLinks = [
     { name: 'Início', path: '/admin', icon: <Home size={18} /> },
@@ -118,7 +128,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Scrollable Main Area (with Footer inside) */}
-        <div className="flex-1 overflow-y-auto bg-bg-main-alt flex flex-col no-scrollbar">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto bg-bg-main-alt flex flex-col no-scrollbar">
           <main className="p-8 flex-grow relative">
             <Outlet />
           </main>

@@ -131,7 +131,8 @@
   grid-template-columns: 1fr 1fr;
   gap: 56px;
   align-items: center;
-  padding: calc(var(--nav-h) + 80px) 28px 80px;
+  padding: calc(var(--nav-h) + 32px) 28px 80px;
+
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -345,10 +346,42 @@
 .home-hero__orb-label {
   font-weight: 700;
   font-size: 1.2rem;
-  color: rgba(139,126,250,.9);
+  color: rgba(139, 126, 250, 0.9);
   letter-spacing: .04em;
   text-align: center;
   user-select: none;
+}
+
+.home-hero__video-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-hero__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.1); /* Zoom leve para ajudar a tirar as bordas se necessário */
+}
+
+.home-hero__video-mask {
+  position: absolute;
+  inset: 0;
+  /* Degradê radial que escurece as bordas e suaviza o centro para esconder marcas d'água nos cantos */
+  background: radial-gradient(
+    circle, 
+    transparent 40%, 
+    rgba(17, 17, 27, 0.4) 70%, 
+    rgba(17, 17, 27, 0.8) 90%,
+    rgba(17, 17, 27, 1) 100%
+  );
+  pointer-events: none;
 }
 
 /* Floating cards */

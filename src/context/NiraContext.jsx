@@ -71,7 +71,8 @@ export function NiraProvider({ children }) {
       location: 'Desconhecida',
       status: 'ativo',
       risk: 'pendente',
-      messages: [{ id: 1, sender: 'bot', text: 'Olá! Sou a PsiTech, a IA de triagem da NIRA. Este espaço é 100% anônimo e seguro. Nenhum dado pessoal é coletado. Como posso te ajudar hoje?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }],
+      messages: [{ id: 1, sender: 'bot', text: 'Olá! Sou a PsiTech, seu chatbot de triagem da NIRA. Este espaço é 100% anônimo e seguro. Nenhum dado pessoal é coletado. Como posso te ajudar hoje?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }],
+
       internalNote: ''
     };
     setChats(prev => [newChat, ...prev]);

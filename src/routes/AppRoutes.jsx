@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ScrollToTop from '../components/ScrollToTop';
+
 
 // Layouts
 import PublicLayout from '../layouts/PublicLayout';
@@ -29,6 +31,8 @@ import AdminRelatorios from '../pages/admin/AdminRelatorios';
 export default function AppRoutes() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
+
       <Routes>
         {/* Public Routes */}
         <Route element={<PublicLayout />}>

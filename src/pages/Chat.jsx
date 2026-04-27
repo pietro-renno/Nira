@@ -189,7 +189,8 @@ const css = `
   width: 100%; max-width: 800px; display: flex; gap: 16px; padding: 0 20px;
   animation: msgIn .25s ease both;
 }
-.chat-msg--ia   { align-items: flex-start; }
+.chat-msg--bot { align-items: flex-start; }
+
 .chat-msg--user { justify-content: flex-end; align-items: flex-start; }
 
 .chat-msg__avatar {
@@ -220,7 +221,8 @@ const css = `
 }
 .chat-msg--user .chat-msg-col { display: flex; flex-direction: column; align-items: flex-end; }
 .chat-msg--user .chat-msg__bubble { max-width: 600px; }
-.chat-msg--ia .chat-msg__bubble   { max-width: 650px; }
+.chat-msg--bot .chat-msg__bubble   { max-width: 650px; }
+
 
 /* Typing */
 .chat-typing { display: flex; gap: 16px; align-items: center; align-self: flex-start; max-width: 800px; padding: 0 20px; width: 100%; margin: 0 auto; }
@@ -285,6 +287,82 @@ const css = `
 .chat-header__back-mob { display:none; color: rgba(255,255,255,0.6); margin-right: 10px; text-decoration:none; }
 .chat-header__back-mob:hover { color: #fff; }
 
+/* ── BANNER DE LOCALIZAÇÃO REFINADO ── */
+.nira-location-prompt {
+  background: linear-gradient(90deg, rgba(138, 126, 248, 0.15), rgba(164, 145, 255, 0.05));
+  border-bottom: 1px solid rgba(138, 126, 248, 0.2);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nira-location-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.nira-location-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(138, 126, 248, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8A7EF8;
+}
+.nira-location-text-title {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.nira-location-text-sub {
+  display: block;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+.nira-location-action {
+  background: #8A7EF8;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(138, 126, 248, 0.3);
+}
+.nira-location-action:hover {
+  background: #A491FF;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(138, 126, 248, 0.4);
+}
+.nira-location-action--success {
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ED573;
+  border: 1px solid rgba(46, 213, 115, 0.3);
+  box-shadow: none;
+  cursor: default;
+}
+.nira-location-action--success:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+
 @media (max-width: 900px) {
   .chat-wrap { grid-template-columns: 1fr; }
   .chat-sidebar { display: none; }
@@ -299,18 +377,18 @@ const FLOW = [
     id: 'start',
     msg: 'Olá. Boas-vindas ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?',
     options: [
-      { text: 'Estou em perigo imediato',        next: 'perigo'   },
-      { text: 'Preciso conversar',             next: 'conversar' },
+      { text: 'Estou em perigo imediato', next: 'perigo' },
+      { text: 'Preciso conversar', next: 'conversar' },
       { text: 'Desejo entender meus direitos', next: 'direitos' },
-      { text: 'Busco apoio na minha região',     next: 'servicos' },
+      { text: 'Busco apoio na minha região', next: 'servicos' },
     ],
   },
   {
     id: 'perigo',
     msg: 'Compreendo. Sua segurança é a nossa maior preocupação agora.\n\nVocê tem condições de acionar o botão de S.O.S. vermelho na tela? Ele enviará sua localização discretamente para nossa equipe de apoio.\n\nCaso possa fazer uma ligação: disque 190 (Polícia Militar) ou 180 (Central da Mulher).',
     options: [
-      { text: 'Ativar S.O.S. agora',         next: 'sos_ativo'  },
-      { text: 'Estou em um local seguro agora', next: 'seguro'     },
+      { text: 'Ativar S.O.S. agora', next: 'sos_ativo' },
+      { text: 'Estou em um local seguro agora', next: 'seguro' },
     ],
     risco: 'alto',
   },
@@ -333,9 +411,9 @@ const FLOW = [
     id: 'seguro',
     msg: 'Fico mais tranquila ao saber que você está em segurança neste momento.\n\nVocê poderia compartilhar um pouco sobre o que ocorreu?',
     options: [
-      { text: 'Sofri agressão física',       next: 'tipo_fisica'  },
-      { text: 'Sofri abuso verbal ou psicológico', next: 'tipo_psico'   },
-      { text: 'Fui alvo de ameaças',               next: 'tipo_ameaca'  },
+      { text: 'Sofri agressão física', next: 'tipo_fisica' },
+      { text: 'Sofri abuso verbal ou psicológico', next: 'tipo_psico' },
+      { text: 'Fui alvo de ameaças', next: 'tipo_ameaca' },
       { text: 'Estou sofrendo controle financeiro', next: 'tipo_fin' },
     ],
     risco: 'medio',
@@ -344,8 +422,8 @@ const FLOW = [
     id: 'conversar',
     msg: 'Nós estamos aqui para ouvir você de forma empática e sem nenhum tipo de julgamento.\n\nPor favor, essa situação está acontecendo agora, ou é algo relacionado ao passado?',
     options: [
-      { text: 'Está ocorrendo neste momento',   next: 'seguro'    },
-      { text: 'Aconteceu recentemente',   next: 'recente'   },
+      { text: 'Está ocorrendo neste momento', next: 'seguro' },
+      { text: 'Aconteceu recentemente', next: 'recente' },
       { text: 'Foi no passado, mas sigo afetada', next: 'passado' },
     ],
   },
@@ -353,10 +431,10 @@ const FLOW = [
     id: 'recente',
     msg: 'Agradecemos muito por compartilhar isso conosco. O acolhimento é o primeiro passo.\n\nO que você está sentindo com mais intensidade agora?',
     options: [
-      { text: 'Medo profundo ou ansiedade',     next: 'emocoes_resp' },
-      { text: 'Extensa tristeza e isolamento',   next: 'emocoes_resp' },
-      { text: 'Sensação de raiva e injustiça',               next: 'emocoes_resp' },
-      { text: 'Vazio ou entorpecimento',       next: 'emocoes_resp' },
+      { text: 'Medo profundo ou ansiedade', next: 'emocoes_resp' },
+      { text: 'Extensa tristeza e isolamento', next: 'emocoes_resp' },
+      { text: 'Sensação de raiva e injustiça', next: 'emocoes_resp' },
+      { text: 'Vazio ou entorpecimento', next: 'emocoes_resp' },
     ],
     risco: 'medio',
   },
@@ -364,9 +442,9 @@ const FLOW = [
     id: 'passado',
     msg: 'Situações ocorridas no passado continuam gerando sofrimento real hoje, e buscar apoio requer muita força.\n\nVocê possui algum acompanhamento ou tratamento psicológico ativo?',
     options: [
-      { text: 'Sim, realizo acompanhamento',     next: 'ja_ajuda'  },
-      { text: 'Ainda não busco apoio profissional',                   next: 'sem_ajuda' },
-      { text: 'Tentei, porém encontrei dificuldades de acesso',  next: 'sem_ajuda' },
+      { text: 'Sim, realizo acompanhamento', next: 'ja_ajuda' },
+      { text: 'Ainda não busco apoio profissional', next: 'sem_ajuda' },
+      { text: 'Tentei, porém encontrei dificuldades de acesso', next: 'sem_ajuda' },
     ],
     risco: 'baixo',
   },
@@ -374,10 +452,10 @@ const FLOW = [
     id: 'direitos',
     msg: 'Perfeito. Compreender legalmente a situação é essencial.\n\nQual tema específico você gostaria de acessar?',
     options: [
-      { text: 'Lei Maria da Penha',       next: 'lei_mp'    },
-      { text: 'Pedido de medidas protetivas',       next: 'medidas'   },
-      { text: 'Registrar Boletim de Ocorrência',         next: 'bo'        },
-      { text: 'Questões sobre guarda dos filhos',        next: 'guarda'    },
+      { text: 'Lei Maria da Penha', next: 'lei_mp' },
+      { text: 'Pedido de medidas protetivas', next: 'medidas' },
+      { text: 'Registrar Boletim de Ocorrência', next: 'bo' },
+      { text: 'Questões sobre guarda dos filhos', next: 'guarda' },
     ],
     risco: 'baixo',
   },
@@ -385,7 +463,7 @@ const FLOW = [
     id: 'lei_mp',
     msg: 'A Lei Maria da Penha (Lei 11.340/2006) foi elaborada para proteger contra qualquer forma de violência física, psicológica, sexual, patrimonial e moral no âmbito doméstico.\n\nA responsabilidade recai sobre pessoas com as quais a vítima possua ou possuiu laços afetivos. Deseja conferir os moldes protetivos garantidos?',
     options: [
-      { text: 'Gostaria de saber sobre as medidas', next: 'medidas'  },
+      { text: 'Gostaria de saber sobre as medidas', next: 'medidas' },
       { text: 'Desejo buscar serviços de auxílio', next: 'servicos' },
     ],
     risco: 'baixo',
@@ -395,7 +473,7 @@ const FLOW = [
     msg: 'Diante de urgência, ordens judiciais de proteção podem ser concedidas num prazo de até 48 horas após registro.\n\nIncluem determinações como:\n• Afastamento compulsório do agressor;\n• Fixação de distanciamento mínimo obrigatório;\n• Cancelamento de meios de comunicação;\n• Interrupção de posse ou porte de armamentos.\n\nA solicitação inicial se dá diretamente na delegacia civil local.',
     options: [
       { text: 'Verificar unidades de atendimento próximas', next: 'servicos' },
-      { text: 'Retornar ao acolhimento via chat',   next: 'conversar' },
+      { text: 'Retornar ao acolhimento via chat', next: 'conversar' },
     ],
     risco: 'baixo',
   },
@@ -404,7 +482,7 @@ const FLOW = [
     msg: 'Para a elaboração de um Boletim de Ocorrência, há vias seguras:\n\n• Dirigir-se pessoalmente a instâncias policiais civis.\n• Acesso direto nas delegacias digitais online.\n• Central Telefônica 180 para orientações preliminares.\n\nViolências não físicas (coação e cerceio) configuram infração; separe arquivos e provas digitais se possível.',
     options: [
       { text: 'Encontrar unidades policiais da região', next: 'servicos' },
-      { text: 'Retornar ao menu de instruções',                 next: 'direitos'  },
+      { text: 'Retornar ao menu de instruções', next: 'direitos' },
     ],
     risco: 'baixo',
   },
@@ -413,9 +491,9 @@ const FLOW = [
     msg: 'Podemos repassar locais governamentais estruturados próximos.\n\nQue modelo de retaguarda se faz mais necessário hoje?',
     options: [
       { text: 'Delegacia Especializada de Atendimento à Mulher (DEAM)', next: 'final_servicos' },
-      { text: 'Ponto de abrigo imediato',               next: 'final_servicos' },
+      { text: 'Ponto de abrigo imediato', next: 'final_servicos' },
       { text: 'Atenção e cuidado psicológico', next: 'final_servicos' },
-      { text: 'Centros e conselhos de apoio',    next: 'final_servicos' },
+      { text: 'Centros e conselhos de apoio', next: 'final_servicos' },
     ],
   },
   {
@@ -438,8 +516,8 @@ const FLOW = [
     id: 'tipo_fisica',
     msg: 'Compreendemos integralmente o evento brutal, ninguém merece passar ou sentir essa agressão.\n\nPrimeiramente: existe chance de risco estrutural e biológico no seu estado atual? Necessita de retaguarda hospitalar?',
     options: [
-      { text: 'É imprescindível um encaminhamento médico',    next: 'medico'         },
-      { text: 'Fisicamente a questão não é urgência clínica de momento',       next: 'emocoes_resp'   },
+      { text: 'É imprescindível um encaminhamento médico', next: 'medico' },
+      { text: 'Fisicamente a questão não é urgência clínica de momento', next: 'emocoes_resp' },
     ],
     risco: 'alto',
   },
@@ -456,9 +534,9 @@ const FLOW = [
     id: 'tipo_psico',
     msg: 'O dolo mental, isolamento estrutural e o rebaixamento de autoestima gerados formam frentes enraizadas e gravíssimas que a lei penaliza abertamente.\n\nHá quanto tempo você nota o endurecimento desse modelo abusivo ocorrer?',
     options: [
-      { text: 'Começou e/ou intensificou ultimamente', next: 'recente'      },
-      { text: 'Consolidou-se durante longo tempo e meses',           next: 'passado'      },
-      { text: 'Não tenho base sólida para mensurar o tempo exato',          next: 'emocoes_resp' },
+      { text: 'Começou e/ou intensificou ultimamente', next: 'recente' },
+      { text: 'Consolidou-se durante longo tempo e meses', next: 'passado' },
+      { text: 'Não tenho base sólida para mensurar o tempo exato', next: 'emocoes_resp' },
     ],
     risco: 'medio',
   },
@@ -466,8 +544,8 @@ const FLOW = [
     id: 'tipo_ameaca',
     msg: 'O crime de ameaça se qualifica juridicamente nas esferas de coerção e desconstrução.\n\nSempre armazene interações gravadas ou transcrições de comunicação da pessoa incriminada para eventuais trâmites civis.\n\nSente que corre um risco vital no imediato ou durante a próxima noite de desdobramentos?',
     options: [
-      { text: 'Sim, a circunstância é de extrema periculosidade contínua',  next: 'perigo'      },
-      { text: 'No minuto atual a margem de ataque é refreada e controlada',     next: 'final_servicos' },
+      { text: 'Sim, a circunstância é de extrema periculosidade contínua', next: 'perigo' },
+      { text: 'No minuto atual a margem de ataque é refreada e controlada', next: 'final_servicos' },
     ],
     risco: 'medio',
   },
@@ -475,7 +553,7 @@ const FLOW = [
     id: 'tipo_fin',
     msg: 'Inviabilização de contas, apreensão unilateral de quantias, constrangimento por não deter posse de dinheiro — também são frentes da violação do código interno de Maria da Penha.\n\nVocê detém independência e canais próprios de provento e uso civil hoje em dia?',
     options: [
-      { text: 'Consigo manipular minhas contas devidamente',           next: 'final_servicos' },
+      { text: 'Consigo manipular minhas contas devidamente', next: 'final_servicos' },
       { text: 'Total obstrução ou ausência de renda livre', next: 'final_servicos' },
     ],
     risco: 'medio',
@@ -484,9 +562,9 @@ const FLOW = [
     id: 'emocoes_resp',
     msg: 'Entendemos isso. Suas impressões fazem todo e completo sentido dentro desse contexto complexo.\n\nGostaria que efetuássemos redirecionamento para o setor e os gabinetes integrados das nossas terapeutas parceiras que compõem a NIRA?',
     options: [
-      { text: 'Prosseguir para área de consulta especializada',         next: 'conectar_humano' },
-      { text: 'Compreender com melhor extensão a validade legal das ações', next: 'direitos'       },
-      { text: 'Acessar diretórios e locais perimetrais de salvaguardada',           next: 'servicos'        },
+      { text: 'Prosseguir para área de consulta especializada', next: 'conectar_humano' },
+      { text: 'Compreender com melhor extensão a validade legal das ações', next: 'direitos' },
+      { text: 'Acessar diretórios e locais perimetrais de salvaguardada', next: 'servicos' },
     ],
     risco: 'medio',
   },
@@ -494,9 +572,9 @@ const FLOW = [
     id: 'ja_ajuda',
     msg: 'Este compromisso de se expor com um encarregado ou a ajuda mental é um excelente contraponto contra eventuais distorções do ambiente do trauma e abuso contíguo.\n\nQue braço de acompanhamento técnico as nossas centrais poderiam auxiliar em continuidade?',
     options: [
-      { text: 'Quero instrução clara da justiça e validade dos recursos', next: 'direitos'  },
-      { text: 'Procurar abas e alas disponíveis na microrregião de residência',        next: 'servicos'  },
-      { text: 'Falar de angústia e compartilhar vivências atípicas',           next: 'emocoes_resp' },
+      { text: 'Quero instrução clara da justiça e validade dos recursos', next: 'direitos' },
+      { text: 'Procurar abas e alas disponíveis na microrregião de residência', next: 'servicos' },
+      { text: 'Falar de angústia e compartilhar vivências atípicas', next: 'emocoes_resp' },
     ],
     risco: 'baixo',
   },
@@ -505,7 +583,7 @@ const FLOW = [
     msg: 'Dentro da sua limitação não há nenhuma inércia pessoal sua de procurar o sistema. Há o peso em si do obstáculo estrutural do ato em seu curso de ocorrência.\n\nNossa instituição permite pontes e contato via o site com gabarito de anonimato.\n\nAceita ser disposta como prioridade técnica aos nossos psicólogos de plantão de acolhimento orgânico?',
     options: [
       { text: 'Confirmar e engessar apoio de análise e condução mista', next: 'conectar_humano' },
-      { text: 'Consultar portais abertos estaduais', next: 'servicos'       },
+      { text: 'Consultar portais abertos estaduais', next: 'servicos' },
     ],
     risco: 'medio',
   },
@@ -514,7 +592,7 @@ const FLOW = [
     msg: 'Nos eventos da Lei doméstica é impetrada junto às representações a ação coligada de guarda emergencial compulsória nas cadeias de delegacias (CRAM incluído no desmembramento local).\n\nO crivo magistrado inibe contato materno-limitante efetuado como intimidação.\n\nQuer listar e referenciar o suporte jurídico que encoste nas suas fronteiras geográficas ou estuda as outras opções passadas?',
     options: [
       { text: 'Verificar centrais e escritórios integrados', next: 'final_servicos' },
-      { text: 'Recuar os passos e rever o painel legal',   next: 'direitos'       },
+      { text: 'Recuar os passos e rever o painel legal', next: 'direitos' },
     ],
     risco: 'baixo',
   },
@@ -528,7 +606,7 @@ const HIST_MOCK = [
 
 function formatTime() {
   const now = new Date();
-  return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
 function parseMsg(text) {
@@ -539,11 +617,17 @@ function parseMsg(text) {
 
 export default function TriagemPage() {
   const [histAtivo, setHistAtivo] = useState(1);
-  const [chatAtivo, setChatAtivo] = useState(true); 
-  const [messages,  setMessages]  = useState([
-    { role: 'ia', text: "Olá. Boas-vindas ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?", time: '19:47' },
+  const [chatAtivo, setChatAtivo] = useState(true);
+  const [gpsStatus, setGpsStatus] = useState('idle'); // idle, granted
+  const [showPrompt, setShowPrompt] = useState(true);
+
+  const [messages, setMessages] = useState([
+    { role: 'bot', text: "Olá. Boas-vindas ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?", time: '19:47' },
+
     { role: 'user', text: "Preciso conversar", time: '20:33' },
-    { role: 'ia', text: "Nós estamos aqui para ouvir você de forma empática e sem julgamentos.\n\nPor favor, essa situação está acontecendo agora, ou é algo relacionado ao passado?", time: '20:34', 
+    {
+      role: 'bot', text: "Nós estamos aqui para ouvir você de forma empática e sem julgamentos.\n\nPor favor, essa situação está acontecendo agora, ou é algo relacionado ao passado?", time: '20:34',
+
       options: [
         { text: "Está ocorrendo neste momento", next: 'seguro' },
         { text: "Aconteceu recentemente", next: 'recente' },
@@ -552,18 +636,18 @@ export default function TriagemPage() {
     }
   ]);
   const [digitando, setDigitando] = useState(false);
-  const [inputVal,  setInputVal]  = useState('');
-  const [riscoAtual,setRiscoAtual]= useState(null);
+  const [inputVal, setInputVal] = useState('');
+  const [riscoAtual, setRiscoAtual] = useState(null);
 
   const scrollContainerRef = useRef(null);
 
   // Scroll logic isolado no container interior p evitar rolagem global //
   function scrollBottom() {
     if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTo({
-            top: scrollContainerRef.current.scrollHeight,
-            behavior: 'smooth'
-        });
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }
   useEffect(() => { scrollBottom(); }, [messages, digitando]);
@@ -577,17 +661,19 @@ export default function TriagemPage() {
       setDigitando(true);
       setTimeout(() => {
         setDigitando(false);
-        setMessages([{ role:'ia', text: step.msg, options: step.options, time: formatTime() }]);
+        setMessages([{ role: 'ia', text: step.msg, options: step.options, time: formatTime() }]);
       }, 1200);
     }, 300);
   }
 
   function escolherOpcao(opcao, optText) {
-    const userMsg = { role:'user', text: optText, time: formatTime() };
+    const userMsg = { role: 'user', text: optText, time: formatTime() };
     setMessages(prev => {
       const semBotoes = [...prev];
-      const ultimaIA = semBotoes[semBotoes.length - 1];
-      if (ultimaIA && ultimaIA.role === 'ia') { delete ultimaIA.options; }
+      const ultimaMsgBot = semBotoes[semBotoes.length - 1];
+      if (ultimaMsgBot && ultimaMsgBot.role === 'bot') { delete ultimaMsgBot.options; }
+
+
       return [...semBotoes, userMsg];
     });
 
@@ -599,26 +685,27 @@ export default function TriagemPage() {
     setDigitando(true);
     setTimeout(() => {
       setDigitando(false);
-      const iaMsg = {
-        role: 'ia',
+      const botMsg = {
+        role: 'bot',
         text: proxStep.msg,
         options: proxStep.final ? [] : proxStep.options,
         time: formatTime(),
         risco: proxStep.risco,
         final: proxStep.final,
       };
-      setMessages(prev => [...prev, iaMsg]);
+      setMessages(prev => [...prev, botMsg]);
     }, 1000 + Math.random() * 600);
   }
 
   function enviarTexto() {
     if (!inputVal.trim()) return;
-    const userMsg = { role:'user', text: inputVal.trim(), time: formatTime() };
-    
+    const userMsg = { role: 'user', text: inputVal.trim(), time: formatTime() };
+
     setMessages(prev => {
       const res = [...prev];
-      const lst = res[res.length-1];
-      if (lst && lst.role === 'ia') { delete lst.options; }
+      const lst = res[res.length - 1];
+      if (lst && lst.role === 'bot') { delete lst.options; }
+
       return [...res, userMsg];
     });
 
@@ -627,12 +714,13 @@ export default function TriagemPage() {
     setTimeout(() => {
       setDigitando(false);
       const resp = {
-        role: 'ia',
+        role: 'bot',
+
         text: 'Agradecemos por nos pontuar este fator.\n\nPara seguirmos com zelo, como podemos estabilizar o cenário atual ou auxiliar o entendimento da via judicial a frente?',
         options: [
-          { text: 'Encontro-me em situação de perigo de risco altíssimo', next: 'perigo'    },
+          { text: 'Encontro-me em situação de perigo de risco altíssimo', next: 'perigo' },
           { text: 'Necessito conexão com profissionais', next: 'conectar_humano' },
-          { text: 'Instruções sobre amparo em lei', next: 'direitos'  },
+          { text: 'Instruções sobre amparo em lei', next: 'direitos' },
         ],
         time: formatTime(),
       };
@@ -645,7 +733,7 @@ export default function TriagemPage() {
   }
 
   function novoChat() { iniciarChat(); setHistAtivo(1); }
-  function abrirHist(id) { setHistAtivo(id); if(id !== 1) setChatAtivo(false); else setChatAtivo(true); }
+  function abrirHist(id) { setHistAtivo(id); if (id !== 1) setChatAtivo(false); else setChatAtivo(true); }
 
   function ativarSOS() {
     alert('🆘 S.O.S. ativado!\n\nEm produção: sua localização seria enviada silenciosamente para a equipe NIRA.\n\nEmergências: 190 (Polícia) · 192 (SAMU) · 180 (Central da Mulher)');
@@ -656,7 +744,7 @@ export default function TriagemPage() {
       <style>{css}</style>
       <div className="chat-page">
         <div className="chat-wrap">
-          
+
           <aside className="chat-sidebar">
             <div className="chat-sidebar__head">
               <Link to="/" className="chat-sidebar__back-btn">
@@ -672,7 +760,7 @@ export default function TriagemPage() {
               {HIST_MOCK.map(h => (
                 <div
                   key={h.id}
-                  className={`chat-hist-item${histAtivo===h.id?' chat-hist-item--active':''}`}
+                  className={`chat-hist-item${histAtivo === h.id ? ' chat-hist-item--active' : ''}`}
                   onClick={() => abrirHist(h.id)}
                 >
                   <p className="chat-hist-item__title">{h.titulo}</p>
@@ -689,7 +777,38 @@ export default function TriagemPage() {
           </aside>
 
           <div className="chat-main">
+            {showPrompt && (
+              <div className="nira-location-prompt">
+                <div className="nira-location-info">
+                  <div className="nira-location-icon-box">
+                    <MapPin size={18} className={gpsStatus === 'granted' ? "text-emerald-500" : "animate-pulse"} />
+                  </div>
+                  <div>
+                    <span className="nira-location-text-title">
+                      {gpsStatus === 'granted' ? "Localização Compartilhada" : "Ativar Proteção por GPS"}
+                    </span>
+                    <span className="nira-location-text-sub">
+                      {gpsStatus === 'granted' 
+                        ? "Sua localização está sendo enviada em tempo real para a rede Nira." 
+                        : "Permita o acesso para que possamos agir rápido em caso de S.O.S."}
+                    </span>
+                  </div>
+                </div>
+                <button 
+                  className={`nira-location-action ${gpsStatus === 'granted' ? 'nira-location-action--success' : ''}`}
+                  onClick={() => {
+                    if (gpsStatus === 'idle') {
+                      setGpsStatus('granted');
+                      setTimeout(() => setShowPrompt(false), 4000);
+                    }
+                  }}
+                >
+                  {gpsStatus === 'granted' ? "Ativado ✓" : "Habilitar Agora"}
+                </button>
+              </div>
+            )}
             {chatAtivo ? (
+
               <div className="chat-header">
                 <div className="chat-header__info">
                   <Link to="/" className="chat-header__back-mob"><ArrowLeft size={18} /></Link>
@@ -699,18 +818,18 @@ export default function TriagemPage() {
                     <p className="chat-header__status">
                       <span className="chat-header__status-dot" />
                       Atendimento verificado
-                      {riscoAtual && <span style={{marginLeft:8, opacity:.7}}>· Grau mapeado: <strong>{riscoAtual}</strong></span>}
+                      {riscoAtual && <span style={{ marginLeft: 8, opacity: .7 }}>· Grau mapeado: <strong>{riscoAtual}</strong></span>}
                     </p>
                   </div>
                 </div>
                 <div className="chat-header__actions">
                   <button className="chat-header__btn chat-header__btn--danger" onClick={ativarSOS}>
-                    <AlertTriangle size={13}/> Acionar S.O.S.
+                    <AlertTriangle size={13} /> Acionar S.O.S.
                   </button>
                   <button className="chat-header__btn" onClick={() => alert('Conectando com atendente humano...')}>
-                    <MessageSquare size={13}/> Atendimento Humano
+                    <MessageSquare size={13} /> Atendimento Humano
                   </button>
-                  <button className="chat-header__btn" onClick={novoChat}><RefreshCcw size={13}/> Atualizar caso</button>
+                  <button className="chat-header__btn" onClick={novoChat}><RefreshCcw size={13} /> Atualizar caso</button>
                 </div>
               </div>
             ) : (
@@ -724,7 +843,7 @@ export default function TriagemPage() {
                   </div>
                 </div>
                 <div className="chat-header__actions">
-                  <button className="chat-header__btn chat-header__btn--danger" onClick={ativarSOS}><AlertTriangle size={13}/> Acionar S.O.S.</button>
+                  <button className="chat-header__btn chat-header__btn--danger" onClick={ativarSOS}><AlertTriangle size={13} /> Acionar S.O.S.</button>
                 </div>
               </div>
             )}
@@ -738,10 +857,10 @@ export default function TriagemPage() {
                 </p>
                 <div className="chat-welcome__starts">
                   {[
-                    { Icon:AlertTriangle, title:'Estou em perigo', desc:'Preciso de ajuda agora' },
-                    { Icon:MessageSquare, title:'Quero conversar',  desc:'Preciso ser ouvido(a)'     },
-                    { Icon:BookOpen,      title:'Meus direitos',    desc:'Quero me informar'      },
-                    { Icon:MapPin,        title:'Buscar apoio',     desc:'Serviços próximos'      },
+                    { Icon: AlertTriangle, title: 'Estou em perigo', desc: 'Preciso de ajuda agora' },
+                    { Icon: MessageSquare, title: 'Quero conversar', desc: 'Preciso ser ouvido(a)' },
+                    { Icon: BookOpen, title: 'Meus direitos', desc: 'Quero me informar' },
+                    { Icon: MapPin, title: 'Buscar apoio', desc: 'Serviços próximos' },
                   ].map(s => (
                     <div key={s.title} className="chat-welcome__start" onClick={() => { novoChat() }}>
                       <div className="chat-welcome__start-icon"><s.Icon /></div>
@@ -757,17 +876,20 @@ export default function TriagemPage() {
 
                 {messages.map((msg, i) => (
                   <div key={i} className={`chat-msg chat-msg--${msg.role}`}>
+
                     <div className="chat-msg__avatar">
-                      {msg.role === 'ia' ? <Shield /> : <User />}
+                      {msg.role === 'bot' ? <Shield /> : <User />}
+
                     </div>
-                    
-                    <div className={`chat-msg-col ${msg.role === 'user' ? 'chat-msg-col--user' : ''}`} style={{display: 'flex', flexDirection: 'column', width: '100%', alignItems: msg.role==='user'?'flex-end':'flex-start'}}>
+
+                    <div className={`chat-msg-col ${msg.role === 'user' ? 'chat-msg-col--user' : ''}`} style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                       <div
                         className="chat-msg__bubble"
                         dangerouslySetInnerHTML={{ __html: parseMsg(msg.text) }}
                       />
-                      
-                      {msg.role === 'ia' && msg.options && msg.options.length > 0 && i === messages.length - 1 && !digitando && (
+
+                      {msg.role === 'bot' && msg.options && msg.options.length > 0 && i === messages.length - 1 && !digitando && (
+
                         <div className="chat-options">
                           {msg.options.map((op, oi) => (
                             <button
@@ -789,11 +911,11 @@ export default function TriagemPage() {
                           <div className={`chat-risk-card__level chat-risk-card__level--${msg.risco}`}>
                             {msg.risco === 'alto' ? 'Risco Alto' : msg.risco === 'medio' ? 'Risco Médio' : 'Monitoramento'}
                           </div>
-                          <p style={{ fontSize:'.82rem', color:'rgba(239,238,234,.6)', lineHeight:1.65 }}>
+                          <p style={{ fontSize: '.82rem', color: 'rgba(239,238,234,.6)', lineHeight: 1.65 }}>
                             Nossa equipe foi notificada. Uma atendente humana entrará em contato em breve.
                           </p>
                           <div className="chat-risk-card__actions">
-                            <button className="chat-risk-btn btn-r-sos" onClick={ativarSOS}><AlertTriangle size={13}/> S.O.S.</button>
+                            <button className="chat-risk-btn btn-r-sos" onClick={ativarSOS}><AlertTriangle size={13} /> S.O.S.</button>
                           </div>
                         </div>
                       )}
@@ -822,31 +944,31 @@ export default function TriagemPage() {
             )}
 
             {chatAtivo && (
-               <div className="chat-input-area">
-                 <div className="chat-input-wrap">
-                   <textarea
-                     className="chat-input"
-                     placeholder="Digite uma mensagem ou escolha uma opção acima..."
-                     rows={1}
-                     value={inputVal}
-                     onChange={e => setInputVal(e.target.value)}
-                     onKeyDown={handleKeyDown}
-                   />
-                   <button
-                     className="chat-send-btn"
-                     onClick={enviarTexto}
-                     disabled={!inputVal.trim() || digitando}
-                     title="Enviar"
-                   >
-                     <Send size={16} />
-                   </button>
-                 </div>
-                 <p className="chat-input-hint" style={{display:'flex',alignItems:'center',gap:6,justifyContent:'center'}}>
-                   <Lock size={11}/> Conversa anônima · Enter para enviar · Shift+Enter para nova linha
-                 </p>
-               </div>
+              <div className="chat-input-area">
+                <div className="chat-input-wrap">
+                  <textarea
+                    className="chat-input"
+                    placeholder="Digite uma mensagem ou escolha uma opção acima..."
+                    rows={1}
+                    value={inputVal}
+                    onChange={e => setInputVal(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                  <button
+                    className="chat-send-btn"
+                    onClick={enviarTexto}
+                    disabled={!inputVal.trim() || digitando}
+                    title="Enviar"
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
+                <p className="chat-input-hint" style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                  <Lock size={11} /> Conversa anônima · Enter para enviar · Shift+Enter para nova linha
+                </p>
+              </div>
             )}
-            
+
           </div>
         </div>
       </div>
