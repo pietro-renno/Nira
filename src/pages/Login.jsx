@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Users, Settings, Lock, Map as MapIcon } from 'lucide-react';
+import { ArrowLeft, User, Users, Settings, Lock, Map as MapIcon, Shield, MessageSquare, AlertCircle, BookOpen, Activity } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -118,11 +118,50 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right Column (Visual) */}
+      {/* Right Column (Visual - Beautiful Image) */}
       <div className="hidden md:block flex-1 relative overflow-hidden bg-[#0A0A10]">
-         <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/30 via-transparent to-transparent z-10"></div>
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-primary/10 rounded-full blur-[180px]"></div>
-         <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1000" className="w-full h-full object-cover opacity-20 mix-blend-overlay" alt="Cyber Security" />
+         {/* Gradient Overlays */}
+         <div className="absolute inset-0 bg-gradient-to-r from-bg-main via-transparent to-transparent z-10 w-[20%]"></div>
+         <div className="absolute inset-0 bg-gradient-to-t from-bg-main/80 via-transparent to-transparent z-10"></div>
+         
+         {/* The Image */}
+         <img 
+            src="/login_security_visual.png" 
+            className="w-full h-full object-cover opacity-80" 
+            alt="Nira Security" 
+         />
+
+         {/* Security Scanner Line */}
+         <div className="absolute inset-0 z-15 pointer-events-none overflow-hidden">
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-brand-primary to-transparent opacity-50 animate-[scanner_4s_linear_infinite]"></div>
+         </div>
+
+         {/* Extra Tech Details */}
+         <div className="absolute top-12 right-12 z-20 flex flex-col items-end gap-2 text-right">
+            <div className="flex items-center gap-3 bg-black/40 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full shadow-2xl">
+               <div className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse"></div>
+               <span className="text-[9px] font-black tracking-widest text-white uppercase">Servidor Seguro: Online</span>
+            </div>
+            <div className="flex items-center gap-3 bg-black/40 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full shadow-2xl">
+               <span className="text-[9px] font-black tracking-widest text-white/50 uppercase">Latência: 12ms</span>
+            </div>
+         </div>
+
+         {/* Floating Glass Label */}
+         <div className="absolute bottom-12 right-12 z-20 glass-card p-8 rounded-[2.5rem] border-white/10 max-w-xs backdrop-blur-3xl shadow-2xl animate-float">
+            <div className="flex items-center gap-4 mb-5">
+               <div className="p-3 bg-brand-primary/20 rounded-2xl">
+                  <Shield className="text-brand-primary" size={24} />
+               </div>
+               <div>
+                  <h3 className="text-lg font-bold text-white">Segurança Nira</h3>
+                  <p className="text-[9px] font-black text-brand-primary uppercase tracking-widest">Protocolo E.Y.E</p>
+               </div>
+            </div>
+            <p className="text-xs text-text-muted leading-relaxed font-medium">
+               Proteção ativa com criptografia de ponta a ponta. Sua identidade e dados estão sob o mais alto padrão de segurança digital.
+            </p>
+         </div>
       </div>
 
     </div>

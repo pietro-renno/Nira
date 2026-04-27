@@ -21,8 +21,12 @@ const MOCK_ONGS = [
 ];
 
 const MOCK_ALERTS = [
-  { id: 101, user: 'Vítima Anônima', location: 'R. das Flores, 52', lat: -23.1700, lng: -45.8600 },
-  { id: 102, user: 'Maria S.',       location: 'Av. Brasil, 310',   lat: -23.1900, lng: -45.9000 },
+  { id: 101, user: 'Vítima Anônima', location: 'R. das Flores, 52', lat: -23.1700, lng: -45.8600, urgency: 'high' },
+  { id: 102, user: 'Maria S.',       location: 'Av. Brasil, 310',   lat: -23.1900, lng: -45.9000, urgency: 'medium' },
+  { id: 103, user: 'Ocorrência #082', location: 'Pça. da Matriz, 15', lat: -23.1850, lng: -45.8800, urgency: 'high' },
+  { id: 104, user: 'Usuária #441',   location: 'R. Sete de Setembro', lat: -23.1600, lng: -45.8900, urgency: 'low' },
+  { id: 105, user: 'Alerta SOS',     location: 'Proximidades do Parque', lat: -23.2000, lng: -45.8500, urgency: 'high' },
+  { id: 106, user: 'Chamado Ativo',  location: 'Setor Sul - Quadra 4', lat: -23.2200, lng: -45.8950, urgency: 'medium' },
 ];
 
 const ZONAS = [
@@ -72,8 +76,7 @@ const GLOBAL_CSS = `
     position: absolute; inset: 0; z-index: 0;
   }
   .leaflet-container {
-    background: #060610 !important;
-    filter: contrast(1.1) brightness(0.65) saturate(1.2) hue-rotate(200deg);
+    background: #f0f2f5 !important;
   }
   .leaflet-control-zoom {
     border: none !important;
@@ -122,23 +125,12 @@ const GLOBAL_CSS = `
 
   /* ── scan line overlay ── */
   .scan-line {
-    position: absolute; top: 0; left: 0; width: 100%; height: 3px;
-    background: linear-gradient(to right, transparent, rgba(139,126,250,0.6), transparent);
-    animation: scan 7s linear infinite;
-    pointer-events: none; z-index: 20;
-  }
-  @keyframes scan {
-    0%   { top: 0;    opacity: 0; }
-    5%   { opacity: 1; }
-    95%  { opacity: 1; }
-    100% { top: 100%; opacity: 0; }
+    display: none;
   }
 
   /* ── vignette ── */
   .vignette {
-    position: absolute; inset: 0; pointer-events: none; z-index: 10;
-    background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.72) 100%);
-    box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
+    display: none;
   }
 
   /* ── grid dots ── */
@@ -159,8 +151,38 @@ const GLOBAL_CSS = `
 
   /* ── marker glow ── */
   .marker-glow { filter: drop-shadow(0 0 12px #8B7EFA) drop-shadow(0 0 4px #fff); }
-  .marker-sos  { filter: drop-shadow(0 0 14px #FF3D6B) drop-shadow(0 0 4px #fff); }
   .marker-ong  { filter: drop-shadow(0 0 12px #34D399); }
+
+  /* ── Custom SOS Marker ── */
+  .sos-marker-container {
+    position: relative;
+    width: 40px;
+    height: 40px;
+  }
+  .sos-marker-dot {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px; height: 14px;
+    background: #FF3D6B;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 15px #FF3D6B;
+  }
+  .sos-marker-pulse {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px; height: 14px;
+    background: #FF3D6B;
+    border-radius: 50%;
+    animation: sos-pulse-ring 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  }
+  @keyframes sos-pulse-ring {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+    100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+  }
 
   /* ── scrollbar ── */
   .custom-scroll::-webkit-scrollbar { width: 3px; }
@@ -206,13 +228,14 @@ const GLOBAL_CSS = `
    POPUP HTML
 ───────────────────────────────────────── */
 const agentPopup = (f) => `
-  <div style="padding:16px 18px; background:#0B0B16; min-width:190px; font-family:'Space Grotesk',sans-serif">
-    <p style="margin:0 0 2px; font-size:9px; font-weight:900; color:#8B7EFA; text-transform:uppercase; letter-spacing:2.5px">Unidade de Campo</p>
-    <p style="margin:0; font-size:15px; font-weight:800; color:#fff">${f.nome}</p>
-    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:8px">
-      <div style="width:7px; height:7px; background:#34D399; border-radius:50%; flex-shrink:0; box-shadow: 0 0 8px #34D399"></div>
-      <p style="margin:0; font-size:9px; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:1.5px">${f.area || 'STANDBY'}</p>
+  <div style="padding:16px 18px; background:#fff; min-width:220px; font-family:'Space Grotesk',sans-serif; color: #111; border-radius: 12px">
+    <p style="margin:0 0 2px; font-size:10px; font-weight:900; color:#8B7EFA; text-transform:uppercase; letter-spacing:2px">Unidade de Campo</p>
+    <p style="margin:0; font-size:16px; font-weight:800; color:#111">${f.nome}</p>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.06); display:flex; align-items:center; gap:8px">
+      <div style="width:8px; height:8px; background:#34D399; border-radius:50%; flex-shrink:0"></div>
+      <p style="margin:0; font-size:10px; color:#666; font-weight:700; text-transform:uppercase">${f.area || 'DISPONÍVEL'}</p>
     </div>
+    <button onclick="window.allocateAgent(${f.id})" style="width:100%; margin-top:12px; padding:10px; background:#8B7EFA; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:12px">Revezar / Alocar</button>
   </div>`;
 
 const ongPopup = (o) => `
@@ -226,11 +249,14 @@ const ongPopup = (o) => `
   </div>`;
 
 const sosPopup = (a) => `
-  <div style="padding:16px 18px; background:#0B0B16; min-width:190px; font-family:'Space Grotesk',sans-serif">
-    <p style="margin:0 0 2px; font-size:9px; font-weight:900; color:#FF3D6B; text-transform:uppercase; letter-spacing:2.5px">⚠ Alerta S.O.S</p>
-    <p style="margin:0; font-size:15px; font-weight:800; color:#fff">${a.user}</p>
-    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08)">
-      <p style="margin:0; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.5px">${a.location}</p>
+  <div style="padding:16px 18px; background:#fff; min-width:220px; font-family:'Space Grotesk',sans-serif; color: #111; border-radius: 12px">
+    <p style="margin:0 0 2px; font-size:10px; font-weight:900; color:#FF3D6B; text-transform:uppercase; letter-spacing:2px">⚠ ALERTA S.O.S</p>
+    <p style="margin:0; font-size:16px; font-weight:800; color:#111">${a.user}</p>
+    <div style="margin-top:8px">
+      <p style="margin:0; font-size:11px; color:#666">${a.location}</p>
+    </div>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.06)">
+       <button onclick="window.dispatchHelp(${a.id})" style="width:100%; padding:10px; background:#FF3D6B; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:12px">Despachar Ajuda Imediata</button>
     </div>
   </div>`;
 
@@ -297,8 +323,13 @@ export default function FullMapa({ onBack }) {
       attributionControl: false,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 20 }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
+    
+    // Globals for buttons
+    window.allocateAgent = (id) => showToast(`Alocando agente #${id} para zona de patrulha...`);
+    window.dispatchHelp = (id) => showToast(`UNIDADE EM DESLOCAMENTO para ocorrência #${id}!`);
+
     lMap.current = map;
     updateMarkers(map);
   }, [leafletReady]);
@@ -359,10 +390,19 @@ export default function FullMapa({ onBack }) {
     /* SOS */
     if (layerVisible('sos')) {
       MOCK_ALERTS.forEach(a => {
-        const m = L.circleMarker([a.lat, a.lng], {
-          radius: 13, fillColor: '#FF3D6B', color: '#fff',
-          weight: 2.5, fillOpacity: 1, className: 'marker-sos',
-        }).addTo(map).bindPopup(sosPopup(a), { closeButton: false, offset: [0, -14] });
+        const sosIcon = L.divIcon({
+          className: 'sos-marker-container',
+          html: `<div class="sos-marker-pulse"></div><div class="sos-marker-pulse" style="animation-delay:0.5s"></div><div class="sos-marker-dot"></div>`,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20]
+        });
+
+        const m = L.marker([a.lat, a.lng], {
+          icon: sosIcon,
+          className: 'marker-sos'
+        }).addTo(map)
+          .bindPopup(sosPopup(a), { closeButton: false, offset: [0, -5] })
+          .bindTooltip(a.user, { permanent: true, direction: 'top', className: 'sos-tooltip' });
         markersRef.current[`sos-${a.id}`] = m;
       });
     }
@@ -480,22 +520,22 @@ export default function FullMapa({ onBack }) {
               />
             </div>
 
-            {/* Layer Filters */}
+            {/* Layer Filters - Simplified to 2 */}
             <div className="glass" style={{ borderRadius:20, padding:6, display:'flex', gap:6 }}>
-              {['todos','agentes','ongs','sos'].map(l => (
+              {['todos', 'sos'].map(l => (
                 <button
                   key={l}
                   onClick={() => setActiveLayer(l)}
                   style={{
-                    padding:'8px 16px', borderRadius:14, border:'none', cursor:'pointer',
-                    fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em',
+                    padding:'8px 24px', borderRadius:14, border:'none', cursor:'pointer',
+                    fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em',
                     fontFamily:'Space Grotesk',
                     background: activeLayer === l ? 'var(--brand)' : 'rgba(255,255,255,0.05)',
                     color:      activeLayer === l ? '#fff' : 'rgba(255,255,255,0.35)',
                     transition:'all 0.25s',
                   }}
                 >
-                  {l}
+                  {l === 'todos' ? 'Vista Geral' : 'Emergências'}
                 </button>
               ))}
             </div>
@@ -602,20 +642,20 @@ export default function FullMapa({ onBack }) {
                       <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:14 }}>
                         {/* Avatar */}
                         <div style={{
-                          width:44, height:44, borderRadius:14,
+                          width:40, height:40, borderRadius:12,
                           background:'rgba(139,126,250,0.12)',
                           border:'1px solid rgba(139,126,250,0.22)',
                           display:'flex', alignItems:'center', justifyContent:'center',
-                          fontSize:18, fontWeight:900, color:'var(--brand)', flexShrink:0,
+                          fontSize:16, fontWeight:900, color:'var(--brand)', flexShrink:0,
                         }}>
                           {f.nome.charAt(0)}
                         </div>
                         <div style={{ flex:1, minWidth:0 }}>
-                          <p style={{ fontSize:12, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.12em', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                          <p style={{ fontSize:13, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.05em', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
                             {f.nome}
                           </p>
-                          <p style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.15em', marginTop:3, display:'flex', alignItems:'center', gap:6 }}>
-                            <Shield size={9} color="var(--brand)" />
+                          <p style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em', marginTop:2, display:'flex', alignItems:'center', gap:4 }}>
+                            <Shield size={10} color="var(--brand)" />
                             {ESPEC_LABEL[f.especialidade] || f.especialidade}
                           </p>
                         </div>
@@ -658,25 +698,41 @@ export default function FullMapa({ onBack }) {
                     style={{
                       borderRadius:20, padding:'16px 20px',
                       border:'1px solid rgba(255,255,255,0.05)',
-                      display:'flex', alignItems:'center', justifyContent:'space-between',
-                      transition:'border-color 0.3s', cursor:'default',
+                      display:'flex', flexDirection:'column', gap:12,
+                      transition:'all 0.3s', cursor:'default',
                     }}
                     onMouseEnter={e => e.currentTarget.style.borderColor='rgba(139,126,250,0.3)'}
                     onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.05)'}
                   >
-                    <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-                      <div style={{ width:4, height:44, borderRadius:4, background:z.color, boxShadow:`0 0 14px ${z.color}55`, flexShrink:0 }} />
-                      <div>
-                        <p style={{ fontSize:13, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.18em' }}>{z.label}</p>
-                        <p style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.2)', textTransform:'uppercase', letterSpacing:'0.15em', marginTop:3 }}>Setor de Operação</p>
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+                        <div style={{ width:4, height:36, borderRadius:4, background:z.color, boxShadow:`0 0 14px ${z.color}55`, flexShrink:0 }} />
+                        <div>
+                          <p style={{ fontSize:13, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.1em' }}>{z.label}</p>
+                          <p style={{ fontSize:8, fontWeight:700, color:'rgba(255,255,255,0.2)', textTransform:'uppercase', letterSpacing:'0.1em' }}>Zona de Cobertura</p>
+                        </div>
+                      </div>
+                      <div style={{ textAlign:'right' }}>
+                        <p style={{ fontSize:24, fontWeight:900, color:'#fff', lineHeight:1 }}>
+                          {String(funcionarios.filter(f=>f.area===z.label).length).padStart(2,'0')}
+                        </p>
+                        <p style={{ fontSize:8, fontWeight:900, color:'var(--brand)', textTransform:'uppercase' }}>AGS</p>
                       </div>
                     </div>
-                    <div style={{ textAlign:'right' }}>
-                      <p style={{ fontSize:28, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
-                        {String(funcionarios.filter(f=>f.area===z.label).length).padStart(2,'0')}
-                      </p>
-                      <p style={{ fontSize:8, fontWeight:900, color:'var(--brand)', textTransform:'uppercase', letterSpacing:'0.15em' }}>UNID.</p>
-                    </div>
+                    
+                    <button
+                      onClick={() => showToast(`Alocando reforço para a Zona ${z.label}...`)}
+                      style={{
+                        width:'100%', padding:'10px', borderRadius:12, cursor:'pointer',
+                        background:'rgba(139,126,250,0.1)', border:'1px solid rgba(139,126,250,0.2)',
+                        color:'var(--brand)', fontSize:9, fontWeight:900, fontFamily:'Space Grotesk',
+                        textTransform:'uppercase', letterSpacing:'0.15em', transition:'all 0.25s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background='var(--brand)'}
+                      onMouseLeave={e => e.currentTarget.style.background='rgba(139,126,250,0.1)'}
+                    >
+                      Alocar Agente Aqui
+                    </button>
                   </div>
                 ))}
               </div>
