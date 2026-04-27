@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../contexts/AuthContext';
 import { NiraContext } from '../context/NiraContext';
-import { ChevronDown, LayoutDashboard, AlertCircle, FileText, Users, Map as MapIcon, MessagesSquare, LogOut, ShieldAlert } from 'lucide-react';
+import { ChevronDown, LayoutDashboard, AlertCircle, FileText, Users, Map as MapIcon, MessagesSquare, LogOut, ShieldAlert, Home } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -21,6 +21,7 @@ const Navbar = () => {
   ];
 
   const adminLinks = [
+    { name: 'Início', path: '/admin', icon: <Home size={14} />, roles: ['adm', 'ong'] },
     { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={14} />, roles: ['adm', 'ong'] },
     { name: 'Alertas S.O.S.', path: '/admin/alertas', icon: <AlertCircle size={14} />, roles: ['adm', 'ong'] },
     { name: 'Conteúdos', path: '/admin/conteudos', icon: <FileText size={14} />, roles: ['adm', 'ong'] },

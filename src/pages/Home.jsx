@@ -86,6 +86,7 @@ export default function Home() {
             <div className="home-hero__orb-ring home-hero__orb-ring--1" />
             <div className="home-hero__orb-ring home-hero__orb-ring--2" />
             <div className="home-hero__orb-ring home-hero__orb-ring--3" />
+            
             <div className="home-hero__orb">
               <div className="home-hero__video-container">
                 <video 
@@ -97,11 +98,26 @@ export default function Home() {
                   className="home-hero__video"
                 />
                 <div className="home-hero__video-mask" />
+                <div className="home-hero__scanner" />
               </div>
             </div>
-            <div className="home-hero__fcard home-hero__fcard1"><span className="home-hero__fcard-icon"><Lock size={16} strokeWidth={1.5} /></span><div><p className="home-hero__fcard-title">100% Anônimo</p><p className="home-hero__fcard-sub">Sem identificação</p></div></div>
-            <div className="home-hero__fcard home-hero__fcard2"><span className="home-hero__fcard-icon"><AlertTriangle size={16} strokeWidth={1.5} /></span><div><p className="home-hero__fcard-title">Botão S.O.S.</p><p className="home-hero__fcard-sub">Alerta + GPS</p></div></div>
-            <div className="home-hero__fcard home-hero__fcard3"><span className="home-hero__fcard-icon"><HeartHandshake size={16} strokeWidth={1.5} /></span><div><p className="home-hero__fcard-title">Rede de Apoio</p><p className="home-hero__fcard-sub">Psicólogos · ONGs</p></div></div>
+
+            {/* Decorative Geometric Elements */}
+            <div className="absolute -top-10 -right-10 w-24 h-24 border-t-2 border-r-2 border-brand-primary/20 rounded-tr-3xl" />
+            <div className="absolute -bottom-10 -left-10 w-24 h-24 border-b-2 border-l-2 border-brand-primary/20 rounded-bl-3xl" />
+
+            <div className="home-hero__fcard home-hero__fcard1">
+              <span className="home-hero__fcard-icon text-brand-primary"><Lock size={18} strokeWidth={2} /></span>
+              <div><p className="home-hero__fcard-title">100% Anônimo</p><p className="home-hero__fcard-sub">Criptografia Ponta-a-Ponta</p></div>
+            </div>
+            <div className="home-hero__fcard home-hero__fcard2">
+              <span className="home-hero__fcard-icon text-brand-emergency"><AlertTriangle size={18} strokeWidth={2} /></span>
+              <div><p className="home-hero__fcard-title">Botão S.O.S.</p><p className="home-hero__fcard-sub">Acionamento Silencioso</p></div>
+            </div>
+            <div className="home-hero__fcard home-hero__fcard3">
+              <span className="home-hero__fcard-icon text-[#34D399]"><HeartHandshake size={18} strokeWidth={2} /></span>
+              <div><p className="home-hero__fcard-title">Apoio Real</p><p className="home-hero__fcard-sub">+50 ONGs Parceiras</p></div>
+            </div>
           </div>
         </div>
       </section>

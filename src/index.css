@@ -110,9 +110,24 @@
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 70% 60% at 70% 50%, rgba(139,126,250,.2) 0%, transparent 55%),
-    radial-gradient(ellipse 45% 45% at 15% 80%,  rgba(139,126,250,.08) 0%, transparent 60%),
+    linear-gradient(to bottom, rgba(17,17,27,0) 0%, rgba(17,17,27,1) 100%),
+    radial-gradient(ellipse 70% 60% at 80% 30%, rgba(139,126,250,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 10% 80%, rgba(139,126,250,0.1) 0%, transparent 50%),
     #11111B;
+}
+
+.home-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at 70% 40%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 70% 40%, black 20%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .home-hero::before {
@@ -129,9 +144,9 @@
 .home-hero__inner {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 56px;
+  gap: 64px;
   align-items: center;
-  padding: calc(var(--nav-h) + 32px) 28px 80px;
+  padding: calc(var(--nav-h) + 60px) 28px 80px;
 
   max-width: 1200px;
   margin: 0 auto;
@@ -301,7 +316,8 @@
   justify-content: center;
   position: relative;
   animation: fade-in-up .9s .3s ease both;
-  min-height: 420px;
+  min-height: 480px;
+  margin-top: -60px; /* Joga os elementos para cima */
 }
 
 @media (max-width: 900px) {
@@ -387,17 +403,30 @@
 /* Floating cards */
 .home-hero__fcard {
   position: absolute;
-  background: rgba(30,30,46,.9);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 12px;
-  padding: 10px 14px;
+  background: rgba(30, 30, 46, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 12px 18px;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 12px;
   white-space: nowrap;
-  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(139, 126, 250, 0.15);
   animation: fade-in-up .7s ease both, float 6s ease-in-out infinite;
-  backdrop-filter: blur(8px);
+  z-index: 10;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.home-hero__fcard:hover {
+  transform: scale(1.05) translateY(-5px);
+  border-color: rgba(139, 126, 250, 0.4);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(139, 126, 250, 0.2);
 }
 .home-hero__fcard1 { top: 8%;  left: -4%;  animation-delay: .5s; }
 .home-hero__fcard2 { bottom: 18%; left: -6%; animation-delay: .7s; }
