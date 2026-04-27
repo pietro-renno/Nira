@@ -110,6 +110,15 @@ const BentoCard = ({ module: m, index }) => {
 /* ─── Página principal ─── */
 const AdminHome = () => {
   const { user } = useAuth();
+  
+  // Se não houver usuário, não renderiza os blocos para evitar tela vazia
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-text-muted font-bold animate-pulse">
+        Carregando painel de controle...
+      </div>
+    );
+  }
 
   const modules = [
     {
@@ -392,6 +401,26 @@ const AdminHome = () => {
       `}</style>
 
       <div className="max-w-7xl mx-auto space-y-12 animate-fade-in-up">
+
+        {/* ── KPI STATS (Os blocos que o usuário sentiu falta) ── */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+           {[
+             { label: 'S.O.S. Ativos', value: '06', icon: <AlertCircle size={20} />, color: 'text-brand-emergency', bg: 'bg-brand-emergency/10' },
+             { label: 'Equipes Campo', value: '08', icon: <Users size={20} />, color: 'text-brand-primary', bg: 'bg-brand-primary/10' },
+             { label: 'ONGs Parceiras', value: '02', icon: <ShieldCheck size={20} />, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+             { label: 'Zonas Ativas', value: '05', icon: <MapIcon size={20} />, color: 'text-amber-400', bg: 'bg-amber-400/10' },
+           ].map((stat, i) => (
+             <div key={i} className="glass-panel p-6 rounded-3xl border-white/5 flex items-center gap-5 hover:border-white/10 transition-all group">
+                <div className={`w-12 h-12 ${stat.bg} rounded-2xl flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
+                   {stat.icon}
+                </div>
+                <div>
+                   <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">{stat.label}</p>
+                   <p className="text-2xl font-black text-white">{stat.value}</p>
+                </div>
+             </div>
+           ))}
+        </div>
 
         {/* ── HERO BANNER ── */}
         <section className="relative group perspective-1000">

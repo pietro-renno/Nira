@@ -19,76 +19,13 @@ import TabRelatorios from '../../components/admin/TabRelatorios';
 
 const css = `
 /* Layout raiz */
-.adm-root{
-  display:flex;
-  min-height:100vh;
-  background:var(--bg-deep);
-  /* padding-top para a navbar pill */
-  padding-top:var(--nav-h,72px);
+/* Layout raiz */
+.adm-root-content{
+  display:block;
+  width: 100%;
 }
 
-/* ── SIDEBAR ── */
-.adm-sidebar{
-  width:240px;
-  flex-shrink:0;
-  background:rgba(16,14,34,.95);
-  border-right:1px solid rgba(107,104,152,.16);
-  display:flex;
-  flex-direction:column;
-  position:sticky;
-  top:var(--nav-h,72px);
-  height:calc(100vh - var(--nav-h,72px));
-  overflow-y:auto;
-}
-.adm-sidebar::-webkit-scrollbar{width:3px;}
-.adm-sidebar::-webkit-scrollbar-thumb{background:rgba(107,104,152,.22);border-radius:3px;}
-
-.adm-sidebar__brand{
-  padding:20px 18px 18px;
-  border-bottom:1px solid rgba(107,104,152,.12);
-  flex-shrink:0;
-}
-.adm-sidebar__brand-row{display:flex;align-items:center;gap:9px;margin-bottom:4px;}
-.adm-sidebar__brand-owl{font-size:1.3rem;}
-.adm-sidebar__brand-name{font-weight:700;font-size:.9rem;color:#F4F6F8;letter-spacing:.06em;}
-.adm-sidebar__brand-role{
-  display:inline-flex;align-items:center;gap:5px;
-  background:rgba(155,143,255,.14);border:1px solid rgba(155,143,255,.25);
-  border-radius:100px;padding:3px 10px;
-  font-size:.62rem;color:#9B8FFF;letter-spacing:.08em;font-weight:700;
-  font-family:'Anonymous Pro',monospace;
-}
-
-.adm-nav-sect{
-  padding:16px 16px 6px;
-  font-size:.58rem;color:rgba(239,238,234,.22);
-  letter-spacing:.14em;text-transform:uppercase;
-  font-family:'Anonymous Pro',monospace;
-  flex-shrink:0;
-}
-.adm-nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 16px;
-  font-family:'Poppins',sans-serif;font-size:.83rem;
-  color:rgba(239,238,234,.5);cursor:pointer;
-  transition:all .22s;
-  border-left:2.5px solid transparent;
-  background:none;border-right:none;border-top:none;border-bottom:none;
-  width:100%;text-align:left;
-  border-left-color:transparent;
-}
-.adm-nav-item:hover{color:#F4F6F8;background:rgba(107,104,152,.1);}
-.adm-nav-item--active{
-  color:#C4BCFF;
-  border-left-color:#9B8FFF;
-  background:rgba(155,143,255,.07);
-  font-weight:600;
-}
-.adm-nav-badge{
-  margin-left:auto;
-  background:rgba(255,71,87,.2);color:#FF4757;
-  border-radius:100px;padding:1px 7px;font-size:.6rem;font-weight:700;
-}
+/* Sidebar removida para evitar conflito com AdminLayout */
 
 /* ── CONTEÚDO PRINCIPAL ── */
 .adm-main{
@@ -101,11 +38,9 @@ const css = `
 .adm-tab-header{
   display:flex;align-items:center;justify-content:space-between;
   gap:16px;flex-wrap:wrap;
-  padding:28px 32px 24px;
+  padding:0 0 24px;
   border-bottom:1px solid rgba(107,104,152,.1);
-  background:rgba(16,14,34,.5);
-  backdrop-filter:blur(8px);
-  position:sticky;top:0;z-index:10;
+  margin-bottom: 24px;
 }
 .adm-tab-title{font-weight:800;font-size:1.3rem;color:#F4F6F8;letter-spacing:-.02em;}
 .adm-tab-sub{font-size:.78rem;color:rgba(239,238,234,.38);margin-top:3px;}
@@ -591,100 +526,71 @@ export default function AdminPage() {
   const tabInfo = NAV.find(n => n.key === tabAtiva) || NAV[0];
 
   return (
-    <>
+    <div className="adm-root-content">
       <style>{css}</style>
-      <Navbar />
-      <div className="adm-root">
-        <aside className="adm-sidebar">
-          <div className="adm-sidebar__brand">
-            <div className="adm-sidebar__brand-row">
-              <Shield size={20} className="text-brand-primary" />
-              <span className="adm-sidebar__brand-name">NIRA Admin</span>
-            </div>
-            <span className="adm-sidebar__brand-role">{user?.role?.toUpperCase()} — {user?.nome}</span>
+      
+      <main className="adm-main">
+        <div className="adm-tab-header">
+          <div>
+            <h1 className="adm-tab-title" style={{display:'flex', alignItems:'center', gap:'10px'}}>{tabInfo.icon} {tabInfo.label}</h1>
+            <p className="adm-tab-sub">Visão Geral do Sistema • Painel de Controle</p>
           </div>
-          {sections.map(sec => (
-            <div key={sec}>
-              <div className="adm-nav-sect">{sec}</div>
-              {NAV.filter(n => n.section === sec).map(n => (
-                <button key={n.key} className={`adm-nav-item${tabAtiva===n.key?' adm-nav-item--active':''}`} onClick={() => irParaTab(n.key)}>
-                  {n.icon} {n.label}
-                  {n.badge ? <span className="adm-nav-badge">{n.badge}</span> : null}
-                </button>
-              ))}
-            </div>
-          ))}
-        </aside>
+        </div>
 
-        <main className="adm-main">
-          <div className="adm-tab-header">
-            <div>
-              <h1 className="adm-tab-title" style={{display:'flex', alignItems:'center', gap:'10px'}}>{tabInfo.icon} {tabInfo.label}</h1>
-              <p className="adm-tab-sub">NIRA Admin · E.Y.E 2026 (Painel Unificado)</p>
+        <div className="adm-tab-body" style={{padding: 0}}>
+          {tabAtiva === 'dashboard' && <TabDashboard />}
+          {tabAtiva === 'alertas'   && (
+            <div className="adm-table-wrap">
+              <table className="adm-table">
+                <thead><tr><th>ID</th><th>Tipo</th><th>Usuária</th><th>Local</th><th>Hora</th><th>Status</th><th>Ação</th></tr></thead>
+                <tbody>
+                  {ALERTAS_MOCK.map(a=>(
+                    <tr key={a.id}>
+                      <td style={{fontFamily:"'Anonymous Pro',monospace",fontSize:'.77rem'}}>{a.id}</td>
+                      <td><span className={`adm-pill adm-pill--${a.tipo}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {a.tipo==='sos'?<AlertCircle size={12}/>:<MessageSquare size={12}/>} 
+                        {a.tipo==='sos'?'SOS':'Chat'}
+                      </span></td>
+                      <td style={{color:'rgba(239,238,234,.45)',fontSize:'.78rem'}}>{a.anon}</td>
+                      <td>{a.local}</td>
+                      <td style={{color:'rgba(239,238,234,.35)',fontSize:'.75rem'}}>{a.hora}</td>
+                      <td><span className={`adm-pill adm-pill--${a.status}`}>{a.status==='new'?'Novo':a.status==='pend'?'Pendente':'Concluído'}</span></td>
+                      <td><button className="adm-act-btn" onClick={()=>alert(`Abrindo ${a.id}`)}>Atender →</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="adm-tab-actions">
-              <div style={{display:'flex',alignItems:'center',gap:6,background:'rgba(46,213,115,.1)',border:'1px solid rgba(46,213,115,.22)',borderRadius:100,padding:'5px 13px',fontSize:'.72rem',color:'#2ED573'}}>
-                <span style={{width:6,height:6,borderRadius:'50%',background:'#2ED573',boxShadow:'0 0 6px #2ED573',flexShrink:0}}/>
-                Sistema online
-              </div>
+          )}
+          {tabAtiva === 'conteudos' && <TabConteudos user={user} />}
+          {tabAtiva === 'usuarios'  && (
+            <TabUsuarios
+              user={user}
+              usuarios={usuarios}
+              adicionarUsuario={adicionarUsuario}
+              toggleAtivo={toggleAtivo}
+              removerUsuario={removerUsuario}
+              getVinculoLabel={getVinculoLabel}
+              getONGs={getONGs}
+            />
+          )}
+          {tabAtiva === 'relatorios' && <TabRelatorios />}
+          {tabAtiva === 'mapa' && (
+            <div style={{textAlign:'center',padding:'60px 0'}}>
+              <Map size={48} className="mx-auto mb-4 opacity-50" />
+              <p style={{fontWeight:700,fontSize:'1.1rem',color:'#F4F6F8',marginBottom:8}}>Mapa de Equipes</p>
+              <Link to="/admin/mapa" className="btn btn-primary">Abrir Mapa →</Link>
             </div>
-          </div>
-
-          <div className="adm-tab-body">
-            {tabAtiva === 'dashboard' && <TabDashboard />}
-            {tabAtiva === 'alertas'   && (
-              <div className="adm-table-wrap">
-                <table className="adm-table">
-                  <thead><tr><th>ID</th><th>Tipo</th><th>Usuária</th><th>Local</th><th>Hora</th><th>Status</th><th>Ação</th></tr></thead>
-                  <tbody>
-                    {ALERTAS_MOCK.map(a=>(
-                      <tr key={a.id}>
-                        <td style={{fontFamily:"'Anonymous Pro',monospace",fontSize:'.77rem'}}>{a.id}</td>
-                        <td><span className={`adm-pill adm-pill--${a.tipo}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          {a.tipo==='sos'?<AlertCircle size={12}/>:<MessageSquare size={12}/>} 
-                          {a.tipo==='sos'?'SOS':'Chat'}
-                        </span></td>
-                        <td style={{color:'rgba(239,238,234,.45)',fontSize:'.78rem'}}>{a.anon}</td>
-                        <td>{a.local}</td>
-                        <td style={{color:'rgba(239,238,234,.35)',fontSize:'.75rem'}}>{a.hora}</td>
-                        <td><span className={`adm-pill adm-pill--${a.status}`}>{a.status==='new'?'Novo':a.status==='pend'?'Pendente':'Concluído'}</span></td>
-                        <td><button className="adm-act-btn" onClick={()=>alert(`Abrindo ${a.id}`)}>Atender →</button></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {tabAtiva === 'conteudos' && <TabConteudos user={user} />}
-            {tabAtiva === 'usuarios'  && (
-              <TabUsuarios
-                user={user}
-                usuarios={usuarios}
-                adicionarUsuario={adicionarUsuario}
-                toggleAtivo={toggleAtivo}
-                removerUsuario={removerUsuario}
-                getVinculoLabel={getVinculoLabel}
-                getONGs={getONGs}
-              />
-            )}
-            {tabAtiva === 'relatorios' && <TabRelatorios />}
-            {tabAtiva === 'mapa' && (
-              <div style={{textAlign:'center',padding:'60px 0'}}>
-                <Map size={48} className="mx-auto mb-4 opacity-50" />
-                <p style={{fontWeight:700,fontSize:'1.1rem',color:'#F4F6F8',marginBottom:8}}>Mapa de Equipes</p>
-                <Link to="/mapa" className="btn btn-primary">Abrir Mapa Completo →</Link>
-              </div>
-            )}
-            {tabAtiva === 'chat' && (
-              <div style={{textAlign:'center',padding:'60px 0'}}>
-                <MessageSquare size={48} className="mx-auto mb-4 opacity-50" />
-                <p style={{fontWeight:700,fontSize:'1.1rem',color:'#F4F6F8',marginBottom:8}}>Atendimentos</p>
-                <Link to="/chat" className="btn btn-primary">Abrir Atendimentos →</Link>
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
-    </>
+          )}
+          {tabAtiva === 'chat' && (
+            <div style={{textAlign:'center',padding:'60px 0'}}>
+              <MessageSquare size={48} className="mx-auto mb-4 opacity-50" />
+              <p style={{fontWeight:700,fontSize:'1.1rem',color:'#F4F6F8',marginBottom:8}}>Atendimentos</p>
+              <Link to="/admin/atendimentos-chat" className="btn btn-primary">Abrir Atendimentos →</Link>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }
