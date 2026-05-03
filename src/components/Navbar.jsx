@@ -21,17 +21,29 @@ const Navbar = () => {
   ];
 
   const adminLinks = [
-    { name: 'Início', path: '/admin', icon: <Home size={14} />, roles: ['adm', 'ong'] },
-    { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={14} />, roles: ['adm', 'ong'] },
-    { name: 'Alertas S.O.S.', path: '/admin/alertas', icon: <AlertCircle size={14} />, roles: ['adm', 'ong'] },
+    { name: 'Início', path: '/admin', icon: <Home size={14} />, roles: ['adm', 'ong', 'funcionario'] },
+    { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={14} />, roles: ['adm'] },
+    { name: 'Alertas S.O.S.', path: '/admin/alertas', icon: <AlertCircle size={14} />, roles: ['adm', 'funcionario'], espec: ['agente', 'policial'] },
     { name: 'Conteúdos', path: '/admin/conteudos', icon: <FileText size={14} />, roles: ['adm', 'ong'] },
     { name: 'Usuários/ONGs', path: '/admin/usuarios', icon: <Users size={14} />, roles: ['adm'] },
-    { name: 'Mapa / Equipes', path: '/admin/mapa', icon: <MapIcon size={14} />, roles: ['adm', 'ong'] },
-    { name: 'Atendimentos', path: '/admin/atendimentos-chat', icon: <MessagesSquare size={14} />, roles: ['adm', 'ong'] },
+    { name: 'Mapa / Equipes', path: '/admin/mapa', icon: <MapIcon size={14} />, roles: ['adm', 'funcionario'], espec: ['agente', 'policial'] },
+    { name: 'Atendimentos', path: '/admin/atendimentos-chat', icon: <MessagesSquare size={14} />, roles: ['adm', 'funcionario'], espec: ['psicologo', 'assistente_social'] },
   ];
 
-  // Filter links based on user role
-  const filteredAdminLinks = adminLinks.filter(link => !link.roles || link.roles.includes(user?.role));
+  // Filter links based on user role and specialty
+  const filteredAdminLinks = adminLinks.filter(link => {
+    if (!user) return false;
+    if (user.role === 'adm') return true;
+
+    const rolePermitida = link.roles.includes(user.role);
+    if (!rolePermitida) return false;
+
+    if (user.role === 'funcionario' && link.espec) {
+      return link.espec.includes(user.especialidade);
+    }
+
+    return true;
+  });
 
   return (
     <nav className="w-full bg-[#11111B]/80 backdrop-blur-xl border-b border-white/5 py-4 px-8 fixed top-0 z-50 transition-all duration-300">

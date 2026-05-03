@@ -128,7 +128,8 @@ const AdminHome = () => {
       icon: <AlertCircle size={22} />,
       colorFrom: '#FF4B4B',
       colorTo: '#FF8E8E',
-      roles: ['adm', 'ong'],
+      roles: ['adm', 'funcionario'],
+      espec: ['agente', 'policial'],
       badge: 'Ativo',
     },
     {
@@ -138,7 +139,8 @@ const AdminHome = () => {
       icon: <MapIcon size={22} />,
       colorFrom: '#F59E0B',
       colorTo: '#FCD34D',
-      roles: ['adm', 'ong'],
+      roles: ['adm', 'funcionario'],
+      espec: ['agente', 'policial'],
     },
     {
       title: 'Central de Atendimento',
@@ -147,7 +149,8 @@ const AdminHome = () => {
       icon: <MessagesSquare size={22} />,
       colorFrom: '#8B7EFA',
       colorTo: '#7a6cf0',
-      roles: ['adm', 'ong'],
+      roles: ['adm', 'funcionario'],
+      espec: ['psicologo', 'assistente_social'],
     },
     {
       title: 'Controle de Acesso',
@@ -174,11 +177,33 @@ const AdminHome = () => {
       icon: <LayoutDashboard size={22} />,
       colorFrom: '#3B82F6',
       colorTo: '#60A5FA',
-      roles: ['adm', 'ong'],
+      roles: ['adm'],
     },
   ];
 
-  const filteredModules = modules.filter(m => !m.roles || m.roles.includes(user?.role));
+  const filteredModules = modules.filter(m => {
+    if (user?.role === 'adm') return true;
+    const roleOk = m.roles?.includes(user?.role);
+    if (!roleOk) return false;
+    if (user?.role === 'funcionario' && m.espec) {
+      return m.espec.includes(user?.especialidade);
+    }
+    return true;
+  });
+
+  const getHeroConfig = () => {
+    if (user?.role === 'adm') return { label: 'Ver Alertas Urgentes', path: '/admin/alertas', desc: 'Sua central de inteligência está operacional e monitorando 14 protocolos ativos.' };
+    if (user?.role === 'ong') return { label: 'Gerenciar Conteúdos', path: '/admin/conteudos', desc: 'Central de curadoria e apoio à rede de proteção.' };
+    if (user?.role === 'funcionario') {
+      if (['agente', 'policial'].includes(user.especialidade)) {
+        return { label: 'Abrir Mapa Tático', path: '/admin/mapa', desc: 'Monitoramento em tempo real do setor central.' };
+      }
+      return { label: 'Central de Chat', path: '/admin/atendimentos-chat', desc: 'Inicie sessões de acolhimento e triagem humana.' };
+    }
+    return { label: 'Minha Área', path: '/admin', desc: 'Painel operacional.' };
+  };
+
+  const hero = getHeroConfig();
 
   return (
     <>
@@ -441,15 +466,14 @@ const AdminHome = () => {
               </h2>
               <p className="text-text-muted text-lg font-medium leading-relaxed opacity-80">
                 Bem-vindo de volta,{' '}
-                <span className="text-white font-black">{user?.nome.split(' ')[0]}</span>. Sua central
-                de inteligência está operacional e monitorando 14 protocolos ativos no momento.
+                <span className="text-white font-black">{user?.nome.split(' ')[0]}</span>. {hero.desc}
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-4">
                 <Link
-                  to="/admin/alertas"
+                  to={hero.path}
                   className="bg-brand-primary hover:bg-[#7a6cf0] text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-2"
                 >
-                  Ver Alertas Urgentes <ArrowRight size={16} />
+                  {hero.label} <ArrowRight size={16} />
                 </Link>
                 <button className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
                   Configurações Base
