@@ -1,813 +1,411 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  MapPin, Users, Shield, Navigation, Search,
-  Activity, AlertTriangle, ChevronRight, Crosshair,
-  Maximize2, Scan, ArrowLeft, Filter
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { 
+  Shield, Navigation, Bell, AlertCircle, 
+  ArrowLeft, Radio, UserCheck, Power, Activity,
+  Users, AlertTriangle
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
-/* ─────────────────────────────────────────
-   MOCK DATA  (substitua pelos hooks reais)
-───────────────────────────────────────── */
-const MOCK_FUNCIONARIOS = [
-  { id: 1, nome: 'André Ferreira', especialidade: 'assistente', area: 'Norte', ativo: true,  lat: -23.1620, lng: -45.8750 },
-  { id: 2, nome: 'Pedro Almeida',  especialidade: 'psicologo',  area: 'Sul',   ativo: true,  lat: -23.1950, lng: -45.8900 },
-  { id: 3, nome: 'Carla Souza',    especialidade: 'assistente', area: 'Leste', ativo: false, lat: -23.1788, lng: -45.8200 },
-  { id: 4, nome: 'Lucas Mendes',   especialidade: 'psicologo',  area: null,    ativo: true,  lat: null,     lng: null      },
-];
+/* ─────────────────────────────────────────────────────────────
+   ESTILOS GLOBAIS (Premium Dark Tactical)
+───────────────────────────────────────────────────────────── */
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&family=Inter:wght@400;700;900&display=swap');
 
-const MOCK_ONGS = [
-  { id: 10, nome: 'ONG Vida Nova',      area: 'Norte', lat: -23.1500, lng: -45.8800 },
-  { id: 11, nome: 'Instituto Renascer', area: 'Sul',   lat: -23.2000, lng: -45.8700 },
-];
+:root {
+  --brand: #8B6FFF;
+  --brand-lo: rgba(139, 111, 255, 0.12);
+  --brand-glow: rgba(139, 111, 255, 0.4);
+  --emer: #FF3B6B;
+  --emer-lo: rgba(255, 59, 107, 0.12);
+  --ok: #00E5A0;
+  --ok-lo: rgba(0, 229, 160, 0.12);
+  --warn: #FFB340;
+  --warn-lo: rgba(255, 179, 64, 0.12);
+  --bg: #04040F;
+  --panel: rgba(8, 8, 24, 0.85);
+  --border: rgba(139, 111, 255, 0.18);
+  --border-lo: rgba(255, 255, 255, 0.05);
+  --text: #E8E6FF;
+  --text-dim: rgba(232, 230, 255, 0.5);
+  --font: 'Exo 2', 'Inter', sans-serif;
+  --mono: 'Share Tech Mono', monospace;
+}
 
-const MOCK_ALERTS = [
-  { id: 101, user: 'Vítima Anônima', location: 'R. das Flores, 52', lat: -23.1700, lng: -45.8600, urgency: 'high' },
-  { id: 102, user: 'Maria S.',       location: 'Av. Brasil, 310',   lat: -23.1900, lng: -45.9000, urgency: 'medium' },
-  { id: 103, user: 'Ocorrência #082', location: 'Pça. da Matriz, 15', lat: -23.1850, lng: -45.8800, urgency: 'high' },
-  { id: 104, user: 'Usuária #441',   location: 'R. Sete de Setembro', lat: -23.1600, lng: -45.8900, urgency: 'low' },
-  { id: 105, user: 'Alerta SOS',     location: 'Proximidades do Parque', lat: -23.2000, lng: -45.8500, urgency: 'high' },
-  { id: 106, user: 'Chamado Ativo',  location: 'Setor Sul - Quadra 4', lat: -23.2200, lng: -45.8950, urgency: 'medium' },
-];
+.nira-map-root { width: 100%; height: 100vh; font-family: var(--font); color: var(--text); position: relative; overflow: hidden; background: var(--bg); }
+#nira-map-engine { position: absolute; inset: 0; z-index: 0; }
+.leaflet-container { background: #030310 !important; filter: contrast(1.1) brightness(0.6) saturate(1.2) hue-rotate(210deg); }
+.leaflet-vignette { position: absolute; inset: 0; pointer-events: none; z-index: 10; background: radial-gradient(circle at center, transparent 30%, rgba(4, 4, 15, 0.8) 100%); box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.9); }
+.leaflet-grid-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 11; opacity: 0.03; background-image: linear-gradient(rgba(139, 111, 255, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 111, 255, 0.5) 1px, transparent 1px); background-size: 50px 50px; }
+.leaflet-control-zoom { border: none !important; margin: 30px !important; }
+.leaflet-control-zoom a { width: 44px !important; height: 44px !important; line-height: 44px !important; border-radius: 14px !important; background: var(--panel) !important; border: 1px solid var(--border) !important; color: var(--text) !important; backdrop-filter: blur(10px); margin-bottom: 8px !important; display: flex !important; align-items: center; justify-content: center; transition: all 0.3s ease; }
+.leaflet-popup-content-wrapper { background: var(--panel) !important; backdrop-filter: blur(20px); border: 1px solid var(--border) !important; border-radius: 18px !important; color: var(--text) !important; padding: 0 !important; overflow: hidden; }
+.glass { background: var(--panel); backdrop-filter: blur(25px) saturate(180%); border: 1px solid var(--border); }
+.glass-hover:hover { border-color: var(--brand); background: rgba(139, 111, 255, 0.05); }
+.sidebar-scroll::-webkit-scrollbar { width: 3px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-const ZONAS = [
-  { label: 'Norte',  color: '#9B8FFF', lat: -23.1100, lng: -45.8950 },
-  { label: 'Sul',    color: '#2ED573', lat: -23.2100, lng: -45.8750 },
-  { label: 'Leste',  color: '#FFC800', lat: -23.1700, lng: -45.8100 },
-  { label: 'Oeste',  color: '#FF8C42', lat: -23.1700, lng: -45.9600 },
-  { label: 'Centro', color: '#8B88B8', lat: -23.1788, lng: -45.8852 },
-];
+@keyframes pulse-ring { 0% { transform: scale(0.33); opacity: 0.8; } 80%, 100% { opacity: 0; transform: scale(1.5); } }
+.pulse-primary::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: var(--brand); animation: pulse-ring 2s infinite; }
+.scan-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--brand), transparent); animation: scan-y 10s linear infinite; pointer-events: none; opacity: 0.1; }
+@keyframes scan-y { from { transform: translateY(-100%); } to { transform: translateY(100vh); } }
+.slide-up { animation: slide-in-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes slide-in-bottom { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.tab-active { background: var(--brand) !important; color: #fff !important; }
+.allocation-crosshair { cursor: crosshair !important; }
 
-const ESPEC_LABEL = { assistente: 'Assistente Social', psicologo: 'Psicólogo(a)' };
-
-/* ─────────────────────────────────────────
-   CSS INJETADO
-───────────────────────────────────────── */
-const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap');
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body { background: #050508; overflow: hidden; }
-
-  .nira-root {
-    position: fixed; inset: 0;
-    font-family: 'Space Grotesk', sans-serif;
-    background: #050508;
-    color: #fff;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ── glassmorphism ── */
-  .glass {
-    background: rgba(11, 11, 22, 0.82);
-    backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(139, 126, 250, 0.13);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.04);
-  }
-  .glass-lo {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-  }
-
-  /* ── map engine ── */
-  #nira-map-engine {
-    position: absolute; inset: 0; z-index: 0;
-  }
-  .leaflet-container {
-    background: #f0f2f5 !important;
-  }
-  .leaflet-control-zoom {
-    border: none !important;
-    margin: 40px !important;
-  }
-  .leaflet-control-zoom a {
-    background: rgba(11,11,22,0.92) !important;
-    color: #fff !important;
-    border: 1px solid rgba(139,126,250,0.35) !important;
-    backdrop-filter: blur(10px);
-    width: 44px !important; height: 44px !important;
-    line-height: 44px !important;
-    border-radius: 14px !important;
-    margin-bottom: 10px !important;
-    display: flex !important;
-    align-items: center; justify-content: center;
-    font-weight: 700;
-    transition: all 0.3s;
-  }
-  .leaflet-control-zoom a:hover {
-    background: #8B7EFA !important;
-    transform: scale(1.1);
-  }
-  .leaflet-popup-content-wrapper {
-    background: rgba(10,10,20,0.97) !important;
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(139,126,250,0.5) !important;
-    border-radius: 20px !important;
-    color: #fff !important;
-    padding: 0; overflow: hidden;
-    box-shadow: 0 0 40px rgba(139,126,250,0.25) !important;
-  }
-  .leaflet-popup-tip { background: rgba(139,126,250,0.5) !important; }
-  .leaflet-popup-close-button { color: rgba(255,255,255,0.3) !important; right: 12px !important; top: 12px !important; }
-  .leaflet-routing-container { display: none !important; }
-  .leaflet-attribution-flag { display: none !important; }
-  .leaflet-control-attribution { display: none !important; }
-
-  /* ── neon route ── */
-  .neon-route {
-    filter: drop-shadow(0 0 8px #8B7EFA);
-    stroke-dasharray: 12 10;
-    animation: dash-move 20s linear infinite;
-  }
-  @keyframes dash-move { to { stroke-dashoffset: -1000; } }
-
-  /* ── scan line overlay ── */
-  .scan-line {
-    display: none;
-  }
-
-  /* ── vignette ── */
-  .vignette {
-    display: none;
-  }
-
-  /* ── grid dots ── */
-  .map-grid {
-    position: absolute; inset: 0; pointer-events: none; z-index: 11; opacity: 0.07;
-    background-image: radial-gradient(circle, #8B7EFA 1px, transparent 1px);
-    background-size: 44px 44px;
-  }
-
-  /* ── interface overlay ── */
-  .overlay {
-    position: absolute; inset: 0; z-index: 30;
-    padding: 24px;
-    display: flex; flex-direction: column;
-    pointer-events: none;
-  }
-  .overlay > * { pointer-events: auto; }
-
-  /* ── marker glow ── */
-  .marker-glow { filter: drop-shadow(0 0 12px #8B7EFA) drop-shadow(0 0 4px #fff); }
-  .marker-ong  { filter: drop-shadow(0 0 12px #34D399); }
-
-  /* ── Custom SOS Marker ── */
-  .sos-marker-container {
-    position: relative;
-    width: 40px;
-    height: 40px;
-  }
-  .sos-marker-dot {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 14px; height: 14px;
-    background: #FF3D6B;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    z-index: 2;
-    box-shadow: 0 0 15px #FF3D6B;
-  }
-  .sos-marker-pulse {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 14px; height: 14px;
-    background: #FF3D6B;
-    border-radius: 50%;
-    animation: sos-pulse-ring 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-  }
-  @keyframes sos-pulse-ring {
-    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-    100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
-  }
-
-  /* ── scrollbar ── */
-  .custom-scroll::-webkit-scrollbar { width: 3px; }
-  .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-  .custom-scroll::-webkit-scrollbar-thumb { background: rgba(139,126,250,0.35); border-radius: 10px; }
-
-  /* ── pulse ── */
-  @keyframes ping {
-    0%    { transform: scale(1); opacity: 0.6; }
-    100%  { transform: scale(2.8); opacity: 0; }
-  }
-  .sos-ping { animation: ping 1.6s ease-out infinite; }
-  .sos-ping2 { animation: ping 1.6s ease-out 0.5s infinite; }
-
-  /* ── toast ── */
-  @keyframes slide-in {
-    from { transform: translateX(120%); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
-  }
-  .toast-anim { animation: slide-in 0.5s cubic-bezier(.16,1,.3,1) forwards; }
-
-  /* ── status dot ── */
-  .dot-online  { background: #10b981; box-shadow: 0 0 10px #10b981; }
-  .dot-busy    { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
-  .dot-offline { background: rgba(255,255,255,0.15); }
-
-  /* ── brand colors ── */
-  :root {
-    --brand:    #8B7EFA;
-    --emer:     #FF3D6B;
-    --success:  #34D399;
-    --warn:     #f59e0b;
-    --bg-main:  #050508;
-    --bg-panel: #0B0B16;
-    --mono: 'JetBrains Mono', monospace;
-  }
-
-  input::placeholder { color: rgba(255,255,255,0.2); }
-  input:focus { outline: none; }
+.tactical-tooltip {
+  background: #080818 !important;
+  border: 1px solid var(--brand) !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+  font-family: var(--font) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 4px 8px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+}
+.leaflet-tooltip-top:before { border-top-color: var(--brand) !important; }
 `;
 
-/* ─────────────────────────────────────────
-   POPUP HTML
-───────────────────────────────────────── */
-const agentPopup = (f) => `
-  <div style="padding:16px 18px; background:#fff; min-width:220px; font-family:'Space Grotesk',sans-serif; color: #111; border-radius: 12px">
-    <p style="margin:0 0 2px; font-size:10px; font-weight:900; color:#8B7EFA; text-transform:uppercase; letter-spacing:2px">Unidade de Campo</p>
-    <p style="margin:0; font-size:16px; font-weight:800; color:#111">${f.nome}</p>
-    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.06); display:flex; align-items:center; gap:8px">
-      <div style="width:8px; height:8px; background:#34D399; border-radius:50%; flex-shrink:0"></div>
-      <p style="margin:0; font-size:10px; color:#666; font-weight:700; text-transform:uppercase">${f.area || 'DISPONÍVEL'}</p>
-    </div>
-    <button onclick="window.allocateAgent(${f.id})" style="width:100%; margin-top:12px; padding:10px; background:#8B7EFA; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:12px">Revezar / Alocar</button>
-  </div>`;
+const INITIAL_SOS = [
+  { id: 101, ticketCode: 'NIRA-101', urgency: 'alta',    lat: -23.1750, lng: -45.8650, time: '12:45', desc: 'Sinal de pânico recebido' },
+  { id: 103, ticketCode: 'NIRA-103', urgency: 'critica', lat: -23.1850, lng: -45.8800, time: '13:05', desc: 'Protocolo de emergência nível 4' },
+  { id: 104, ticketCode: 'NIRA-104', urgency: 'media',   lat: -23.1900, lng: -45.8700, time: '14:20', desc: 'Solicitação de apoio preventivo' },
+];
 
-const ongPopup = (o) => `
-  <div style="padding:16px 18px; background:#0B0B16; min-width:190px; font-family:'Space Grotesk',sans-serif">
-    <p style="margin:0 0 2px; font-size:9px; font-weight:900; color:#34D399; text-transform:uppercase; letter-spacing:2.5px">ONG Parceira</p>
-    <p style="margin:0; font-size:15px; font-weight:800; color:#fff">${o.nome}</p>
-    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:8px">
-      <div style="width:7px; height:7px; background:#34D399; border-radius:50%; box-shadow: 0 0 8px #34D399"></div>
-      <p style="margin:0; font-size:9px; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:1.5px">Disponível — ${o.area}</p>
-    </div>
-  </div>`;
-
-const sosPopup = (a) => `
-  <div style="padding:16px 18px; background:#fff; min-width:220px; font-family:'Space Grotesk',sans-serif; color: #111; border-radius: 12px">
-    <p style="margin:0 0 2px; font-size:10px; font-weight:900; color:#FF3D6B; text-transform:uppercase; letter-spacing:2px">⚠ ALERTA S.O.S</p>
-    <p style="margin:0; font-size:16px; font-weight:800; color:#111">${a.user}</p>
-    <div style="margin-top:8px">
-      <p style="margin:0; font-size:11px; color:#666">${a.location}</p>
-    </div>
-    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.06)">
-       <button onclick="window.dispatchHelp(${a.id})" style="width:100%; padding:10px; background:#FF3D6B; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:12px">Despachar Ajuda Imediata</button>
-    </div>
-  </div>`;
-
-/* ═══════════════════════════════════════════
-   COMPONENTE PRINCIPAL
-═══════════════════════════════════════════ */
 export default function FullMapa({ onBack }) {
-  const [activeLayer, setActiveLayer] = useState('todos');
-  const [activeTab,   setActiveTab]   = useState('agentes');
-  const [search,      setSearch]      = useState('');
-  const [toast,       setToast]       = useState(null);
-  const [leafletReady, setLeafletReady] = useState(false);
-
-  const lMap       = useRef(null);
-  const markersRef = useRef({});
-  const routeRef   = useRef(null);
-
-  const [funcionarios, setFuncionarios] = useState(MOCK_FUNCIONARIOS);
-
-  const filtered = funcionarios.filter(f =>
-    f.nome.toLowerCase().includes(search.toLowerCase())
-  );
-
-  /* ── visibilidade por layer ── */
-  const layerVisible = (type) => {
-    if (activeLayer === 'todos') return true;
-    return activeLayer === type;
+  const navigate = useNavigate();
+  const { user, usuarios, alocarFuncionario, marcarNotifLida } = useAuth();
+  
+  const handleBack = () => {
+    if (onBack) onBack();
+    else navigate(-1);
   };
 
-  /* ── 1. Carregar Leaflet ── */
+  const [viewMode, setViewMode] = useState('agent'); // Default para seguro
+  const [mapReady, setMapReady] = useState(false);
+  
+  // Sincroniza o modo de visão com o papel do usuário logado
   useEffect(() => {
-    if (window.L && window.L.Routing) { setLeafletReady(true); return; }
+    if (user?.role === 'adm' || user?.role === 'admin') {
+      setViewMode('admin');
+    } else {
+      setViewMode('agent');
+    }
+  }, [user]);
+  const [sosAlerts] = useState(INITIAL_SOS);
+  const [selectedAgentId, setSelectedAgentId] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [allocationMode, setAllocationMode] = useState(false);
+  const [filters, setFilters] = useState({ agents: true, alerts: true });
+  
+  const initialSimId = user?.role === 'funcionario' ? user.id : (usuarios.find(u => u.role === 'funcionario')?.id || 5);
+  const [simulateAgentId, setSimulateAgentId] = useState(initialSimId);
 
-    const addLink = (id, href) => {
-      if (!document.getElementById(id)) {
-        const el = document.createElement('link');
-        el.id = id; el.rel = 'stylesheet'; el.href = href;
-        document.head.appendChild(el);
-      }
-    };
-    addLink('lf-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-    addLink('lf-rm-css', 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css');
+  const mapRef = useRef(null);
+  const markersGroupRef = useRef(null);
+  const zonesGroupRef = useRef(null);
+  const routeRef = useRef(null);
 
-    const s1 = document.createElement('script');
-    s1.src   = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    s1.onload = () => {
-      const s2 = document.createElement('script');
-      s2.src   = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js';
-      s2.onload = () => setLeafletReady(true);
-      document.head.appendChild(s2);
-    };
-    document.head.appendChild(s1);
+  const agents = usuarios.filter(u => u.role === 'funcionario');
+  const currentAgent = agents.find(a => a.id === simulateAgentId) || agents[0];
+
+  const pushNotification = useCallback((title, msg, id = Date.now(), type = 'info') => {
+    setNotifications(prev => [{ id, title, msg, time: 'Agora', new: true, type }, ...prev.slice(0, 4)]);
   }, []);
 
-  /* ── 2. Inicializar Mapa ── */
   useEffect(() => {
-    if (!leafletReady || lMap.current) return;
-    const L = window.L;
-
-    const map = L.map('nira-map-engine', {
-      center: [-23.1788, -45.8852],
-      zoom: 14,
-      zoomControl: false,
-      attributionControl: false,
-    });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-    
-    // Globals for buttons
-    window.allocateAgent = (id) => showToast(`Alocando agente #${id} para zona de patrulha...`);
-    window.dispatchHelp = (id) => showToast(`UNIDADE EM DESLOCAMENTO para ocorrência #${id}!`);
-
-    lMap.current = map;
-    updateMarkers(map);
-  }, [leafletReady]);
-
-  /* ── 3. Atualizar marcadores ── */
-  useEffect(() => {
-    if (lMap.current) updateMarkers(lMap.current);
-  }, [funcionarios, activeLayer]);
-
-  const makeCircleIcon = (color, cls) => {
-    if (!window.L) return null;
-    const L = window.L;
-    return L.divIcon({
-      className: '',
-      html: `
-        <div style="position:relative;width:36px;height:36px">
-          <div style="position:absolute;inset:0;background:${color};border-radius:50%;opacity:0.25;animation:ping 1.8s ease-out infinite"></div>
-          <div style="position:absolute;inset:4px;background:${color};border:2.5px solid rgba(255,255,255,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 10px ${color})"></div>
-        </div>`,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18],
-    });
-  };
-
-  const updateMarkers = (map) => {
-    if (!map || !window.L) return;
-    const L = window.L;
-
-    /* limpar marcadores removidos */
-    Object.keys(markersRef.current).forEach(key => {
-      map.removeLayer(markersRef.current[key]);
-      delete markersRef.current[key];
-    });
-
-    /* agentes */
-    if (layerVisible('agentes')) {
-      funcionarios.forEach(f => {
-        if (!f.lat || !f.lng) return;
-        const m = L.circleMarker([f.lat, f.lng], {
-          radius: 11, fillColor: '#8B7EFA', color: '#fff',
-          weight: 2.5, fillOpacity: 1, className: 'marker-glow',
-        }).addTo(map).bindPopup(agentPopup(f), { closeButton: false, offset: [0, -14] });
-        markersRef.current[`ag-${f.id}`] = m;
-      });
-    }
-
-    /* ongs */
-    if (layerVisible('ongs')) {
-      MOCK_ONGS.forEach(o => {
-        const m = L.circleMarker([o.lat, o.lng], {
-          radius: 11, fillColor: '#34D399', color: '#fff',
-          weight: 2.5, fillOpacity: 1, className: 'marker-ong',
-        }).addTo(map).bindPopup(ongPopup(o), { closeButton: false, offset: [0, -14] });
-        markersRef.current[`ong-${o.id}`] = m;
-      });
-    }
-
-    /* SOS */
-    if (layerVisible('sos')) {
-      MOCK_ALERTS.forEach(a => {
-        const sosIcon = L.divIcon({
-          className: 'sos-marker-container',
-          html: `<div class="sos-marker-pulse"></div><div class="sos-marker-pulse" style="animation-delay:0.5s"></div><div class="sos-marker-dot"></div>`,
-          iconSize: [40, 40],
-          iconAnchor: [20, 20]
+    if (viewMode === 'agent' && currentAgent?.notificacoes) {
+      const naoLidas = currentAgent.notificacoes.filter(n => !n.lida);
+      naoLidas.forEach(n => {
+        setNotifications(prev => {
+          if (prev.find(p => p.id === n.id)) return prev;
+          return [{ id: n.id, title: n.titulo, msg: n.texto, time: n.data, new: true, type: 'alert', posOrigem: n.posOrigem, posDestino: n.posDestino }, ...prev];
         });
-
-        const m = L.marker([a.lat, a.lng], {
-          icon: sosIcon,
-          className: 'marker-sos'
-        }).addTo(map)
-          .bindPopup(sosPopup(a), { closeButton: false, offset: [0, -5] })
-          .bindTooltip(a.user, { permanent: true, direction: 'top', className: 'sos-tooltip' });
-        markersRef.current[`sos-${a.id}`] = m;
       });
     }
-  };
+  }, [currentAgent, viewMode]);
 
-  /* ── GPS routing ── */
-  const startGPS = (f) => {
-    if (!lMap.current || !window.L?.Routing) return;
+  const handleMapClick = useCallback((e) => {
+    if (!allocationMode || !selectedAgentId) return;
+    
+    const { lat, lng } = e.latlng;
+    const targetAgent = agents.find(a => a.id === selectedAgentId);
+    if (!targetAgent) return;
+    
     const L = window.L;
-    const dest = ZONAS[Math.floor(Math.random() * ZONAS.length)];
-    const start = f.lat ? [f.lat, f.lng] : [-23.1788, -45.8852];
+    L.popup()
+      .setLatLng([lat, lng])
+      .setContent(`
+        <div style="padding:15px; color:#fff; font-family:'Exo 2', sans-serif; background:#080818; border-radius:12px; border:1px solid #8B6FFF;">
+          <h4 style="margin:0 0 5px; font-size:14px; color:#8B6FFF; font-weight:900;">ALOCAR UNIDADE</h4>
+          <p style="margin:0 0 15px; font-size:11px; opacity:0.7;">Confirmar movimentação estratégica de ${targetAgent.nome}?</p>
+          <button id="confirm-alloc-btn" style="width:100%; padding:10px; background:#8B6FFF; border:none; border-radius:8px; color:#fff; font-weight:900; cursor:pointer; font-size:10px; letter-spacing:1px; box-shadow:0 0 15px rgba(139,111,255,0.4);">CONFIRMAR MISSÃO</button>
+        </div>
+      `).openOn(mapRef.current);
 
-    if (routeRef.current) lMap.current.removeControl(routeRef.current);
+    setTimeout(() => {
+      const btn = document.getElementById('confirm-alloc-btn');
+      if (btn) {
+        btn.onclick = () => {
+          alocarFuncionario(selectedAgentId, 'ZONA DE EXTRAÇÃO', lat, lng);
+          setAllocationMode(false);
+          mapRef.current.closePopup();
+          pushNotification('Comando Executado', `Agente ${targetAgent.nome} movido para novas coordenadas.`);
+        };
+      }
+    }, 150);
+  }, [allocationMode, selectedAgentId, agents, alocarFuncionario, pushNotification]);
 
-    routeRef.current = L.Routing.control({
-      waypoints: [L.latLng(...start), L.latLng(dest.lat, dest.lng)],
-      lineOptions: {
-        styles: [
-          { color: '#8B7EFA', opacity: 0.25, weight: 14 },
-          { color: '#fff',    opacity: 1,    weight: 2.5, className: 'neon-route' },
-        ],
-      },
-      addWaypoints: false, draggableWaypoints: false,
-      fitSelectedRoutes: true, createMarker: () => null,
-    }).addTo(lMap.current);
+  const startAgentGPS = (origem, destino) => {
+    if (!mapRef.current || !window.L || !origem || !destino) return;
+    if (routeRef.current) mapRef.current.removeLayer(routeRef.current);
+    
+    const L = window.L;
+    const line = L.polyline([[origem.lat, origem.lng], [destino.lat, destino.lng]], {
+      color: '#8B6FFF', weight: 6, opacity: 0.9, dashArray: '15, 20'
+    }).addTo(mapRef.current);
+    
+    // Adicionar pin de destino específico
+    const destIcon = L.divIcon({
+      className: 'dest-marker',
+      html: `<div style="width:20px; height:20px; background:#00E5A0; border:3px solid #fff; border-radius:50%; box-shadow:0 0 20px #00E5A0;"></div>`,
+      iconSize: [20, 20], iconAnchor: [10, 10]
+    });
+    L.marker([destino.lat, destino.lng], { icon: destIcon }).addTo(mapRef.current);
 
-    setFuncionarios(prev =>
-      prev.map(x => x.id === f.id ? { ...x, area: dest.label, lat: dest.lat, lng: dest.lng } : x)
-    );
-    showToast(`GPS ATIVO // Rota: ${f.nome} → ${dest.label}`);
+    routeRef.current = line;
+    mapRef.current.fitBounds(line.getBounds(), { padding: [100, 100], maxZoom: 16 });
+    pushNotification('Navegação Ativada', 'Traçando rota entre posições...');
   };
 
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 5000);
-  };
+  useEffect(() => {
+    if (window.L) { setMapReady(true); return; }
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = () => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+      setMapReady(true);
+    };
+    document.head.appendChild(script);
+  }, []);
 
-  const sosCount = MOCK_ALERTS.length;
-  const onlineCount = funcionarios.filter(f => f.ativo).length;
+  const renderMapContent = useCallback(() => {
+    if (!mapRef.current || !window.L) return;
+    const L = window.L;
+    markersGroupRef.current.clearLayers();
+    zonesGroupRef.current.clearLayers();
 
-  /* ─────────── RENDER ─────────── */
+    if (filters.agents) {
+      agents.forEach(a => {
+        if (!a.lat || !a.lng) return;
+        const isActive = a.id === simulateAgentId;
+        const color = isActive ? '#00E5A0' : '#8B6FFF';
+        
+        L.circle([a.lat, a.lng], { radius: 800, color, fillOpacity: 0.05, weight: 1, dashArray: '8, 8' }).addTo(zonesGroupRef.current);
+        
+        const icon = L.divIcon({
+          className: 'custom-marker',
+          html: `
+            <div style="position:relative; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+              <div style="position:absolute; inset:0; background:${color}; opacity:0.15; border-radius:14px; blur:10px;"></div>
+              <div style="position:relative; width:34px; height:34px; border-radius:10px; background:${color}30; border:2px solid ${color}; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px); color:#fff; box-shadow: 0 0 15px ${color}50;">
+                <span style="font-size:16px;">${isActive ? '👤' : a.nome.charAt(0)}</span>
+              </div>
+            </div>`,
+          iconSize: [44, 44], iconAnchor: [22, 22]
+        });
+        
+        L.marker([a.lat, a.lng], { icon })
+          .addTo(markersGroupRef.current)
+          .bindTooltip(`<b>${a.nome}</b>`, { permanent: false, direction: 'top', className: 'tactical-tooltip' });
+      });
+    }
+
+    if (filters.alerts) {
+      sosAlerts.forEach(s => {
+        const icon = L.divIcon({
+          className: 'sos-marker',
+          html: `<div style="width:50px; height:50px; background:#FF3B6B; border-radius:50%; opacity:0.2; animation:pulse-ring 2s infinite; position:absolute; inset:0;"></div><div style="width:20px; height:20px; background:#FF3B6B; border:2px solid #fff; border-radius:50%; position:absolute; top:15px; left:15px;"></div>`,
+          iconSize: [50, 50], iconAnchor: [25, 25]
+        });
+        L.marker([s.lat, s.lng], { icon })
+          .addTo(markersGroupRef.current)
+          .bindTooltip(`<b style="color:#FF3B6B">CHAMADO: ${s.ticketCode}</b>`, { direction: 'top' });
+      });
+    }
+  }, [agents, sosAlerts, simulateAgentId, filters]);
+
+  useEffect(() => {
+    if (!mapReady || mapRef.current) return;
+    const map = window.L.map('nira-map-engine', { center: [-23.1788, -45.8852], zoom: 14, zoomControl: false, attributionControl: false });
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    markersGroupRef.current = window.L.layerGroup().addTo(map);
+    zonesGroupRef.current = window.L.layerGroup().addTo(map);
+    mapRef.current = map;
+  }, [mapReady]);
+
+  // Re-vincula o evento de clique sempre que o modo de alocação ou o agente selecionado mudar
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.off('click');
+    mapRef.current.on('click', handleMapClick);
+  }, [handleMapClick]);
+
+  useEffect(() => { renderMapContent(); }, [usuarios, renderMapContent, filters]);
+
   return (
-    <>
-      <style>{GLOBAL_CSS}</style>
+    <div className={`nira-map-root ${allocationMode ? 'allocation-crosshair' : ''}`}>
+      <style>{CSS}</style>
+      <div id="nira-map-engine" />
+      <div className="leaflet-vignette" />
+      <div className="scan-line" />
 
-      <div className="nira-root">
-        {/* MAP ENGINE */}
-        <div id="nira-map-engine" />
-
-        {/* OVERLAYS */}
-        <div className="vignette" />
-        <div className="map-grid" />
-        <div className="scan-line" />
-
-        {/* INTERFACE */}
-        <div className="overlay">
-
-          {/* ════ TOP BAR ════ */}
-          <header style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:16 }}>
-
-            {/* Back + Brand */}
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <button
-                onClick={() => onBack?.()}
-                className="glass"
-                style={{
-                  width:52, height:52, borderRadius:16,
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  cursor:'pointer', border:'1px solid rgba(139,126,250,0.2)',
-                  transition:'all 0.3s', flexShrink:0,
-                }}
-                onMouseEnter={e => e.currentTarget.style.background='rgba(139,126,250,0.25)'}
-                onMouseLeave={e => e.currentTarget.style.background=''}
-              >
-                <ArrowLeft size={22} color="#fff" />
-              </button>
-
-              <div className="glass" style={{
-                borderRadius:24, padding:'12px 22px',
-                borderLeft:'5px solid var(--brand)',
-                display:'flex', alignItems:'center', gap:14,
-              }}>
-                <div style={{
-                  width:40, height:40, borderRadius:12,
-                  background:'rgba(139,126,250,0.15)',
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                }}>
-                  <Navigation size={20} color="var(--brand)" style={{ transform:'rotate(45deg)' }} />
-                </div>
-                <div>
-                  <h1 style={{ fontSize:11, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.35em', lineHeight:1 }}>
-                    GeoMonitor v3.0
-                  </h1>
-                  <p style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.18em', marginTop:5, display:'flex', alignItems:'center', gap:6 }}>
-                    <span style={{ width:6, height:6, borderRadius:'50%', background:'#10b981', boxShadow:'0 0 8px #10b981', display:'inline-block', animation:'none' }} />
-                    Sistema Online · Link Estável
-                  </p>
-                </div>
-              </div>
+      <div style={{ position: 'absolute', inset: 0, zIndex: 150, pointerEvents: 'none', padding: '24px', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ display: 'flex', gap: '16px', alignItems: 'center', pointerEvents: 'auto', zIndex: 200, position: 'relative' }}>
+          <button onClick={handleBack} className="glass glass-hover" style={{ width: '52px', height: '52px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: 'none' }}>
+            <ArrowLeft size={20} color="#fff" />
+          </button>
+          <div className="glass" style={{ height: '52px', borderRadius: '16px', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <div className="pulse-primary" style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8B6FFF' }} />
+            <div>
+              <h1 style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '2px', margin: 0 }}>NIRA TACTICAL</h1>
+              <p style={{ fontSize: '9px', opacity: 0.5, margin: 0 }}>SISTEMA DE MONITORAMENTO EM TEMPO REAL</p>
             </div>
+          </div>
+          <div className="glass" style={{ marginLeft: '12px', borderRadius: '16px', padding: '4px', display: 'flex', gap: '4px' }}>
+            <button 
+              onClick={() => setFilters(f => ({ ...f, agents: !f.agents }))} 
+              className={filters.agents ? 'tab-active' : ''} 
+              style={{ height: '44px', padding: '0 15px', borderRadius: '12px', background: 'transparent', color: '#fff', fontSize: '10px', fontWeight: '800', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <Users size={14} /> AGENTES {filters.agents ? 'ON' : 'OFF'}
+            </button>
+            <button 
+              onClick={() => setFilters(f => ({ ...f, alerts: !f.alerts }))} 
+              className={filters.alerts ? 'tab-active' : ''} 
+              style={{ height: '44px', padding: '0 15px', borderRadius: '12px', background: 'transparent', color: '#fff', fontSize: '10px', fontWeight: '800', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <AlertTriangle size={14} /> ALERTAS {filters.alerts ? 'ON' : 'OFF'}
+            </button>
+          </div>
 
-            {/* Search */}
-            <div className="glass" style={{ flex:1, maxWidth:380, borderRadius:20, padding:'10px 18px', display:'flex', alignItems:'center', gap:12 }}>
-              <Search size={16} color="var(--brand)" style={{ flexShrink:0 }} />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="IDENTIFICAR UNIDADE..."
-                style={{
-                  background:'transparent', border:'none', color:'#fff',
-                  fontSize:10, fontWeight:700, fontFamily:'Space Grotesk',
-                  letterSpacing:'0.15em', textTransform:'uppercase', width:'100%',
-                }}
-              />
-            </div>
+          <div className="glass" style={{ marginLeft: 'auto', borderRadius: '16px', padding: '4px', display: 'flex', gap: '4px' }}>
+            <button 
+              onClick={() => setViewMode('admin')} 
+              className={viewMode === 'admin' ? 'tab-active' : ''} 
+              style={{ 
+                height: '44px', 
+                padding: '0 20px', 
+                borderRadius: '12px', 
+                background: 'transparent', 
+                color: (user?.role === 'adm' || user?.role === 'admin' || !user) ? '#fff' : 'rgba(255,255,255,0.2)', 
+                fontSize: '10px', 
+                fontWeight: '800', 
+                cursor: (user?.role === 'adm' || user?.role === 'admin' || !user) ? 'pointer' : 'not-allowed', 
+                border: 'none',
+                opacity: (user?.role === 'adm' || user?.role === 'admin' || !user) ? 1 : 0.5
+              }}
+              disabled={user?.role !== 'adm' && user?.role !== 'admin' && !!user}
+            >
+              CENTRAL
+            </button>
+            <button 
+              onClick={() => setViewMode('agent')} 
+              className={viewMode === 'agent' ? 'tab-active' : ''} 
+              style={{ height: '44px', padding: '0 20px', borderRadius: '12px', background: 'transparent', color: '#fff', fontSize: '10px', fontWeight: '800', cursor: 'pointer', border: 'none' }}
+            >
+              AGENTE
+            </button>
+          </div>
+        </header>
 
-            {/* Layer Filters - Simplified to 2 */}
-            <div className="glass" style={{ borderRadius:20, padding:6, display:'flex', gap:6 }}>
-              {['todos', 'sos'].map(l => (
-                <button
-                  key={l}
-                  onClick={() => setActiveLayer(l)}
-                  style={{
-                    padding:'8px 24px', borderRadius:14, border:'none', cursor:'pointer',
-                    fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em',
-                    fontFamily:'Space Grotesk',
-                    background: activeLayer === l ? 'var(--brand)' : 'rgba(255,255,255,0.05)',
-                    color:      activeLayer === l ? '#fff' : 'rgba(255,255,255,0.35)',
-                    transition:'all 0.25s',
-                  }}
-                >
-                  {l === 'todos' ? 'Vista Geral' : 'Emergências'}
-                </button>
-              ))}
-            </div>
-
-            {/* Live counter */}
-            <div className="glass" style={{ borderRadius:20, padding:'12px 22px', display:'flex', alignItems:'center', gap:18, flexShrink:0 }}>
-              <div>
-                <p style={{ fontSize:8, fontWeight:900, color:'var(--brand)', textTransform:'uppercase', letterSpacing:'0.2em' }}>Online</p>
-                <p style={{ fontSize:28, fontWeight:900, color:'#fff', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
-                  {String(onlineCount).padStart(2,'0')}
-                </p>
-              </div>
-              <div style={{ width:1, height:36, background:'rgba(255,255,255,0.08)' }} />
-              <div>
-                <p style={{ fontSize:8, fontWeight:900, color:'var(--emer)', textTransform:'uppercase', letterSpacing:'0.2em' }}>S.O.S</p>
-                <p style={{ fontSize:28, fontWeight:900, color:'var(--emer)', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
-                  {String(sosCount).padStart(2,'0')}
-                </p>
-              </div>
-              <Activity size={24} color="var(--brand)" style={{ opacity:0.7 }} />
-            </div>
-          </header>
-
-          {/* ════ BODY ════ */}
-          <div style={{ flex:1, display:'flex', gap:20, marginTop:20, minHeight:0 }}>
-
-            {/* ─── SIDEBAR ─── */}
-            <aside style={{ width:360, display:'flex', flexDirection:'column', gap:14, overflow:'hidden' }}>
-
-              {/* Stats rápidos */}
-              <div className="glass" style={{ borderRadius:24, padding:'18px 22px' }}>
-                <p style={{ fontSize:9, fontWeight:900, color:'var(--brand)', textTransform:'uppercase', letterSpacing:'0.22em', marginBottom:14, display:'flex', alignItems:'center', gap:8 }}>
-                  <Activity size={13} color="var(--brand)" /> Status em Tempo Real
-                </p>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-                  {[
-                    { label:'Equipes Campo', value:'08', color:'#fff' },
-                    { label:'S.O.S Ativos',  value:String(sosCount), color:'var(--emer)' },
-                    { label:'ONGs Ativas',   value:String(MOCK_ONGS.length), color:'var(--success)' },
-                    { label:'Zonas Cobertas',value:'05', color:'var(--warn)' },
-                  ].map(s => (
-                    <div key={s.label} className="glass-lo" style={{ borderRadius:16, padding:'12px 14px' }}>
-                      <p style={{ fontSize:8, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:4 }}>{s.label}</p>
-                      <p style={{ fontSize:26, fontWeight:900, color:s.color, lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{s.value}</p>
+        <div style={{ flex: 1, display: 'flex', gap: '20px', marginTop: '20px', minHeight: 0 }}>
+          <aside style={{ width: '380px', pointerEvents: 'auto', display: 'flex', flexDirection: 'column' }}>
+            {viewMode === 'admin' ? (
+              <div className="glass" style={{ borderRadius: '24px', padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontSize: '10px', color: '#8B6FFF', fontWeight: '900', letterSpacing: '1px', marginBottom: 20, textTransform: 'uppercase' }}>Unidades de Campo</h3>
+                <div className="sidebar-scroll" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {agents.map(a => (
+                    <div key={a.id} onClick={() => setSelectedAgentId(a.id)} className="glass-hover" style={{ padding: '15px', borderRadius: '16px', cursor: 'pointer', background: selectedAgentId === a.id ? 'rgba(139,111,255,0.1)' : 'transparent', border: `1px solid ${selectedAgentId === a.id ? '#8B6FFF' : 'rgba(255,255,255,0.05)'}`, transition: '0.3s' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                           <Shield size={14} color="#8B6FFF" />
+                           <span style={{ fontWeight: '800', fontSize: '13px' }}>{a.nome}</span>
+                        </div>
+                        {selectedAgentId === a.id && <button onClick={(e) => { e.stopPropagation(); setAllocationMode(true); }} style={{ padding: '6px 12px', background: '#8B6FFF', borderRadius: '8px', fontSize: '10px', fontWeight: '900', color: '#fff', border: 'none', cursor: 'pointer' }}>ALOCAR</button>}
+                      </div>
+                      <p style={{ margin: '8px 0 0 26px', fontSize: '10px', opacity: 0.5 }}>{a.area || 'ESTAÇÃO BASE'}</p>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Tabs */}
-              <div className="glass" style={{ borderRadius:18, padding:5, display:'flex', gap:4 }}>
-                {[
-                  { id:'agentes', label:'Unidades', icon:<Shield size={14}/> },
-                  { id:'zonas',   label:'Perímetros', icon:<Scan size={14}/> },
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveTab(t.id)}
-                    style={{
-                      flex:1, padding:'12px 8px', borderRadius:14, border:'none', cursor:'pointer',
-                      display:'flex', alignItems:'center', justifyContent:'center', gap:8,
-                      fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em',
-                      fontFamily:'Space Grotesk',
-                      background: activeTab === t.id ? 'var(--brand)' : 'transparent',
-                      color:      activeTab === t.id ? '#fff' : 'rgba(255,255,255,0.28)',
-                      transition:'all 0.35s',
-                      boxShadow:  activeTab === t.id ? '0 0 20px rgba(139,126,250,0.35)' : 'none',
-                    }}
-                  >
-                    {t.icon} {t.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Lista */}
-              <div
-                className="glass custom-scroll"
-                style={{ flex:1, borderRadius:28, padding:'20px 16px', overflowY:'auto', display:'flex', flexDirection:'column', gap:10 }}
-              >
-                {activeTab === 'agentes' ? filtered.map(f => {
-                  const isOnline = f.ativo;
-                  const dotClass = isOnline ? (f.area ? 'dot-online' : 'dot-busy') : 'dot-offline';
-                  return (
-                    <div
-                      key={f.id}
-                      className="glass-lo"
-                      style={{
-                        borderRadius:20, padding:'16px 18px', cursor:'pointer',
-                        transition:'all 0.3s', position:'relative', overflow:'hidden',
-                        border:'1px solid rgba(255,255,255,0.05)',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.borderColor = 'rgba(139,126,250,0.4)';
-                        e.currentTarget.style.background = 'rgba(139,126,250,0.07)';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                      }}
-                    >
-                      {/* BG deco */}
-                      <div style={{ position:'absolute', top:-20, right:-20, width:80, height:80, borderRadius:'50%', background:'rgba(139,126,250,0.05)', pointerEvents:'none' }} />
-
-                      <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:14 }}>
-                        {/* Avatar */}
-                        <div style={{
-                          width:40, height:40, borderRadius:12,
-                          background:'rgba(139,126,250,0.12)',
-                          border:'1px solid rgba(139,126,250,0.22)',
-                          display:'flex', alignItems:'center', justifyContent:'center',
-                          fontSize:16, fontWeight:900, color:'var(--brand)', flexShrink:0,
-                        }}>
-                          {f.nome.charAt(0)}
-                        </div>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <p style={{ fontSize:13, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.05em', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                            {f.nome}
-                          </p>
-                          <p style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em', marginTop:2, display:'flex', alignItems:'center', gap:4 }}>
-                            <Shield size={10} color="var(--brand)" />
-                            {ESPEC_LABEL[f.especialidade] || f.especialidade}
-                          </p>
-                        </div>
-                        <div className={dotClass} style={{ width:10, height:10, borderRadius:'50%', flexShrink:0 }} />
-                      </div>
-
-                      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                        <div style={{
-                          display:'flex', alignItems:'center', gap:6,
-                          background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.07)',
-                          borderRadius:10, padding:'6px 10px', flex:1,
-                        }}>
-                          <MapPin size={12} color={f.lat ? 'var(--brand)' : 'rgba(255,255,255,0.2)'} />
-                          <span style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.55)', textTransform:'uppercase', letterSpacing:'0.15em' }}>
-                            {f.area || 'STANDBY'}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => startGPS(f)}
-                          style={{
-                            padding:'8px 14px', borderRadius:12, cursor:'pointer',
-                            background:'rgba(139,126,250,0.15)', border:'1px solid rgba(139,126,250,0.35)',
-                            color:'var(--brand)', fontSize:9, fontWeight:900, fontFamily:'Space Grotesk',
-                            textTransform:'uppercase', letterSpacing:'0.15em',
-                            display:'flex', alignItems:'center', gap:6,
-                            transition:'all 0.25s',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.background='var(--brand)'; e.currentTarget.style.color='#fff'; }}
-                          onMouseLeave={e => { e.currentTarget.style.background='rgba(139,126,250,0.15)'; e.currentTarget.style.color='var(--brand)'; }}
-                        >
-                          GPS <ChevronRight size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }) : ZONAS.map(z => (
-                  <div
-                    key={z.label}
-                    className="glass-lo"
-                    style={{
-                      borderRadius:20, padding:'16px 20px',
-                      border:'1px solid rgba(255,255,255,0.05)',
-                      display:'flex', flexDirection:'column', gap:12,
-                      transition:'all 0.3s', cursor:'default',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor='rgba(139,126,250,0.3)'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.05)'}
-                  >
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-                        <div style={{ width:4, height:36, borderRadius:4, background:z.color, boxShadow:`0 0 14px ${z.color}55`, flexShrink:0 }} />
-                        <div>
-                          <p style={{ fontSize:13, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.1em' }}>{z.label}</p>
-                          <p style={{ fontSize:8, fontWeight:700, color:'rgba(255,255,255,0.2)', textTransform:'uppercase', letterSpacing:'0.1em' }}>Zona de Cobertura</p>
-                        </div>
-                      </div>
-                      <div style={{ textAlign:'right' }}>
-                        <p style={{ fontSize:24, fontWeight:900, color:'#fff', lineHeight:1 }}>
-                          {String(funcionarios.filter(f=>f.area===z.label).length).padStart(2,'0')}
-                        </p>
-                        <p style={{ fontSize:8, fontWeight:900, color:'var(--brand)', textTransform:'uppercase' }}>AGS</p>
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => showToast(`Alocando reforço para a Zona ${z.label}...`)}
-                      style={{
-                        width:'100%', padding:'10px', borderRadius:12, cursor:'pointer',
-                        background:'rgba(139,126,250,0.1)', border:'1px solid rgba(139,126,250,0.2)',
-                        color:'var(--brand)', fontSize:9, fontWeight:900, fontFamily:'Space Grotesk',
-                        textTransform:'uppercase', letterSpacing:'0.15em', transition:'all 0.25s'
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background='var(--brand)'}
-                      onMouseLeave={e => e.currentTarget.style.background='rgba(139,126,250,0.1)'}
-                    >
-                      Alocar Agente Aqui
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </aside>
-
-            {/* ─── TOAST ─── */}
-            <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'flex-end', justifyContent:'flex-start', gap:12 }}>
-              {toast && (
-                <div
-                  className="glass toast-anim"
-                  style={{
-                    borderRadius:24, padding:'20px 28px',
-                    borderLeft:'7px solid var(--brand)',
-                    display:'flex', alignItems:'center', gap:18,
-                    maxWidth:480, boxShadow:'0 0 40px rgba(139,126,250,0.2)',
-                  }}
-                >
-                  <div style={{
-                    width:56, height:56, borderRadius:18,
-                    background:'rgba(139,126,250,0.15)', border:'1px solid rgba(139,126,250,0.3)',
-                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
-                  }}>
-                    <Navigation size={28} color="var(--brand)" />
-                  </div>
-                  <div>
-                    <p style={{ fontSize:9, fontWeight:900, color:'var(--brand)', textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:6 }}>Comando NIRA</p>
-                    <p style={{ fontSize:13, fontWeight:900, color:'#fff', letterSpacing:'0.1em', textTransform:'uppercase' }}>{toast}</p>
-                  </div>
+            ) : (
+              <div className="glass" style={{ borderRadius: '24px', padding: '25px', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                   <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(139,111,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <UserCheck size={24} color="#8B6FFF" />
+                   </div>
+                   <div>
+                      <h3 style={{ fontSize: '10px', color: '#8B6FFF', fontWeight: '900', margin: 0 }}>PERFIL AGENTE</h3>
+                      <p style={{ fontSize: '14px', fontWeight: '800', margin: 0 }}>OPERACIONAL ATIVO</p>
+                   </div>
                 </div>
-              )}
-            </div>
+                <select value={simulateAgentId} onChange={(e) => setSimulateAgentId(parseInt(e.target.value))} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(139,111,255,0.2)', padding: '14px', borderRadius: '16px', fontSize: '14px', fontWeight: '800', cursor: 'pointer' }}>
+                  {agents.map(a => <option key={a.id} value={a.id} style={{ background: '#04040F' }}>{a.nome}</option>)}
+                </select>
+                <div style={{ padding: '24px', background: 'rgba(0,229,160,0.06)', borderRadius: '20px', border: '1px solid rgba(0,229,160,0.2)', marginTop: 'auto' }}>
+                  <span style={{ fontSize: '10px', color: '#00E5A0', fontWeight: '900' }}>DESTINO ATUAL:</span>
+                  <p style={{ fontSize: '24px', fontWeight: '900', margin: '10px 0' }}>{currentAgent?.area || 'EM PATRULHA'}</p>
+                </div>
+              </div>
+            )}
+          </aside>
+
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', overflowY: 'auto' }}>
+            {notifications.map(n => (
+              <div key={n.id} className="glass slide-up" style={{ width: '360px', padding: '20px', borderRadius: '24px', borderLeft: `6px solid ${n.type === 'alert' ? '#FF3B6B' : '#8B6FFF'}`, pointerEvents: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+                <div style={{ display: 'flex', gap: '15px' }}>
+                   <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: n.type === 'alert' ? 'rgba(255,59,107,0.1)' : 'rgba(139,111,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {n.type === 'alert' ? <AlertCircle size={20} color="#FF3B6B" /> : <Bell size={20} color="#8B6FFF" />}
+                   </div>
+                   <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '900' }}>{n.title}</h4>
+                      <p style={{ margin: '8px 0 15px', fontSize: '12px', opacity: 0.6 }}>{n.msg}</p>
+                      {n.type === 'alert' && (
+                        <button 
+                          onClick={() => {
+                            if (n.posOrigem && n.posDestino) {
+                              startAgentGPS(n.posOrigem, n.posDestino);
+                              marcarNotifLida(n.id);
+                              setNotifications(prev => prev.filter(x => x.id !== n.id));
+                            }
+                          }} 
+                          className="glass-hover"
+                          style={{ width: '100%', padding: '12px', background: '#8B6FFF', borderRadius: '12px', color: '#fff', fontWeight: '900', border: 'none', cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', zIndex: 110 }}
+                        > 
+                          <Navigation size={14} className="fill-white" />
+                          VER NOVO LOCAL • ABRIR GPS 
+                        </button>
+                      )}
+                   </div>
+                </div>
+              </div>
+            ))}
           </div>
-
-          {/* ════ FOOTER ════ */}
-          <footer style={{ marginTop:20, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <div className="glass" style={{ borderRadius:20, padding:'12px 24px', display:'flex', alignItems:'center', gap:24 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <div style={{ width:8, height:8, borderRadius:'50%', background:'var(--brand)', boxShadow:'0 0 10px var(--brand)' }} />
-                <span style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.18em' }}>Agentes em Campo</span>
-              </div>
-              <div style={{ width:1, height:20, background:'rgba(255,255,255,0.08)' }} />
-              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <div style={{ width:8, height:8, borderRadius:'50%', background:'var(--emer)', boxShadow:'0 0 10px var(--emer)' }} />
-                <span style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.18em' }}>Emergências Ativas</span>
-              </div>
-              <div style={{ width:1, height:20, background:'rgba(255,255,255,0.08)' }} />
-              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <Shield size={11} color="var(--success)" />
-                <span style={{ fontFamily:'var(--mono)', fontSize:9, fontWeight:700, color:'var(--success)', textTransform:'uppercase', letterSpacing:'0.15em' }}>AES-256 ACTIVE</span>
-              </div>
-            </div>
-
-            <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-              <span style={{ fontFamily:'var(--mono)', fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.2)', textTransform:'uppercase', letterSpacing:'0.1em' }}>
-                23°10'43"S  45°53'6"W
-              </span>
-              {[Maximize2, Crosshair].map((Icon, i) => (
-                <button
-                  key={i}
-                  className="glass"
-                  style={{
-                    width:48, height:48, borderRadius:14, border:'1px solid rgba(255,255,255,0.07)',
-                    display:'flex', alignItems:'center', justifyContent:'center',
-                    cursor:'pointer', color:'rgba(255,255,255,0.35)', transition:'all 0.3s',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(139,126,250,0.45)'; e.currentTarget.style.color='#fff'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}
-                >
-                  <Icon size={20} />
-                </button>
-              ))}
-            </div>
-          </footer>
         </div>
+
+        <footer style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', pointerEvents: 'auto', zIndex: 105, position: 'relative' }}>
+          <div className="glass" style={{ padding: '12px 24px', borderRadius: '16px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Activity size={14} color="#00E5A0" /> SISTEMA OPERACIONAL • CONEXÃO ESTÁVEL
+          </div>
+          <button onClick={handleBack} style={{ padding: '0 24px', height: '44px', background: 'rgba(255, 59, 107, 0.1)', border: '1px solid #FF3B6B', borderRadius: '16px', color: '#FF3B6B', fontWeight: '900', fontSize: '11px', cursor: 'pointer', zIndex: 110 }}>ENCERRAR TERMINAL</button>
+        </footer>
       </div>
-    </>
+    </div>
   );
 }

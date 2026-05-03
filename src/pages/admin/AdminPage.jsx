@@ -168,9 +168,9 @@ const css = `
 
 /* ── DADOS MOCK ── */
 const ALERTAS_MOCK = [
-  { id:'#0041', tipo:'sos',  anon:'Usuária #4412', local:'São José dos Campos, SP', hora:'há 3 min',  status:'new'  },
-  { id:'#0040', tipo:'chat', anon:'Usuária #4401', local:'São Paulo, SP',           hora:'há 11 min', status:'pend' },
-  { id:'#0039', tipo:'chat', anon:'Usuária #4399', local:'Campinas, SP',            hora:'há 28 min', status:'done' },
+  { id:'#0041', tipo:'sos',  anon:'ANÔNIMO • #0041', local:'São José dos Campos, SP', hora:'há 3 min',  status:'new'  },
+  { id:'#0040', tipo:'chat', anon:'ANÔNIMO • #0040', local:'São Paulo, SP',           hora:'há 11 min', status:'pend' },
+  { id:'#0039', tipo:'chat', anon:'ANÔNIMO • #0039', local:'Campinas, SP',            hora:'há 28 min', status:'done' },
 ];
 
 const CONTEUDOS_MOCK = [

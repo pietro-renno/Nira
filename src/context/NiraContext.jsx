@@ -22,7 +22,7 @@ export function NiraProvider({ children }) {
     status: alert.status,
     risk: alert.risk,
     messages: [
-      { id: 1, sender: alert.user.includes('anônima') ? 'user' : 'bot', text: alert.logs[0], time: '10:00' }
+      { id: 1, sender: alert.user.toLowerCase().includes('anônimo') ? 'user' : 'bot', text: alert.logs[0], time: '10:00' }
     ],
     internalNote: ''
   }));
@@ -44,7 +44,7 @@ export function NiraProvider({ children }) {
     const newId = `S${Math.floor(Math.random() * 1000)}`;
     const newAlert = {
       id: newId,
-      user: `Usuária #${newId}`,
+      user: `ANÔNIMO • #${newId}`,
       location: 'SP',
       time: 'Agora',
       status: 'ativo',
@@ -67,7 +67,7 @@ export function NiraProvider({ children }) {
     const newId = `T${Math.floor(Math.random() * 1000)}`;
     const newChat = {
       id: newId,
-      user: `Anônima #${newId}`,
+      user: `ANÔNIMO • #${newId}`,
       location: 'Desconhecida',
       status: 'ativo',
       risk: 'pendente',

@@ -90,7 +90,7 @@ export const mockArticles = [
         <li><strong>Modo Anônimo:</strong> Sempre que pesquisar sobre seus direitos ou ajuda, utilize a aba anônima do navegador.</li>
         <li><strong>Verificação em Duas Etapas:</strong> Ative essa função em todas as suas redes sociais e e-mails para evitar invasões.</li>
         <li><strong>Cuidado com o GPS:</strong> Verifique quais aplicativos têm acesso à sua localização e desative o compartilhamento em tempo real.</li>
-        <li><strong>Senhas Fortes:</strong> Evite datas de aniversário ou nomes de familiares. Use gerenciadores de senhas se possível.</li>
+        <li><strong>Senhas Fortes:</strong> Evite dates de aniversário ou nomes de familiares. Use gerenciadores de senhas se possível.</li>
       </ul>
 
       <h3>Stalkerware: O que é?</h3>
@@ -240,16 +240,75 @@ export const mockArticles = [
       <h3>Dicas de Segurança:</h3>
       <p>Estabeleça uma palavra-chave com uma pessoa de confiança para indicar que você precisa de ajuda sem alertar o agressor. Se decidir sair, faça-o em um momento em que ele não esteja em casa.</p>
     `
+  },
+  {
+    id: 10,
+    title: 'Rede de Solidariedade: Vizinhos que Protegem',
+    description: 'Como criar uma rede de apoio local com pessoas de confiança para monitoramento mútuo.',
+    category: 'Apoio',
+    author: 'Comunidade NIRA',
+    readTime: '5 min',
+    date: '12 abr. 2026',
+    featured: false,
+    tags: ['Apoio'],
+    image: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800',
+    content: `
+      <p>A segurança coletiva é uma das ferramentas mais poderosas contra a violência. Quando vizinhos se unem, o agressor se sente vigiado e a vítima se sente protegida.</p>
+      <h3>Como Começar sua Rede?</h3>
+      <p>Identifique pelo menos duas pessoas próximas (vizinhos, comerciantes) de quem você confia. Compartilhe sua situação de forma discreta e estabeleça sinais visuais (como uma luz acesa ou um objeto na janela) que indiquem que você precisa que alguém chame a polícia.</p>
+    `
+  },
+  {
+    id: 11,
+    title: 'Impacto na Infância: Protegendo os Pequenos',
+    description: 'Entenda como a exposição à violência afeta o desenvolvimento infantil e como acolher seus filhos.',
+    category: 'Família',
+    author: 'Psicologia Infantil NIRA',
+    readTime: '10 min',
+    date: '15 abr. 2026',
+    featured: false,
+    tags: ['Família', 'Saúde Mental'],
+    image: 'https://images.unsplash.com/photo-1476703993599-0035a21b17a9?auto=format&fit=crop&q=80&w=800',
+    content: `
+      <p>Crianças que presenciam violência doméstica sofrem impactos profundos em seu desenvolvimento emocional e cognitivo, mesmo que não sejam o alvo direto das agressões.</p>
+      <h3>Sinais de Sofrimento na Criança:</h3>
+      <ul>
+        <li>Regressão de comportamentos (voltar a urinar na cama, por exemplo).</li>
+        <li>Agressividade excessiva ou isolamento extremo.</li>
+        <li>Dificuldade de concentração e queda no rendimento escolar.</li>
+      </ul>
+      <p>O acolhimento deve ser constante. Reafirme que a criança está segura e que a culpa da situação não é dela.</p>
+    `
+  },
+  {
+    id: 12,
+    title: 'Autonomia Digital: Limpando seus Rastros',
+    description: 'Guia avançado para remover spywares e garantir que sua comunicação não seja interceptada.',
+    category: 'Segurança',
+    author: 'Cibersegurança NIRA',
+    readTime: '8 min',
+    date: '20 abr. 2026',
+    featured: false,
+    tags: ['Segurança', 'Tecnologia'],
+    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
+    content: `
+      <p>Muitos agressores utilizam tecnologia para manter o controle remoto sobre suas vítimas. Aprender a "limpar" seus dispositivos é um passo vital para a independência.</p>
+      <h3>Passos Críticos:</h3>
+      <ul>
+        <li><strong>Reset de Fábrica:</strong> Se suspeitar de stalkerware, o reset de fábrica é a única forma garantida de remoção.</li>
+        <li><strong>Novas Contas:</strong> Crie um e-mail novo em um dispositivo seguro (computador da biblioteca ou de uma amiga) e não o vincule ao seu celular antigo.</li>
+        <li><strong>Senhas Não Óbvias:</strong> Use frases longas misturando números e símbolos.</li>
+      </ul>
+    `
   }
-
 ];
 
 export const mockAlerts = [
-  { id: '0041', user: 'Usuária #0041', location: 'São José dos Campos, SP', time: '3 min', status: 'ativo', risk: 'alto', type: 'map', logs: ['S.O.S. ativado - Localização recebida - 10:52'] },
-  { id: '0040', user: 'Usuária anônima • #0040', location: 'São Paulo, SP', time: 'Ontem', status: 'ativo', risk: 'médio', type: 'chat', logs: ['Sofri agressão ontem à noite... - 10:41'] },
-  { id: '0038', user: 'Usuária #0038', location: 'Campinas, SP', time: 'Agora', status: 'ativo', risk: 'alto', type: 'map', logs: ['S.O.S. ativado - Localização recebida'] },
-  { id: '0037', user: 'Anônima #0037', location: 'Curitiba, PR', time: 'Ontem', status: 'ativo', risk: 'baixo', type: 'chat', logs: ['Solicitação de apoio psicológico pendente'] },
-  { id: '0039', user: 'Usuária #0039', location: 'Belo Horizonte, MG', time: 'Ontem', status: 'concluido', risk: 'baixo', type: 'chat', logs: ['Conversa encerrada - 09:18'] }
+  { id: '0041', user: 'ANÔNIMO • #0041', location: 'São José dos Campos, SP', time: '3 min', status: 'ativo', risk: 'alto', type: 'map', logs: ['S.O.S. ativado - Localização recebida - 10:52'] },
+  { id: '0040', user: 'ANÔNIMO • #0040', location: 'São Paulo, SP', time: 'Ontem', status: 'ativo', risk: 'médio', type: 'chat', logs: ['Solicitação de apoio via chat - 10:41'] },
+  { id: '0038', user: 'ANÔNIMO • #0038', location: 'Campinas, SP', time: 'Agora', status: 'ativo', risk: 'alto', type: 'map', logs: ['S.O.S. ativado - Localização recebida'] },
+  { id: '0037', user: 'ANÔNIMO • #0037', location: 'Curitiba, PR', time: 'Ontem', status: 'ativo', risk: 'baixo', type: 'chat', logs: ['Solicitação de apoio psicológico pendente'] },
+  { id: '0039', user: 'ANÔNIMO • #0039', location: 'Belo Horizonte, MG', time: 'Ontem', status: 'concluido', risk: 'baixo', type: 'chat', logs: ['Atendimento encerrado com sucesso - 09:18'] }
 ];
 
 export const mockUsersMap = [

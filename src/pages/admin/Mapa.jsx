@@ -1,174 +1,99 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  MapPin, Users, Shield, Navigation, Search,
-  Activity, AlertTriangle, ChevronRight, Crosshair,
-  Maximize2, Scan, ArrowLeft, Filter, Fullscreen
+import React from 'react';
+import { 
+  Maximize2, Activity, Shield, Navigation, 
+  MapPin, Radio, Zap, Globe, Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-/* ─────────────────────────────────────────
-   MOCK DATA
-   (Sincronizado com FullMapa para consistência)
-───────────────────────────────────────── */
-const MOCK_FUNCIONARIOS = [
-  { id: 1, nome: 'André Ferreira', especialidade: 'assistente', area: 'Norte', ativo: true,  lat: -23.1620, lng: -45.8750 },
-  { id: 2, nome: 'Pedro Almeida',  especialidade: 'psicologo',  area: 'Sul',   ativo: true,  lat: -23.1950, lng: -45.8900 },
-  { id: 3, nome: 'Carla Souza',    especialidade: 'assistente', area: 'Leste', ativo: false, lat: -23.1788, lng: -45.8200 },
-];
-
-const MOCK_ONGS = [
-  { id: 10, nome: 'ONG Vida Nova',      area: 'Norte', lat: -23.1500, lng: -45.8800 },
-  { id: 11, nome: 'Instituto Renascer', area: 'Sul',   lat: -23.2000, lng: -45.8700 },
-];
-
-const MOCK_ALERTS = [
-  { id: 101, user: 'Vítima Anônima', location: 'R. das Flores, 52', lat: -23.1700, lng: -45.8600, urgency: 'high' },
-  { id: 102, user: 'Maria S.',       location: 'Av. Brasil, 310',   lat: -23.1900, lng: -45.9000, urgency: 'medium' },
-  { id: 103, user: 'Ocorrência #082', location: 'Pça. da Matriz, 15', lat: -23.1850, lng: -45.8800, urgency: 'high' },
-  { id: 105, user: 'Alerta SOS',     location: 'Proximidades do Parque', lat: -23.2000, lng: -45.8500, urgency: 'high' },
-];
-
-const ESPEC_LABEL = { assistente: 'Assistente Social', psicologo: 'Psicólogo(a)' };
-
-const agentPopup = (f) => `
-  <div style="padding:12px; background:#0B0B16; font-family:'Inter',sans-serif">
-    <p style="margin:0; font-size:10px; font-weight:bold; color:#8B7EFA; text-transform:uppercase">Agente</p>
-    <p style="margin:2px 0 0; font-size:14px; font-weight:800; color:#fff">${f.nome}</p>
-    <p style="margin:8px 0 0; font-size:10px; color:rgba(255,255,255,0.4)">${f.area || 'Disponível'}</p>
-  </div>`;
-
-const sosPopup = (a) => `
-  <div style="padding:12px; background:#0B0B16; font-family:'Inter',sans-serif">
-    <p style="margin:0; font-size:10px; font-weight:bold; color:#FF3D6B; text-transform:uppercase">ALERTA SOS</p>
-    <p style="margin:2px 0 0; font-size:14px; font-weight:800; color:#fff">${a.user}</p>
-    <p style="margin:8px 0 0; font-size:10px; color:rgba(255,255,255,0.4)">${a.location}</p>
-  </div>`;
-
 export default function Mapa() {
   const navigate = useNavigate();
-  const [leafletReady, setLeafletReady] = useState(false);
-  const mapRef = useRef(null);
-  const markersRef = useRef({});
-
-  useEffect(() => {
-    if (window.L) { setLeafletReady(true); return; }
-    
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-    document.head.appendChild(link);
-
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.onload = () => setLeafletReady(true);
-    document.head.appendChild(script);
-  }, []);
-
-  useEffect(() => {
-    if (!leafletReady || mapRef.current) return;
-    const L = window.L;
-
-    const map = L.map('map-container', {
-      center: [-23.1788, -45.8852],
-      zoom: 14,
-      zoomControl: false,
-      attributionControl: false
-    });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-    
-    // Globals for buttons
-    window.allocateAgent = (id) => alert(`Alocando agente #${id}...`);
-    window.dispatchHelp = (id) => alert(`Enviando socorro para #${id}!`);
-
-    mapRef.current = map;
-
-    // Agentes
-    MOCK_FUNCIONARIOS.forEach(f => {
-      const m = L.circleMarker([f.lat, f.lng], {
-        radius: 8, fillColor: '#8B7EFA', color: '#fff', weight: 2, fillOpacity: 1
-      }).addTo(map).bindPopup(agentPopup(f));
-      markersRef.current[`ag-${f.id}`] = m;
-    });
-
-    // SOS
-    MOCK_ALERTS.forEach(a => {
-      const sosIcon = L.divIcon({
-        className: 'sos-marker-container',
-        html: `<div class="sos-marker-pulse"></div><div class="sos-marker-dot"></div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-      const m = L.marker([a.lat, a.lng], { icon: sosIcon })
-        .addTo(map)
-        .bindPopup(sosPopup(a))
-        .bindTooltip(a.user, { permanent: true, direction: 'top' });
-      markersRef.current[`sos-${a.id}`] = m;
-    });
-
-  }, [leafletReady]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)] space-y-6">
+    <div className="flex flex-col h-full bg-[#04040F] p-4 md:p-8 overflow-hidden rounded-[2.5rem]">
       
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Monitoramento Geográfico</h2>
-          <p className="text-text-muted text-xs mt-1">Mapa interativo de ocorrências e unidades de campo.</p>
-        </div>
-        <button 
-          onClick={() => navigate('/admin/mapa-completo')}
-          className="bg-brand-primary hover:bg-[#7a6cf0] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
-        >
-          <Fullscreen size={16} /> Tela Cheia
-        </button>
+      {/* Header */}
+      <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+        <h2 className="text-2xl md:text-3xl font-black text-white tracking-tighter uppercase italic flex items-center gap-3">
+           <div className="w-1.5 h-8 bg-brand-primary rounded-full shadow-[0_0_15px_rgba(139,111,255,0.5)]"></div>
+           Monitoramento Geográfico
+        </h2>
+        <p className="text-text-muted text-xs md:text-sm mt-1 font-medium italic opacity-70">SISTEMA DE RASTREAMENTO TÁTICO NIRA • V3.0</p>
       </div>
 
-      <div className="flex-1 glass border border-white/5 rounded-3xl overflow-hidden relative shadow-2xl">
-        <div id="map-container" className="absolute inset-0 z-0" />
+      {/* Main Panel Content */}
+      <div className="flex-1 flex flex-col items-center justify-center relative glass rounded-[2rem] border border-white/5 overflow-hidden p-6 md:p-12">
         
-        {/* Overlay do Mapa */}
-        <div className="absolute top-6 left-6 z-10 flex flex-col gap-3 pointer-events-none">
-          <div className="glass-panel px-4 py-3 rounded-2xl border border-white/10 pointer-events-auto flex items-center gap-4">
-             <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-brand-primary"></div>
-                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Agentes: {MOCK_FUNCIONARIOS.length}</span>
-             </div>
-             <div className="w-[1px] h-3 bg-white/10"></div>
-             <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-brand-emergency animate-pulse"></div>
-                <span className="text-[10px] font-bold text-white uppercase tracking-wider">SOS: {MOCK_ALERTS.length}</span>
-             </div>
-          </div>
+        {/* Background Elements (Pointer Events None) */}
+        <div className="absolute inset-0 pointer-events-none opacity-20" style={{ 
+          backgroundImage: `linear-gradient(#8B6FFF 1px, transparent 1px), linear-gradient(90deg, #8B6FFF 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-primary/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+        {/* Tactical Icon */}
+        <div className="relative mb-8 group pointer-events-none">
+           <div className="w-20 h-20 md:w-24 md:h-24 bg-[#0A0A1F] border border-white/10 rounded-[2rem] flex items-center justify-center shadow-2xl relative z-10">
+              <Globe size={40} className="text-brand-primary" />
+           </div>
+           <div className="absolute -inset-4 bg-brand-primary/20 blur-2xl rounded-full animate-pulse"></div>
+           <div className="absolute -bottom-2 -right-2 bg-brand-primary p-2 rounded-xl shadow-xl z-20">
+              <Target size={16} className="text-white" />
+           </div>
         </div>
 
-        {/* Mini Legenda */}
-        <div className="absolute bottom-6 left-6 z-10 glass-panel px-4 py-3 rounded-2xl border border-white/10 pointer-events-auto">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-[9px] font-bold text-text-muted">
-              <div className="w-3 h-3 rounded-full bg-brand-primary border border-white/20"></div> AGENTE ATIVO
-            </div>
-            <div className="flex items-center gap-2 text-[9px] font-bold text-text-muted">
-              <div className="w-3 h-3 rounded-full bg-brand-emergency border border-white/20"></div> CHAMADO S.O.S.
-            </div>
-            <div className="flex items-center gap-2 text-[9px] font-bold text-text-muted">
-              <div className="w-3 h-3 rounded-full bg-[#34D399] border border-white/20"></div> ONG PARCEIRA
-            </div>
-          </div>
+        {/* Text and Button */}
+        <div className="text-center max-w-xl relative z-30">
+          <h1 className="text-3xl md:text-5xl font-black text-white mb-4 italic tracking-tighter uppercase leading-tight">
+            Terminal Tático <br/>
+            <span className="text-brand-primary drop-shadow-[0_0_10px_rgba(139,111,255,0.5)]">Offline</span>
+          </h1>
+          
+          <p className="text-text-muted text-sm md:text-base mb-10 opacity-80 leading-relaxed font-medium px-4">
+            A sincronização de satélites e processamento de rota milimétrica exigem o ambiente dedicado do terminal NIRA em tela cheia.
+          </p>
+
+          <button 
+            onClick={() => navigate('/admin/mapa-completo')}
+            className="group relative z-[100] inline-flex items-center gap-4 bg-brand-primary hover:bg-[#7a6cf0] text-white px-8 md:px-12 py-5 md:py-6 rounded-2xl text-sm md:text-lg font-black transition-all duration-300 shadow-[0_15px_35px_rgba(139,111,255,0.4)] active:scale-95 overflow-hidden cursor-pointer"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+            <Zap size={22} className="fill-white" />
+            ACESSAR TERMINAL FULL-SCREEN
+          </button>
         </div>
+
+        {/* Stats Footer - Non-absolute to avoid overlap */}
+        <div className="mt-12 w-full max-w-4xl flex flex-wrap items-center justify-center gap-x-12 gap-y-6 pt-10 border-t border-white/5 relative z-20">
+           <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0"><Radio size={18} className="text-brand-primary" /></div>
+              <div className="text-left shrink-0">
+                <p className="text-[9px] text-text-muted font-black tracking-widest uppercase mb-1">GPS SIGNAL</p>
+                <p className="text-white font-black">99.8% STABLE</p>
+              </div>
+           </div>
+
+           <div className="hidden md:block w-[1px] h-8 bg-white/5"></div>
+
+           <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0"><Activity size={18} className="text-brand-primary" /></div>
+              <div className="text-left shrink-0">
+                <p className="text-[9px] text-text-muted font-black tracking-widest uppercase mb-1">LATENCY</p>
+                <p className="text-white font-black">14ms NOMINAL</p>
+              </div>
+           </div>
+
+           <div className="hidden md:block w-[1px] h-8 bg-white/5"></div>
+
+           <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0"><Shield size={18} className="text-brand-primary" /></div>
+              <div className="text-left shrink-0">
+                <p className="text-[9px] text-text-muted font-black tracking-widest uppercase mb-1">ENCRYPTION</p>
+                <p className="text-white font-black">AES-4096 BIT</p>
+              </div>
+           </div>
+        </div>
+
       </div>
-
-      <style>{`
-        .leaflet-container { background: #f0f2f5 !important; border-radius: 24px; }
-        .leaflet-popup-content-wrapper { background: #fff !important; color: #111 !important; border-radius: 12px !important; border: 1px solid rgba(139,126,250,0.2) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; }
-        .leaflet-popup-tip { background: #fff !important; }
-        
-        .sos-marker-container { position: relative; width: 30px; height: 30px; }
-        .sos-marker-dot { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; background: #FF3D6B; border: 2px solid #fff; border-radius: 50%; z-index: 2; box-shadow: 0 0 10px #FF3D6B; }
-        .sos-marker-pulse { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; background: #FF3D6B; border-radius: 50%; animation: sos-pulse-ring 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite; }
-        @keyframes sos-pulse-ring { 0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; } 100% { transform: translate(-50%, -50%) scale(4); opacity: 0; } }
-      `}</style>
     </div>
   );
 }
