@@ -267,6 +267,48 @@ const css = `
 .chat-send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; background: rgba(255,255,255,0.1); }
 .chat-input-hint { text-align: center; font-size: .7rem; color: rgba(255,255,255,0.3); margin-top: 12px; display:flex; align-items:center; gap:6px; justify-content:center; }
 
+/* QUICK DIAGNOSIS BUTTONS */
+.chat-quick-diagnostics {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  margin-bottom: 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.chat-quick-diagnostics::-webkit-scrollbar { display: none; }
+
+.chat-quick-btn {
+  background: rgba(138, 126, 248, 0.08);
+  border: 1px solid rgba(138, 126, 248, 0.25);
+  color: #A491FF;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.chat-quick-btn:hover {
+  background: rgba(138, 126, 248, 0.15);
+  border-color: rgba(138, 126, 248, 0.4);
+  transform: translateY(-2px);
+}
+.chat-quick-btn--sos {
+  background: rgba(255, 71, 87, 0.08);
+  border-color: rgba(255, 71, 87, 0.25);
+  color: #FF4757;
+}
+.chat-quick-btn--sos:hover {
+  background: rgba(255, 71, 87, 0.15);
+  border-color: rgba(255, 71, 87, 0.4);
+}
+
+
 /* WELCOME */
 .chat-welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px; z-index: 5; }
 .chat-welcome__owl svg { width:60px; height:60px; stroke:#A491FF; margin-bottom:20px; animation: float 4s infinite;}
@@ -375,56 +417,56 @@ const css = `
 const FLOW = [
   {
     id: 'start',
-    msg: 'Olá. Boas-vindas ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?',
+    msg: 'Oi. Seja bem-vindo(a) ao espaço de cuidado da Nira.\n\nEste lugar é totalmente seguro e anônimo. Não guardamos nenhuma informação sua.\n\nComo podemos te ajudar agora?',
     options: [
-      { text: 'Estou em perigo imediato', next: 'perigo' },
-      { text: 'Preciso conversar', next: 'conversar' },
-      { text: 'Desejo entender meus direitos', next: 'direitos' },
-      { text: 'Busco apoio na minha região', next: 'servicos' },
+      { text: 'Estou em perigo agora', next: 'perigo' },
+      { text: 'Preciso desabafar / conversar', next: 'conversar' },
+      { text: 'Quero saber meus direitos', next: 'direitos' },
+      { text: 'Procuro ajuda perto de mim', next: 'servicos' },
     ],
   },
   {
     id: 'perigo',
-    msg: 'Compreendo. Sua segurança é a nossa maior preocupação agora.\n\nVocê tem condições de acionar o botão de S.O.S. vermelho na tela? Ele enviará sua localização discretamente para nossa equipe de apoio.\n\nCaso possa fazer uma ligação: disque 190 (Polícia Militar) ou 180 (Central da Mulher).',
+    msg: 'Entendo. Sua segurança é o mais importante agora.\n\nVocê consegue apertar o botão vermelho de S.O.S. na tela? Ele avisa nossa equipe onde você está para podermos agir.\n\nSe preferir ligar para a polícia, disque 190. Para ajuda específica, disque 180.',
     options: [
-      { text: 'Ativar S.O.S. agora', next: 'sos_ativo' },
-      { text: 'Estou em um local seguro agora', next: 'seguro' },
+      { text: 'Apertei o S.O.S.', next: 'sos_ativo' },
+      { text: 'Estou em lugar seguro agora', next: 'seguro' },
     ],
     risco: 'alto',
   },
   {
     id: 'sos_ativo',
-    msg: 'Alerta acionado. Nossa rede de apoio recebeu a notificação da sua localização.\n\nPermaneça em local seguro, se possível com as portas trancadas. Uma profissional humana fará contato por aqui em instantes.',
+    msg: 'Alerta ligado! Já avisamos nossa equipe.\n\nFique em um lugar seguro se puder e tente trancar a porta. Alguém vai falar com você por aqui em breve.',
     options: [
-      { text: 'Aguardando atendimento', next: 'aguardando' },
+      { text: 'Estou aguardando', next: 'aguardando' },
     ],
     risco: 'alto',
   },
   {
     id: 'aguardando',
-    msg: 'Nossa equipe está a caminho. Tente respirar de forma pausada.\n\nVocê não está passando por isso só.',
+    msg: 'Nossa equipe está vindo. Tente respirar fundo.\n\nVocê não está só nessa.',
     options: [],
     final: true,
     risco: 'alto',
   },
   {
     id: 'seguro',
-    msg: 'Fico mais tranquila ao saber que você está em segurança neste momento.\n\nVocê poderia compartilhar um pouco sobre o que ocorreu?',
+    msg: 'Fico mais tranquila por você estar em segurança agora.\n\nO que aconteceu exatamente?',
     options: [
       { text: 'Sofri agressão física', next: 'tipo_fisica' },
-      { text: 'Sofri abuso verbal ou psicológico', next: 'tipo_psico' },
-      { text: 'Fui alvo de ameaças', next: 'tipo_ameaca' },
-      { text: 'Estou sofrendo controle financeiro', next: 'tipo_fin' },
+      { text: 'Fui humilhado(a) ou maltratado(a)', next: 'tipo_psico' },
+      { text: 'Fui ameaçado(a)', next: 'tipo_ameaca' },
+      { text: 'Estão controlando meu dinheiro', next: 'tipo_fin' },
     ],
     risco: 'medio',
   },
   {
     id: 'conversar',
-    msg: 'Nós estamos aqui para ouvir você de forma empática e sem nenhum tipo de julgamento.\n\nPor favor, essa situação está acontecendo agora, ou é algo relacionado ao passado?',
+    msg: 'Estamos aqui para te ouvir com carinho e sem te julgar.\n\nIsso está acontecendo agora ou já faz tempo?',
     options: [
-      { text: 'Está ocorrendo neste momento', next: 'seguro' },
-      { text: 'Aconteceu recentemente', next: 'recente' },
-      { text: 'Foi no passado, mas sigo afetada', next: 'passado' },
+      { text: 'Está acontecendo agora', next: 'seguro' },
+      { text: 'Aconteceu faz pouco tempo', next: 'recente' },
+      { text: 'Faz tempo, mas ainda sofro', next: 'passado' },
     ],
   },
   {
@@ -596,6 +638,19 @@ const FLOW = [
     ],
     risco: 'baixo',
   },
+];
+
+const QUICK_DIAGNOSTICS = [
+  { text: '🆘 PERIGO IMEDIATO', next: 'perigo', type: 'sos' },
+  { text: '👊 Violência Física', next: 'tipo_fisica' },
+  { text: '🧠 Abuso Psicológico', next: 'tipo_psico' },
+  { text: '⚠️ Ameaças Graves', next: 'tipo_ameaca' },
+  { text: '💰 Controle Financeiro', next: 'tipo_fin' },
+  { text: '🛡️ Meus Direitos', next: 'direitos' },
+  { text: '🏠 Buscar Abrigo', next: 'servicos' },
+  { text: '🕵️ Segurança Digital', next: 'direitos' },
+  { text: '⚖️ Pensão e Guarda', next: 'guarda' },
+  { text: '🤝 Apoio na Região', next: 'servicos' },
 ];
 
 const HIST_MOCK = [
@@ -936,15 +991,21 @@ export default function TriagemPage() {
               </div>
             )}
 
-            {chatAtivo && (
-              <button className="chat-sos-float" onClick={ativarSOS}>
-                <span className="chat-sos-float-dot" />
-                Ativar S.O.S.
-              </button>
-            )}
+
 
             {chatAtivo && (
               <div className="chat-input-area">
+                <div className="chat-quick-diagnostics">
+                  {QUICK_DIAGNOSTICS.map((diag, idx) => (
+                    <button
+                      key={idx}
+                      className={`chat-quick-btn ${diag.type === 'sos' ? 'chat-quick-btn--sos' : ''}`}
+                      onClick={() => escolherOpcao(diag, diag.text)}
+                    >
+                      {diag.text}
+                    </button>
+                  ))}
+                </div>
                 <div className="chat-input-wrap">
                   <textarea
                     className="chat-input"
