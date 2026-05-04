@@ -45,10 +45,10 @@ export default function Home() {
   const featuredArticles = articles.slice(0, 3);
 
   const dores = [
-    { title: 'O SILÊNCIO', desc: 'Medo de represália, vergonha e dependência do agressor tornam o silêncio uma armadilha, não uma escolha.', icon: <EyeOff size={24} className="text-brand-emergency" /> },
-    { title: 'FALTA DE ACESSO', desc: 'Ir a uma delegacia ou psicólogo presencialmente é impossível para quem vive sob vigilância constante.', icon: <UserX size={24} className="text-brand-emergency" /> },
-    { title: 'SEM RESPOSTA RÁPIDA', desc: 'Em momentos de agressão, ligar e falar ao telefone não é uma opção. É preciso socorro silencioso.', icon: <Clock size={24} className="text-brand-emergency" /> },
-    { title: 'AUSÊNCIA DE ACOLHIMENTO', desc: 'Antes da denúncia, existe a necessidade de ser ouvida. Sem julgamento, sem burocracia, sem se expor.', icon: <Heart size={24} className="text-brand-emergency" /> }
+    { title: 'O SILÊNCIO', desc: 'Medo de represália, vergonha e dependência do agressor tornam o silêncio uma armadilha, não uma escolha.', icon: <EyeOff size={24} className="text-brand-primary" /> },
+    { title: 'FALTA DE ACESSO', desc: 'Ir a uma delegacia ou psicólogo presencialmente é impossível para quem vive sob vigilância constante.', icon: <UserX size={24} className="text-brand-primary" /> },
+    { title: 'SEM RESPOSTA RÁPIDA', desc: 'Em momentos de agressão, ligar e falar ao telefone não é uma opção. É preciso socorro silencioso.', icon: <Clock size={24} className="text-brand-primary" /> },
+    { title: 'AUSÊNCIA DE ACOLHIMENTO', desc: 'Antes da denúncia, existe a necessidade de ser ouvida. Sem julgamento, sem burocracia, sem se expor.', icon: <Heart size={24} className="text-brand-primary" /> }
   ];
 
   return (
@@ -136,13 +136,13 @@ export default function Home() {
             <motion.p 
               initial={{ opacity: 0, letterSpacing: '0.2em' }} 
               whileInView={{ opacity: 1, letterSpacing: '0.5em' }} 
-              className="text-[10px] font-black text-brand-emergency uppercase"
+              className="text-[10px] font-black text-brand-primary uppercase"
             >
               Problemática Social
             </motion.p>
             <h2 className="text-5xl md:text-8xl font-black text-white tracking-tighter leading-none">
               Qual a dor que <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-emergency to-orange-500">nos move?</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-purple-400">nos move?</span>
             </h2>
             <p className="text-xl font-light text-text-muted max-w-2xl mx-auto leading-relaxed">
               O silêncio é o combustível da violência. Criamos a Nira para ser a voz de quem precisa de proteção imediata e anônima.
@@ -157,12 +157,12 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1, duration: 0.8 }}
                 viewport={{ once: true }}
-                className="glass-card p-10 rounded-[2.5rem] border border-white/5 hover:border-brand-emergency/40 transition-all duration-500 group relative"
+                className="glass-card p-10 rounded-[2.5rem] border border-white/5 hover:border-brand-primary/40 transition-all duration-500 group relative"
               >
-                <div className="w-16 h-16 rounded-2xl bg-bg-main flex items-center justify-center mb-8 border border-white/10 group-hover:bg-brand-emergency/10 group-hover:border-brand-emergency/30 transition-all">
+                <div className="w-16 h-16 rounded-2xl bg-bg-main flex items-center justify-center mb-8 border border-white/10 group-hover:bg-brand-primary/10 group-hover:border-brand-primary/30 transition-all">
                   {item.icon}
                 </div>
-                <h3 className="text-lg font-black text-white mb-4 group-hover:text-brand-emergency transition-colors">
+                <h3 className="text-lg font-black text-white mb-4 group-hover:text-brand-primary transition-colors">
                   {item.title}
                 </h3>
                 <p className="text-text-muted text-sm leading-relaxed font-light">
@@ -180,8 +180,8 @@ export default function Home() {
            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div className="space-y-4">
                  <p className="text-[10px] font-black tracking-[0.3em] text-brand-primary uppercase">Informação e apoio</p>
-                 <h2 className="text-4xl md:text-5xl font-black tracking-tight">Conteúdos que <span className="text-brand-primary">empoderam</span></h2>
-                 <p className="text-text-muted text-lg max-w-xl font-light leading-relaxed">Conheça seus direitos e saiba como se proteger com guias produzidos por especialistas da rede Nira.</p>
+                 <h2 className="text-4xl md:text-5xl font-black tracking-tight">Informação que <span className="text-brand-primary">acolhe e orienta</span></h2>
+                 <p className="text-text-muted text-lg max-w-xl font-light leading-relaxed">Acesse guias práticos e conteúdos informativos produzidos por especialistas para ajudar qualquer pessoa em situação de vulnerabilidade.</p>
               </div>
               <Link to="/conteudos" className="flex items-center gap-3 text-sm font-black uppercase tracking-widest text-white hover:text-brand-primary transition-all group">
                  Ver todas as matérias <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />

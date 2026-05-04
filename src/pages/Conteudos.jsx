@@ -291,7 +291,7 @@ export default function Conteudos() {
                         onClick={() => setArtigoAtivo(null)}
                         className="flex-1 bg-brand-primary hover:bg-[#7a6cf0] text-center text-white px-8 py-5 rounded-[1.5rem] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all hover:scale-[1.02]"
                        >
-                          🆘 Solicitar Apoio Agora <ArrowRight size={18} />
+                          Solicitar Apoio Agora <ArrowRight size={18} />
                        </Link>
                        <button 
                         onClick={() => setArtigoAtivo(null)}

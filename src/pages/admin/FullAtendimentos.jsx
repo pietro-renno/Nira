@@ -38,6 +38,7 @@ export default function FullAtendimentos() {
   const [notas, setNotas] = useState('');
   const messagesEndRef = useRef(null);
   const [localMsgs, setLocalMsgs] = useState({});
+  const [notif, setNotif] = useState({ show: false, type: 'info', title: '', msg: '' });
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -92,11 +93,17 @@ export default function FullAtendimentos() {
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/5 text-[8px] font-black uppercase tracking-widest text-text-muted">
                <Activity size={10} className="text-brand-primary" /> {alerts.filter(a => a.status === 'ativo').length} OCORRÊNCIAS EM FILA
             </div>
-            <button className="w-9 h-9 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-text-muted hover:text-white transition-all">
-               <Settings size={16} />
-            </button>
-         </div>
-      </header>
+             <button 
+               onClick={() => {
+                 setNotif({ show: true, type: 'info', title: 'CONFIGURAÇÕES TÁTICAS', msg: 'Ajustes de latência e criptografia de canal estão em modo automático.' });
+                 setTimeout(() => setNotif({ show: false }), 3000);
+               }}
+               className="w-9 h-9 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-text-muted hover:text-white transition-all active:scale-95"
+             >
+                <Settings size={16} />
+             </button>
+          </div>
+       </header>
 
       {/* ── CORPO PRINCIPAL ── */}
       <div className="flex-1 flex overflow-hidden">
@@ -203,9 +210,15 @@ export default function FullAtendimentos() {
 
                 <div className="p-6 bg-gradient-to-t from-[#07070B] to-transparent">
                    <div className="max-w-3xl mx-auto flex items-center gap-3 bg-[#151521]/80 backdrop-blur-2xl border border-white/10 p-2 rounded-2xl focus-within:border-brand-primary/50 transition-all shadow-2xl">
-                      <button className="h-10 w-10 rounded-xl flex items-center justify-center text-text-muted hover:text-white">
-                         <Paperclip size={20} />
-                      </button>
+                       <button 
+                         onClick={() => {
+                           setNotif({ show: true, type: 'info', title: 'ANEXAR ARQUIVO', msg: 'Apenas arquivos criptografados (.nira) são permitidos neste canal.' });
+                           setTimeout(() => setNotif({ show: false }), 3000);
+                         }}
+                         className="h-10 w-10 rounded-xl flex items-center justify-center text-text-muted hover:text-white active:scale-90 transition-all"
+                       >
+                          <Paperclip size={20} />
+                       </button>
                       <input 
                         type="text" 
                         value={inputMsg}
@@ -256,44 +269,102 @@ export default function FullAtendimentos() {
                          <p className="text-[8px] font-black text-text-muted uppercase mb-0.5">Localização</p>
                          <p className="text-xs font-bold text-white/90">{casoAtivo.location}</p>
                       </div>
-                   </div>
-                </section>
+                    </div>
+                 </section>
 
-                <section>
-                   <div className="flex items-center gap-2 mb-4">
-                      <AlertTriangle size={14} className="text-brand-emergency" />
-                      <h4 className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Encaminhamento</h4>
-                   </div>
-                   <div className="grid gap-2">
-                      <button className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase text-white hover:bg-brand-primary/10 transition-all text-left">
-                         CRAM <ArrowLeft className="rotate-180" size={12} />
-                      </button>
-                      <button className="flex items-center justify-between p-4 bg-brand-emergency/5 border border-brand-emergency/10 rounded-xl text-[9px] font-black uppercase text-brand-emergency hover:bg-brand-emergency hover:text-white transition-all text-left">
-                         Conselho Tutelar <UserX size={14} />
-                      </button>
-                   </div>
-                </section>
+                 <section>
+                    <div className="flex items-center gap-2 mb-4">
+                       <AlertTriangle size={14} className="text-brand-emergency" />
+                       <h4 className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Encaminhamento Tático</h4>
+                    </div>
+                    <div className="grid gap-2">
+                       <button 
+                         onClick={() => {
+                           setNotif({ show: true, type: 'success', title: 'ENCAMINHADO AO CRAM', msg: `O caso #${casoAtivo.id} foi vinculado à rede municipal de atendimento à mulher.` });
+                           setTimeout(() => setNotif({ show: false }), 4000);
+                         }}
+                         className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase text-white hover:bg-brand-primary/20 hover:border-brand-primary/40 transition-all text-left group"
+                       >
+                          CRAM <ArrowLeft className="rotate-180 group-hover:translate-x-1 transition-transform" size={12} />
+                       </button>
+                       
+                       <button 
+                         onClick={() => {
+                           setNotif({ show: true, type: 'emergency', title: 'CONSELHO TUTELAR ACIONADO', msg: 'Equipe de proteção à criança e adolescente foi notificada para intervenção conjunta.' });
+                           setTimeout(() => setNotif({ show: false }), 4000);
+                         }}
+                         className="flex items-center justify-between p-4 bg-brand-emergency/5 border border-brand-emergency/10 rounded-xl text-[9px] font-black uppercase text-brand-emergency hover:bg-brand-emergency hover:text-white transition-all text-left group"
+                       >
+                          Conselho Tutelar <UserX className="group-hover:scale-110 transition-transform" size={14} />
+                       </button>
 
-                <section className="flex-1 flex flex-col min-h-[180px]">
-                   <div className="flex items-center gap-2 mb-4">
-                      <ShieldCheck size={14} className="text-brand-primary" />
-                      <h4 className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Prontuário</h4>
-                   </div>
-                   <textarea 
-                     value={notas}
-                     onChange={e => setNotas(e.target.value)}
-                     className="flex-1 bg-white/5 border border-white/5 rounded-2xl p-4 text-xs text-white focus:outline-none focus:border-brand-primary/30 resize-none font-medium leading-relaxed"
-                   />
-                </section>
-             </>
-           ) : (
-             <div className="text-center py-10 opacity-10">
-                <ShieldCheck size={80} className="mx-auto" strokeWidth={1} />
-             </div>
-           )}
-        </aside>
+                       <button 
+                         onClick={() => {
+                           setNotif({ show: true, type: 'info', title: 'GERANDO RELATÓRIO', msg: 'O prontuário completo está sendo compilado em formato seguro PDF/A.' });
+                           setTimeout(() => setNotif({ show: false }), 4000);
+                         }}
+                         className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase text-white hover:bg-white/10 transition-all text-left"
+                       >
+                          Gerar PDF do Caso <FileText size={14} className="opacity-40" />
+                       </button>
+
+                       <button 
+                         onClick={() => {
+                           if(window.confirm('CONFIRMAR ACIONAMENTO POLICIAL? Esta ação enviará as coordenadas exatas para o COPOM.')) {
+                             setNotif({ show: true, type: 'emergency', title: 'POLÍCIA MILITAR ACIONADA', msg: 'Viaturas em rota de intercepção. Tempo estimado: 4-7 min.' });
+                             setTimeout(() => setNotif({ show: false }), 5000);
+                           }
+                         }}
+                         className="flex items-center justify-between p-4 bg-brand-emergency/20 border border-brand-emergency/40 rounded-xl text-[9px] font-black uppercase text-brand-emergency hover:bg-brand-emergency hover:text-white transition-all text-left shadow-[0_0_20px_rgba(255,71,87,0.2)]"
+                       >
+                          Polícia Militar (190) <Phone size={14} className="animate-pulse" />
+                       </button>
+                    </div>
+                 </section>
+
+                 <section className="flex-1 flex flex-col min-h-[180px]">
+                    <div className="flex items-center gap-2 mb-4">
+                       <ShieldCheck size={14} className="text-brand-primary" />
+                       <h4 className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Prontuário</h4>
+                    </div>
+                    <textarea 
+                      value={notas}
+                      onChange={e => setNotas(e.target.value)}
+                      placeholder="Anote aqui observações críticas sobre o acolhimento..."
+                      className="flex-1 bg-white/5 border border-white/5 rounded-2xl p-4 text-xs text-white focus:outline-none focus:border-brand-primary/30 resize-none font-medium leading-relaxed placeholder:opacity-20"
+                    />
+                 </section>
+              </>
+            ) : (
+              <div className="text-center py-10 opacity-10">
+                 <ShieldCheck size={80} className="mx-auto" strokeWidth={1} />
+              </div>
+            )}
+         </aside>
 
       </div>
+
+      {/* ── FEEDBACK OVERLAY (NOTIFICAÇÕES IMERSIVAS) ── */}
+      {notif.show && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[10000] animate-fade-in-down">
+          <div className={`flex items-center gap-4 px-8 py-4 rounded-2xl border backdrop-blur-2xl shadow-2xl min-w-[320px] ${
+            notif.type === 'success' ? 'bg-[#10B981]/10 border-[#10B981]/30 text-[#10B981]' : 
+            notif.type === 'emergency' ? 'bg-[#FF4757]/10 border-[#FF4757]/30 text-[#FF4757]' : 
+            'bg-brand-primary/10 border-brand-primary/30 text-brand-primary'
+          }`}>
+             <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                {notif.type === 'success' ? <CheckCircle2 size={20} /> : 
+                 notif.type === 'emergency' ? <AlertTriangle size={20} /> : 
+                 <ShieldCheck size={20} />}
+             </div>
+             <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-0.5">{notif.title}</p>
+                <p className="text-[11px] font-bold text-white/70">{notif.msg}</p>
+             </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

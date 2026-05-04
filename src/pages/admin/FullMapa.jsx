@@ -8,6 +8,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useContext } from 'react';
 import { NiraContext } from '../../context/NiraContext';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Corrigir o problema dos ícones do Leaflet no Vite
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 /* ─────────────────────────────────────────────────────────────
    ESTILOS GLOBAIS (Premium Dark Tactical)
@@ -37,8 +47,8 @@ const CSS = `
 
 .nira-map-root { width: 100%; height: 100vh; font-family: var(--font); color: var(--text); position: relative; overflow: hidden; background: var(--bg); }
 #nira-map-engine { position: absolute; inset: 0; z-index: 0; }
-.leaflet-container { background: #030310 !important; filter: contrast(1.1) brightness(0.6) saturate(1.2) hue-rotate(210deg); }
-.leaflet-vignette { position: absolute; inset: 0; pointer-events: none; z-index: 10; background: radial-gradient(circle at center, transparent 30%, rgba(4, 4, 15, 0.8) 100%); box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.9); }
+.leaflet-container { background: #030310 !important; filter: contrast(1.1) brightness(0.8) saturate(1.1) hue-rotate(210deg); }
+.leaflet-vignette { position: absolute; inset: 0; pointer-events: none; z-index: 10; background: radial-gradient(circle at center, transparent 60%, rgba(4, 4, 15, 0.5) 100%); box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.7); }
 .leaflet-grid-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 11; opacity: 0.03; background-image: linear-gradient(rgba(139, 111, 255, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 111, 255, 0.5) 1px, transparent 1px); background-size: 50px 50px; }
 .leaflet-control-zoom { border: none !important; margin: 30px !important; }
 .leaflet-control-zoom a { width: 44px !important; height: 44px !important; line-height: 44px !important; border-radius: 14px !important; background: var(--panel) !important; border: 1px solid var(--border) !important; color: var(--text) !important; backdrop-filter: blur(10px); margin-bottom: 8px !important; display: flex !important; align-items: center; justify-content: center; transition: all 0.3s ease; }
@@ -119,6 +129,13 @@ export default function FullMapa({ onBack }) {
   const zonesGroupRef = useRef(null);
   const routeRef = useRef(null);
 
+  const pushNotification = useCallback((title, msg, id = Date.now(), type = 'info') => {
+    setNotifications(prev => [{ id, title, msg, time: 'Agora', new: true, type }, ...prev.slice(0, 4)]);
+  }, []);
+
+  const agents = usuarios.filter(u => u.role === 'funcionario');
+  const currentAgent = agents.find(a => a.id === simulateAgentId) || agents[0];
+
   // Expõe a função de concluir alerta para o escopo global (usado pelos popups do Leaflet)
   useEffect(() => {
     window.concluirAlerta = (id) => {
@@ -129,13 +146,6 @@ export default function FullMapa({ onBack }) {
     };
     return () => { delete window.concluirAlerta; };
   }, [updateChatStatus, pushNotification]);
-
-  const agents = usuarios.filter(u => u.role === 'funcionario');
-  const currentAgent = agents.find(a => a.id === simulateAgentId) || agents[0];
-
-  const pushNotification = useCallback((title, msg, id = Date.now(), type = 'info') => {
-    setNotifications(prev => [{ id, title, msg, time: 'Agora', new: true, type }, ...prev.slice(0, 4)]);
-  }, []);
 
   useEffect(() => {
     if (viewMode === 'agent' && currentAgent?.notificacoes) {
@@ -156,7 +166,6 @@ export default function FullMapa({ onBack }) {
     const targetAgent = agents.find(a => a.id === selectedAgentId);
     if (!targetAgent) return;
     
-    const L = window.L;
     L.popup()
       .setLatLng([lat, lng])
       .setContent(`
@@ -181,10 +190,9 @@ export default function FullMapa({ onBack }) {
   }, [allocationMode, selectedAgentId, agents, alocarFuncionario, pushNotification]);
 
   const startAgentGPS = (origem, destino) => {
-    if (!mapRef.current || !window.L || !origem || !destino) return;
+    if (!mapRef.current || !L || !origem || !destino) return;
     if (routeRef.current) mapRef.current.removeLayer(routeRef.current);
     
-    const L = window.L;
     const line = L.polyline([[origem.lat, origem.lng], [destino.lat, destino.lng]], {
       color: '#8B6FFF', weight: 6, opacity: 0.9, dashArray: '15, 20'
     }).addTo(mapRef.current);
@@ -203,21 +211,11 @@ export default function FullMapa({ onBack }) {
   };
 
   useEffect(() => {
-    if (window.L) { setMapReady(true); return; }
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.onload = () => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      document.head.appendChild(link);
-      setMapReady(true);
-    };
-    document.head.appendChild(script);
+    setMapReady(true);
   }, []);
 
   const renderMapContent = useCallback(() => {
-    if (!mapRef.current || !window.L) return;
-    const L = window.L;
+    if (!mapRef.current || !L) return;
     markersGroupRef.current.clearLayers();
     zonesGroupRef.current.clearLayers();
 
@@ -276,11 +274,16 @@ export default function FullMapa({ onBack }) {
 
   useEffect(() => {
     if (!mapReady || mapRef.current) return;
-    const map = window.L.map('nira-map-engine', { center: [-23.1788, -45.8852], zoom: 14, zoomControl: false, attributionControl: false });
-    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-    markersGroupRef.current = window.L.layerGroup().addTo(map);
-    zonesGroupRef.current = window.L.layerGroup().addTo(map);
+    const map = L.map('nira-map-engine', { center: [-23.1788, -45.8852], zoom: 11, zoomControl: false, attributionControl: false });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    markersGroupRef.current = L.layerGroup().addTo(map);
+    zonesGroupRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
+
+    // Forçar o Leaflet a recalcular o tamanho do container após o render
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
   }, [mapReady]);
 
   // Re-vincula o evento de clique sempre que o modo de alocação ou o agente selecionado mudar

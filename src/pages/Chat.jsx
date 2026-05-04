@@ -642,7 +642,7 @@ const FLOW = [
 ];
 
 const QUICK_DIAGNOSTICS = [
-  { text: '🆘 PERIGO IMEDIATO', next: 'perigo', type: 'sos' },
+  { text: 'PERIGO IMEDIATO', next: 'perigo', type: 'sos' },
   { text: '👊 Violência Física', next: 'tipo_fisica' },
   { text: '🧠 Abuso Psicológico', next: 'tipo_psico' },
   { text: '⚠️ Ameaças Graves', next: 'tipo_ameaca' },
@@ -677,6 +677,7 @@ export default function TriagemPage() {
   const [chatAtivo, setChatAtivo] = useState(true);
   const [gpsStatus, setGpsStatus] = useState('idle'); // idle, granted
   const [showPrompt, setShowPrompt] = useState(true);
+  const [sosConfirmed, setSosConfirmed] = useState(false);
 
   const [messages, setMessages] = useState([
     { role: 'bot', text: "Olá. Boas-vindas ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?", time: '19:47' },
@@ -794,7 +795,7 @@ export default function TriagemPage() {
 
   function ativarSOS() {
     addSOSAlert();
-    alert('🚨 S.O.S. ATIVADO!\n\nSua localização foi enviada silenciosamente para a equipe NIRA de plantão.\n\nMantenha-se em local seguro se puder.');
+    setSosConfirmed(true);
   }
 
   return (
@@ -1036,6 +1037,43 @@ export default function TriagemPage() {
           </div>
         </div>
       </div>
+      {/* ── CUSTOM SOS OVERLAY ── */}
+      {sosConfirmed && (
+        <div className="fixed inset-0 z-[10002] flex items-center justify-center p-6 animate-fade-in">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-xl"></div>
+          
+          <div className="relative bg-[#111119] border border-brand-emergency/30 p-10 rounded-[2.5rem] shadow-[0_0_50px_rgba(255,71,87,0.2)] max-w-md w-full text-center space-y-8 animate-scale-in">
+            <div className="w-24 h-24 bg-brand-emergency/10 border border-brand-emergency/40 text-brand-emergency rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+               <Shield size={48} fill="currentColor" fillOpacity="0.1" />
+            </div>
+            
+            <div className="space-y-4">
+               <h3 className="text-2xl font-black text-white tracking-tight">S.O.S. ATIVADO!</h3>
+               <div className="h-1 w-20 bg-brand-emergency mx-auto rounded-full"></div>
+               <p className="text-sm text-[#D1D5DB] leading-relaxed">
+                  Sua localização exata foi enviada silenciosamente para a central de monitoramento da <strong>NIRA</strong>.
+               </p>
+               <p className="text-xs text-brand-emergency font-bold uppercase tracking-widest bg-brand-emergency/10 py-3 rounded-xl border border-brand-emergency/20">
+                  Nossa equipe já está agindo.
+               </p>
+            </div>
+
+            <div className="space-y-4 pt-4">
+               <div className="flex items-center gap-3 text-left bg-white/5 p-4 rounded-2xl border border-white/5">
+                  <div className="w-2 h-2 rounded-full bg-brand-emergency animate-ping"></div>
+                  <p className="text-[11px] text-text-muted font-medium">Mantenha-se em local seguro e tranque as portas se possível.</p>
+               </div>
+               
+               <button 
+                 onClick={() => setSosConfirmed(false)}
+                 className="w-full bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10"
+               >
+                  Entendido, manter em sigilo
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
