@@ -42,13 +42,20 @@ export function NiraProvider({ children }) {
 
   const addSOSAlert = () => {
     const newId = `S${Math.floor(Math.random() * 1000)}`;
+    // Gera coordenadas aleatórias aproximadas para SJC
+    const randomLat = -23.17 + (Math.random() * 0.04 - 0.02);
+    const randomLng = -45.88 + (Math.random() * 0.04 - 0.02);
+    
     const newAlert = {
       id: newId,
       user: `ANÔNIMO • #${newId}`,
-      location: 'SP',
+      location: 'São José dos Campos, SP',
       time: 'Agora',
       status: 'ativo',
       risk: 'alto',
+      lat: randomLat,
+      lng: randomLng,
+      ticketCode: `NIRA-${newId}`,
       logs: ['S.O.S. ativado via botão de emergência']
     };
     setAlerts([newAlert, ...alerts]);
@@ -58,7 +65,7 @@ export function NiraProvider({ children }) {
       location: newAlert.location,
       status: 'ativo',
       risk: 'alto',
-      messages: [{ id: 1, sender: 'bot', text: 'S.O.S ativado. Estamos recebendo sua localização. Como podemos ajudar agora?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }],
+      messages: [{ id: 1, sender: 'bot', text: '🚨 S.O.S ATIVADO! Já notificamos as autoridades e nossa equipe de prontidão. Permaneça em local seguro se puder.', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }],
       internalNote: ''
     }, ...chats]);
   };

@@ -304,11 +304,11 @@ export const mockArticles = [
 ];
 
 export const mockAlerts = [
-  { id: '0041', user: 'ANÔNIMO • #0041', location: 'São José dos Campos, SP', time: '3 min', status: 'ativo', risk: 'alto', type: 'map', logs: ['S.O.S. ativado - Localização recebida - 10:52'] },
-  { id: '0040', user: 'ANÔNIMO • #0040', location: 'São Paulo, SP', time: 'Ontem', status: 'ativo', risk: 'médio', type: 'chat', logs: ['Solicitação de apoio via chat - 10:41'] },
-  { id: '0038', user: 'ANÔNIMO • #0038', location: 'Campinas, SP', time: 'Agora', status: 'ativo', risk: 'alto', type: 'map', logs: ['S.O.S. ativado - Localização recebida'] },
-  { id: '0037', user: 'ANÔNIMO • #0037', location: 'Curitiba, PR', time: 'Ontem', status: 'ativo', risk: 'baixo', type: 'chat', logs: ['Solicitação de apoio psicológico pendente'] },
-  { id: '0039', user: 'ANÔNIMO • #0039', location: 'Belo Horizonte, MG', time: 'Ontem', status: 'concluido', risk: 'baixo', type: 'chat', logs: ['Atendimento encerrado com sucesso - 09:18'] }
+  { id: '0041', user: 'ANÔNIMO • #0041', location: 'São José dos Campos, SP', time: '3 min', status: 'ativo', risk: 'alto', type: 'map', lat: -23.1750, lng: -45.8650, ticketCode: 'NIRA-0041', logs: ['S.O.S. ativado - Localização recebida - 10:52'] },
+  { id: '0040', user: 'ANÔNIMO • #0040', location: 'São Paulo, SP', time: 'Ontem', status: 'ativo', risk: 'médio', type: 'chat', lat: -23.1850, lng: -45.8800, ticketCode: 'NIRA-0040', logs: ['Solicitação de apoio via chat - 10:41'] },
+  { id: '0038', user: 'ANÔNIMO • #0038', location: 'Campinas, SP', time: 'Agora', status: 'ativo', risk: 'alto', type: 'map', lat: -23.1900, lng: -45.8700, ticketCode: 'NIRA-0038', logs: ['S.O.S. ativado - Localização recebida'] },
+  { id: '0037', user: 'ANÔNIMO • #0037', location: 'Curitiba, PR', time: 'Ontem', status: 'ativo', risk: 'baixo', type: 'chat', lat: -23.1700, lng: -45.8900, ticketCode: 'NIRA-0037', logs: ['Solicitação de apoio psicológico pendente'] },
+  { id: '0039', user: 'ANÔNIMO • #0039', location: 'Belo Horizonte, MG', time: 'Ontem', status: 'concluido', risk: 'baixo', type: 'chat', lat: -23.1600, lng: -45.8500, ticketCode: 'NIRA-0039', logs: ['Atendimento encerrado com sucesso - 09:18'] }
 ];
 
 export const mockUsersMap = [

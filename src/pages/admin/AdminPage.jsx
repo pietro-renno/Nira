@@ -216,9 +216,9 @@ function TabDashboard() {
               <p className="adm-sos-sub">{a.anon} · {a.local} · {a.hora}</p>
             </div>
           </div>
-          <button className="btn btn-danger btn-sm" onClick={()=>alert(`Abrindo caso ${a.id}...`)}>
+          <Link to="/admin/atendimentos-completo" className="btn btn-danger btn-sm">
             Atender agora →
-          </button>
+          </Link>
         </div>
       ))}
 
@@ -240,7 +240,7 @@ function TabDashboard() {
                 <td>{a.local}</td>
                 <td style={{color:'rgba(239,238,234,.35)',fontSize:'.75rem'}}>{a.hora}</td>
                 <td><span className={`adm-pill adm-pill--${a.status}`}>{a.status==='new'?'Novo':a.status==='pend'?'Pendente':'Concluído'}</span></td>
-                <td><button className="adm-act-btn" onClick={()=>alert(`Abrindo ${a.id}`)}>Ver →</button></td>
+                <td><Link to="/admin/atendimentos-completo" className="adm-act-btn">Ver →</Link></td>
               </tr>
             ))}
           </tbody>

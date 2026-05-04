@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useContext, useRef, useEffect, useCallback } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { NiraContext } from '../context/NiraContext';
 import {
   Shield, User, AlertTriangle, MessageSquare, BookOpen, MapPin,
   Lock, Send, RefreshCcw, ArrowLeft
@@ -671,6 +672,7 @@ function parseMsg(text) {
 }
 
 export default function TriagemPage() {
+  const { addSOSAlert } = useContext(NiraContext);
   const [histAtivo, setHistAtivo] = useState(1);
   const [chatAtivo, setChatAtivo] = useState(true);
   const [gpsStatus, setGpsStatus] = useState('idle'); // idle, granted
@@ -791,7 +793,8 @@ export default function TriagemPage() {
   function abrirHist(id) { setHistAtivo(id); if (id !== 1) setChatAtivo(false); else setChatAtivo(true); }
 
   function ativarSOS() {
-    alert('🆘 S.O.S. ativado!\n\nEm produção: sua localização seria enviada silenciosamente para a equipe NIRA.\n\nEmergências: 190 (Polícia) · 192 (SAMU) · 180 (Central da Mulher)');
+    addSOSAlert();
+    alert('🚨 S.O.S. ATIVADO!\n\nSua localização foi enviada silenciosamente para a equipe NIRA de plantão.\n\nMantenha-se em local seguro se puder.');
   }
 
   return (

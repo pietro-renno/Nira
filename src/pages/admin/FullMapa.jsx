@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useContext } from 'react';
+import { NiraContext } from '../../context/NiraContext';
 
 /* ─────────────────────────────────────────────────────────────
    ESTILOS GLOBAIS (Premium Dark Tactical)
@@ -78,6 +80,7 @@ const INITIAL_SOS = [
 export default function FullMapa({ onBack }) {
   const navigate = useNavigate();
   const { user, usuarios, alocarFuncionario, marcarNotifLida } = useAuth();
+  const { alerts, updateChatStatus } = useContext(NiraContext);
   
   const handleBack = () => {
     if (onBack) onBack();
@@ -95,7 +98,14 @@ export default function FullMapa({ onBack }) {
       setViewMode('agent');
     }
   }, [user]);
-  const [sosAlerts] = useState(INITIAL_SOS);
+  const [sosAlerts, setSosAlerts] = useState([]);
+
+  useEffect(() => {
+    // Filtra apenas alertas ativos que possuam coordenadas
+    const activeAlerts = alerts.filter(a => a.status === 'ativo' && a.lat && a.lng);
+    setSosAlerts(activeAlerts);
+  }, [alerts]);
+
   const [selectedAgentId, setSelectedAgentId] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [allocationMode, setAllocationMode] = useState(false);
@@ -108,6 +118,17 @@ export default function FullMapa({ onBack }) {
   const markersGroupRef = useRef(null);
   const zonesGroupRef = useRef(null);
   const routeRef = useRef(null);
+
+  // Expõe a função de concluir alerta para o escopo global (usado pelos popups do Leaflet)
+  useEffect(() => {
+    window.concluirAlerta = (id) => {
+      if (window.confirm(`Deseja marcar o chamado ${id} como CONCLUÍDO e remover do mapa?`)) {
+        updateChatStatus(id, 'concluido');
+        pushNotification('Alerta Concluído', `O chamado ${id} foi resolvido com sucesso.`);
+      }
+    };
+    return () => { delete window.concluirAlerta; };
+  }, [updateChatStatus, pushNotification]);
 
   const agents = usuarios.filter(u => u.role === 'funcionario');
   const currentAgent = agents.find(a => a.id === simulateAgentId) || agents[0];
@@ -235,7 +256,20 @@ export default function FullMapa({ onBack }) {
         });
         L.marker([s.lat, s.lng], { icon })
           .addTo(markersGroupRef.current)
-          .bindTooltip(`<b style="color:#FF3B6B">CHAMADO: ${s.ticketCode}</b>`, { direction: 'top' });
+          .bindTooltip(`<b style="color:#FF3B6B">CHAMADO: ${s.ticketCode}</b>`, { direction: 'top' })
+          .bindPopup(`
+            <div style="min-width:160px; padding:8px; text-align:center; font-family:'Exo 2', sans-serif;">
+              <div style="background:#FF3B6B20; color:#FF3B6B; padding:4px; border-radius:6px; font-weight:900; font-size:10px; letter-spacing:1px; margin-bottom:8px;">ALERTA CRÍTICO</div>
+              <b style="color:#fff; display:block; margin-bottom:4px; font-size:14px;">${s.ticketCode}</b>
+              <p style="font-size:11px; color:rgba(255,255,255,0.6); margin:0 0 12px 0;">Localização rastreada e ativa.</p>
+              <button 
+                onclick="window.concluirAlerta('${s.id}')"
+                style="background:#00E5A0; color:#030310; border:none; padding:8px 12px; border-radius:8px; font-weight:800; cursor:pointer; width:100%; font-size:11px; text-transform:uppercase; transition:all 0.2s; box-shadow: 0 4px 12px rgba(0, 229, 160, 0.2);"
+              >
+                Concluir Chamado
+              </button>
+            </div>
+          `);
       });
     }
   }, [agents, sosAlerts, simulateAgentId, filters]);

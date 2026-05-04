@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   ShieldAlert, 
   Search, 
@@ -151,9 +152,12 @@ export default function Alertas() {
                    >
                      <CheckCircle2 size={20} />
                    </button>
-                   <button className="flex-1 lg:flex-none bg-brand-primary hover:bg-[#7a6cf0] text-white px-7 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all hover:-translate-y-0.5 active:scale-95">
+                   <Link 
+                     to="/admin/atendimentos-completo"
+                     className="flex-1 lg:flex-none bg-brand-primary hover:bg-[#7a6cf0] text-white px-7 py-3.5 rounded-2xl font-black text-[10px] text-center uppercase tracking-widest shadow-lg transition-all hover:-translate-y-0.5 active:scale-95"
+                   >
                      Assumir Atendimento
-                   </button>
+                   </Link>
                    <button className="w-12 h-12 flex items-center justify-center bg-white/5 border border-white/10 rounded-2xl text-text-muted hover:text-white transition-all">
                      <MoreVertical size={20} />
                    </button>
