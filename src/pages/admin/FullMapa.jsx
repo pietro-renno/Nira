@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Shield, Navigation, Bell, AlertCircle, 
   ArrowLeft, Radio, UserCheck, Power, Activity,
-  Users, AlertTriangle
+  Users, AlertTriangle, FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -59,7 +59,7 @@ const CSS = `
 .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
 @keyframes pulse-ring { 0% { transform: scale(0.33); opacity: 0.8; } 80%, 100% { opacity: 0; transform: scale(1.5); } }
-.pulse-primary::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: var(--brand); animation: pulse-ring 2s infinite; }
+.pulse-primary::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: var(--brand); opacity: 0.4; }
 .scan-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--brand), transparent); animation: scan-y 10s linear infinite; pointer-events: none; opacity: 0.1; }
 @keyframes scan-y { from { transform: translateY(-100%); } to { transform: translateY(100vh); } }
 .slide-up { animation: slide-in-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -90,7 +90,27 @@ const INITIAL_SOS = [
 export default function FullMapa({ onBack }) {
   const navigate = useNavigate();
   const { user, usuarios, alocarFuncionario, marcarNotifLida } = useAuth();
-  const { alerts, updateChatStatus } = useContext(NiraContext);
+  const { alerts, updateChatStatus, heatmapPoints } = useContext(NiraContext);
+  
+  const [heatmapReady, setHeatmapReady] = useState(!!(window.L && window.L.heatLayer));
+  
+  // Garante que L esteja global para plugins como o Heatmap e carrega o plugin dinamicamente
+  useEffect(() => {
+    window.L = L;
+    
+    if (!window.L.heatLayer) {
+      const script = document.createElement('script');
+      script.src = "https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js";
+      script.async = true;
+      script.onload = () => {
+        console.log("Heatmap plugin loaded");
+        setHeatmapReady(true);
+      };
+      document.head.appendChild(script);
+    } else {
+      setHeatmapReady(true);
+    }
+  }, []);
   
   const handleBack = () => {
     if (onBack) onBack();
@@ -119,7 +139,7 @@ export default function FullMapa({ onBack }) {
   const [selectedAgentId, setSelectedAgentId] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [allocationMode, setAllocationMode] = useState(false);
-  const [filters, setFilters] = useState({ agents: true, alerts: true });
+  const [filters, setFilters] = useState({ agents: true, alerts: true, heatmap: false });
   
   const initialSimId = user?.role === 'funcionario' ? user.id : (usuarios.find(u => u.role === 'funcionario')?.id || 5);
   const [simulateAgentId, setSimulateAgentId] = useState(initialSimId);
@@ -128,6 +148,7 @@ export default function FullMapa({ onBack }) {
   const markersGroupRef = useRef(null);
   const zonesGroupRef = useRef(null);
   const routeRef = useRef(null);
+  const heatLayerRef = useRef(null);
 
   const pushNotification = useCallback((title, msg, id = Date.now(), type = 'info') => {
     setNotifications(prev => [{ id, title, msg, time: 'Agora', new: true, type }, ...prev.slice(0, 4)]);
@@ -270,7 +291,20 @@ export default function FullMapa({ onBack }) {
           `);
       });
     }
-  }, [agents, sosAlerts, simulateAgentId, filters]);
+
+    if (filters.heatmap && window.L.heatLayer) {
+      if (heatLayerRef.current) mapRef.current.removeLayer(heatLayerRef.current);
+      heatLayerRef.current = window.L.heatLayer(heatmapPoints, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 17,
+        gradient: { 0.4: 'blue', 0.65: 'lime', 1: 'red' }
+      }).addTo(mapRef.current);
+    } else if (heatLayerRef.current) {
+      mapRef.current.removeLayer(heatLayerRef.current);
+      heatLayerRef.current = null;
+    }
+  }, [agents, sosAlerts, simulateAgentId, filters, heatmapPoints, heatmapReady]);
 
   useEffect(() => {
     if (!mapReady || mapRef.current) return;
@@ -308,7 +342,7 @@ export default function FullMapa({ onBack }) {
             <ArrowLeft size={20} color="#fff" />
           </button>
           <div className="glass" style={{ height: '52px', borderRadius: '16px', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div className="pulse-primary" style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8B6FFF' }} />
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8B6FFF' }} />
             <div>
               <h1 style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '2px', margin: 0 }}>NIRA TACTICAL</h1>
               <p style={{ fontSize: '9px', opacity: 0.5, margin: 0 }}>SISTEMA DE MONITORAMENTO EM TEMPO REAL</p>
@@ -328,6 +362,13 @@ export default function FullMapa({ onBack }) {
               style={{ height: '44px', padding: '0 15px', borderRadius: '12px', background: 'transparent', color: '#fff', fontSize: '10px', fontWeight: '800', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               <AlertTriangle size={14} /> ALERTAS {filters.alerts ? 'ON' : 'OFF'}
+            </button>
+            <button 
+              onClick={() => setFilters(f => ({ ...f, heatmap: !f.heatmap }))} 
+              className={filters.heatmap ? 'tab-active' : ''} 
+              style={{ height: '44px', padding: '0 15px', borderRadius: '12px', background: 'transparent', color: '#fff', fontSize: '10px', fontWeight: '800', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <Activity size={14} /> HEATMAP {filters.heatmap ? 'ON' : 'OFF'}
             </button>
           </div>
 
@@ -380,6 +421,12 @@ export default function FullMapa({ onBack }) {
                     </div>
                   ))}
                 </div>
+                <button 
+                  onClick={() => window.print()}
+                  style={{ width: '100%', marginTop: '20px', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '16px', color: '#fff', fontWeight: '900', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                >
+                  <FileText size={16} /> GERAR RELATÓRIO PDF
+                </button>
               </div>
             ) : (
               <div className="glass" style={{ borderRadius: '24px', padding: '25px', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>

@@ -29,41 +29,59 @@ export default function FullAtendimentos() {
   
   const user = authContext?.user;
   const getVinculoLabel = authContext?.getVinculoLabel || (() => '---');
-  const alerts = niraContext?.alerts || [];
+  const chats = niraContext?.chats || [];
+  const addChatMessage = niraContext?.addChatMessage || (() => {});
   const updateChatStatus = niraContext?.updateChatStatus || (() => {});
+  const setTypingStatus = niraContext?.setTypingStatus || (() => {});
+  const burnMessage = niraContext?.burnMessage || (() => {});
+  const markChatAsRead = niraContext?.markChatAsRead || (() => {});
   
-  const [casoAtivo, setCasoAtivo] = useState(null);
+  const [casoAtivoId, setCasoAtivoId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [inputMsg, setInputMsg] = useState('');
   const [notas, setNotas] = useState('');
   const messagesEndRef = useRef(null);
-  const [localMsgs, setLocalMsgs] = useState({});
   const [notif, setNotif] = useState({ show: false, type: 'info', title: '', msg: '' });
+  const [sendFileOnce, setSendFileOnce] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const casoAtivo = chats.find(c => c.id === casoAtivoId);
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [casoAtivo, localMsgs]);
+  }, [casoAtivo?.messages]);
 
-  const filteredAlerts = alerts.filter(a => 
-    a.status === 'ativo' && 
-    (a.user?.toLowerCase().includes(searchTerm.toLowerCase()) || a.id?.includes(searchTerm))
-  );
+  const filteredChats = chats
+    .filter(c => 
+      c.status === 'ativo' && 
+      (c.user?.toLowerCase().includes(searchTerm.toLowerCase()) || c.id?.includes(searchTerm))
+    )
+    .sort((a, b) => b.id.localeCompare(a.id)); // Simula 'mais recente' pelo ID decrescente ou timestamp se houvesse
 
   const handleSend = () => {
-    if (!inputMsg.trim() || !casoAtivo) return;
-    const msg = { 
-      role: 'prof', 
-      text: inputMsg, 
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-    };
-    setLocalMsgs(prev => ({
-      ...prev,
-      [casoAtivo.id]: [...(prev[casoAtivo.id] || []), msg]
-    }));
+    if (!inputMsg.trim() || !casoAtivoId) return;
+    addChatMessage(casoAtivoId, inputMsg, 'prof');
     setInputMsg('');
   };
+
+  const handleSendFile = (fileName) => {
+    if (!casoAtivoId) return;
+    addChatMessage(casoAtivoId, fileName, 'prof', 'file', sendFileOnce);
+    setNotif({ show: true, type: 'success', title: 'ARQUIVO ENVIADO', msg: `Arquivo "${fileName}" enviado com sucesso.` });
+    setTimeout(() => setNotif({ show: false }), 3000);
+  };
+
+  // Sincroniza estado de digitação do profissional
+  useEffect(() => {
+    if (casoAtivoId) {
+      const isTyping = inputMsg.length > 0;
+      setTypingStatus(casoAtivoId, 'prof', isTyping);
+      const timer = setTimeout(() => setTypingStatus(casoAtivoId, 'prof', false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [inputMsg, casoAtivoId]);
 
   return (
     <div className="fixed inset-0 z-[9999] bg-[#07070B] flex flex-col overflow-hidden text-white font-sans selection:bg-brand-primary/30">
@@ -91,7 +109,7 @@ export default function FullAtendimentos() {
 
          <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/5 text-[8px] font-black uppercase tracking-widest text-text-muted">
-               <Activity size={10} className="text-brand-primary" /> {alerts.filter(a => a.status === 'ativo').length} OCORRÊNCIAS EM FILA
+               <Activity size={10} className="text-brand-primary" /> {chats.filter(c => c.status === 'ativo').length} OCORRÊNCIAS EM FILA
             </div>
              <button 
                onClick={() => {
@@ -105,10 +123,8 @@ export default function FullAtendimentos() {
           </div>
        </header>
 
-      {/* ── CORPO PRINCIPAL ── */}
       <div className="flex-1 flex overflow-hidden">
         
-        {/* COLUNA ESQUERDA: Fila (Compacta) */}
         <aside className="w-[260px] bg-[#0D0D15]/40 backdrop-blur-3xl border-r border-white/5 flex flex-col flex-shrink-0 z-40">
            <div className="p-4">
               <div className="relative group">
@@ -124,20 +140,27 @@ export default function FullAtendimentos() {
            </div>
            
            <div className="flex-1 overflow-y-auto p-2 space-y-1 no-scrollbar">
-              {filteredAlerts.length > 0 ? filteredAlerts.map(alert => (
+              {filteredChats.length > 0 ? filteredChats.map(chat => (
                 <div 
-                  key={alert.id}
-                  onClick={() => setCasoAtivo(alert)}
-                  className={`p-3 rounded-xl cursor-pointer transition-all border ${casoAtivo?.id === alert.id ? 'bg-brand-primary/10 border-brand-primary/30' : 'bg-transparent border-transparent hover:bg-white/5'}`}
+                  key={chat.id}
+                  onClick={() => {
+                    setCasoAtivoId(chat.id);
+                    markChatAsRead(chat.id);
+                    setNotas(chat.internalNote || '');
+                  }}
+                  className={`p-3 rounded-xl cursor-pointer transition-all border ${casoAtivoId === chat.id ? 'bg-brand-primary/10 border-brand-primary/30' : 'bg-transparent border-transparent hover:bg-white/5'}`}
                 >
                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[8px] font-mono font-black text-text-muted opacity-40">#{alert.id}</span>
-                      <div className={`w-1 h-1 rounded-full ${alert.risk === 'alto' ? 'bg-brand-emergency' : 'bg-brand-primary'}`}></div>
+                      <span className="text-[8px] font-mono font-black text-text-muted opacity-40">#{chat.id}</span>
+                      <div className="flex items-center gap-2">
+                         {chat.unread && <div className="w-1.5 h-1.5 rounded-full bg-brand-emergency animate-pulse" />}
+                         <div className={`w-1 h-1 rounded-full ${chat.risk === 'alto' ? 'bg-brand-emergency' : 'bg-brand-primary'}`}></div>
+                      </div>
                    </div>
-                   <p className="text-[11px] font-bold text-white truncate">{alert.user?.split('•')[0] || 'Anônima'}</p>
+                   <p className="text-[11px] font-bold text-white truncate">{chat.user?.split('•')[0] || 'Anônima'}</p>
                    <div className="flex items-center justify-between text-[8px] text-text-muted mt-1 font-bold">
-                      <span className="opacity-40 uppercase tracking-widest">{alert.location.split(',')[0]}</span>
-                      <span className="opacity-40">{alert.time}</span>
+                      <span className="opacity-40 uppercase tracking-widest">{chat.location.split(',')[0]}</span>
+                      <span className="opacity-40">Ativo</span>
                    </div>
                 </div>
               )) : (
@@ -146,7 +169,6 @@ export default function FullAtendimentos() {
            </div>
         </aside>
 
-        {/* COLUNA CENTRAL: Chat (Otimizada) */}
         <main className="flex-1 bg-[#07070B] flex flex-col relative min-w-0">
            {casoAtivo ? (
              <>
@@ -183,25 +205,34 @@ export default function FullAtendimentos() {
                       </span>
                    </div>
                    
-                   <div className="max-w-[80%] self-start flex gap-3 animate-fade-in">
-                      <div className="w-7 h-7 rounded-lg bg-brand-primary/20 border border-brand-primary/30 flex items-center justify-center text-brand-primary flex-shrink-0 mt-1">
-                         <MessageSquare size={14} />
-                      </div>
-                      <div className="bg-[#151521] p-4 rounded-2xl rounded-tl-none border border-white/5 text-xs leading-relaxed text-white/80">
-                         <p className="text-[9px] font-black text-brand-primary uppercase mb-1 tracking-widest">Triagem PsiTech</p>
-                         {casoAtivo.logs?.[0] || 'Acionamento crítico recebido.'}
-                      </div>
-                   </div>
-
-                   {(localMsgs[casoAtivo.id] || []).map((msg, i) => (
+                   {casoAtivo.isTyping?.user && (
+                     <div className="self-start flex gap-1 mb-4 animate-pulse">
+                        <span className="w-1 h-1 bg-brand-primary rounded-full"></span>
+                        <span className="w-1 h-1 bg-brand-primary rounded-full"></span>
+                        <span className="w-1 h-1 bg-brand-primary rounded-full"></span>
+                        <span className="text-[7px] font-black uppercase text-brand-primary ml-2">Usuária digitando...</span>
+                     </div>
+                   )}
+                   {(casoAtivo.messages || []).map((msg, i) => (
                      <div 
                        key={i} 
-                       className={`max-w-[70%] p-4 rounded-2xl text-xs leading-relaxed shadow-lg ${msg.role === 'prof' ? 'self-end bg-brand-primary text-white rounded-br-none' : 'self-start bg-[#151521] text-white/80 rounded-bl-none border border-white/5'}`}
+                       className={`max-w-[70%] p-4 rounded-2xl text-xs leading-relaxed shadow-lg ${msg.sender === 'prof' ? 'self-end bg-brand-primary text-white rounded-br-none' : 'self-start bg-[#151521] text-white/80 rounded-bl-none border border-white/5'}`}
                      >
-                        {msg.text}
+                        {msg.type === 'file' ? (
+                           <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                 <FileText size={16} />
+                              </div>
+                              <div className="flex-1">
+                                 <p className="font-bold text-[11px] truncate">{msg.text}</p>
+                                 <p className="text-[8px] opacity-40 uppercase font-black">{msg.once ? 'Visualização Única' : 'Documento'}</p>
+                              </div>
+                              {msg.burned && <Lock size={12} className="text-brand-emergency" />}
+                           </div>
+                        ) : msg.text}
                         <div className="flex items-center justify-end gap-1 mt-2 opacity-50">
                            <span className="text-[7px] font-black uppercase">{msg.time}</span>
-                           {msg.role === 'prof' && <CheckCircle2 size={8} />}
+                           {msg.sender === 'prof' && <CheckCircle2 size={8} />}
                         </div>
                      </div>
                    ))}
@@ -210,14 +241,31 @@ export default function FullAtendimentos() {
 
                 <div className="p-6 bg-gradient-to-t from-[#07070B] to-transparent">
                    <div className="max-w-3xl mx-auto flex items-center gap-3 bg-[#151521]/80 backdrop-blur-2xl border border-white/10 p-2 rounded-2xl focus-within:border-brand-primary/50 transition-all shadow-2xl">
-                       <button 
-                         onClick={() => {
-                           setNotif({ show: true, type: 'info', title: 'ANEXAR ARQUIVO', msg: 'Apenas arquivos criptografados (.nira) são permitidos neste canal.' });
-                           setTimeout(() => setNotif({ show: false }), 3000);
+                       <input 
+                         type="file" 
+                         ref={fileInputRef} 
+                         className="hidden" 
+                         onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) handleSendFile(file.name);
                          }}
-                         className="h-10 w-10 rounded-xl flex items-center justify-center text-text-muted hover:text-white active:scale-90 transition-all"
+                       />
+                       <button 
+                         onClick={() => fileInputRef.current.click()}
+                         className="h-10 w-10 rounded-xl flex items-center justify-center text-text-muted hover:text-white active:scale-90 transition-all relative group"
                        >
                           <Paperclip size={20} />
+                          <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-black/80 p-2 rounded-lg border border-white/10 hidden group-hover:flex flex-col items-start gap-1 w-32 z-50">
+                             <label className="flex items-center gap-2 cursor-pointer w-full">
+                                <input 
+                                  type="checkbox" 
+                                  checked={sendFileOnce} 
+                                  onChange={e => setSendFileOnce(e.target.checked)} 
+                                  className="accent-brand-primary"
+                                />
+                                <span className="text-[8px] font-black text-white uppercase">Vista Única</span>
+                             </label>
+                          </div>
                        </button>
                       <input 
                         type="text" 
@@ -333,6 +381,16 @@ export default function FullAtendimentos() {
                       placeholder="Anote aqui observações críticas sobre o acolhimento..."
                       className="flex-1 bg-white/5 border border-white/5 rounded-2xl p-4 text-xs text-white focus:outline-none focus:border-brand-primary/30 resize-none font-medium leading-relaxed placeholder:opacity-20"
                     />
+                 </section>
+
+                 <section className="mt-auto pt-4">
+                    <button 
+                       onClick={() => alert('Abrindo protocolo de Plano de Segurança...')}
+                       className="w-full p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all flex flex-col items-center gap-2"
+                    >
+                       <ShieldCheck size={20} />
+                       <span className="text-[10px] font-black uppercase tracking-widest">Plano de Segurança</span>
+                    </button>
                  </section>
               </>
             ) : (

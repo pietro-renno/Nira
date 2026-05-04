@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { NiraContext } from '../context/NiraContext';
 import {
   Shield, User, AlertTriangle, MessageSquare, BookOpen, MapPin,
-  Lock, Send, RefreshCcw, ArrowLeft
+  Lock, Send, RefreshCcw, ArrowLeft, FileText
 } from 'lucide-react';
 
 /* ─── CSS TEMA DARK IMERSIVO (Corrigido para Fixed e No-Page-Scroll) ─── */
@@ -400,11 +400,58 @@ const css = `
   box-shadow: none;
 }
 
+/* ── NOTIFICAÇÃO ATENDIMENTO HUMANO ── */
+.notification-human {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2ED573;
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 50px;
+  z-index: 10001;
+  box-shadow: 0 10px 40px rgba(46, 213, 115, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  animation: slideDownIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slideDownIn {
+  from { transform: translate(-50%, -100%); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.chat-header__btn--success {
+  background: rgba(46, 213, 115, 0.15) !important;
+  border-color: rgba(46, 213, 115, 0.4) !important;
+  color: #2ED573 !important;
+}
+
+.chat-input--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.chat-input--human-active {
+  border-color: rgba(46, 213, 115, 0.4) !important;
+  background: rgba(46, 213, 115, 0.05) !important;
+}
+
+.chat-quick-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
 @keyframes slideDown {
   from { transform: translateY(-100%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-
 
 @media (max-width: 900px) {
   .chat-wrap { grid-template-columns: 1fr; }
@@ -672,12 +719,16 @@ function parseMsg(text) {
 }
 
 export default function TriagemPage() {
-  const { addSOSAlert } = useContext(NiraContext);
   const [histAtivo, setHistAtivo] = useState(1);
   const [chatAtivo, setChatAtivo] = useState(true);
   const [gpsStatus, setGpsStatus] = useState('idle'); // idle, granted
   const [showPrompt, setShowPrompt] = useState(true);
   const [sosConfirmed, setSosConfirmed] = useState(false);
+  const [isHumanSupport, setIsHumanSupport] = useState(false);
+  const [atendimentoNotificado, setAtendimentoNotificado] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState(null);
+  
+  const { addSOSAlert, chats, addChatMessage, setTypingStatus, burnMessage, upsertChat } = useContext(NiraContext);
 
   const [messages, setMessages] = useState([
     { role: 'bot', text: "Olá. Boas-vindas ao espaço de acolhimento da Nira.\n\nEste ambiente é totalmente seguro e anônimo. Não registramos nenhum dado pessoal.\n\nComo posso ajudar você neste momento?", time: '19:47' },
@@ -714,6 +765,8 @@ export default function TriagemPage() {
     setChatAtivo(true);
     setMessages([]);
     setRiscoAtual(null);
+    setIsHumanSupport(false);
+    setCurrentChatId(`T${Math.floor(Math.random() * 10000)}`);
     const step = FLOW.find(f => f.id === 'start');
     setTimeout(() => {
       setDigitando(true);
@@ -724,7 +777,106 @@ export default function TriagemPage() {
     }, 300);
   }
 
+  const conectarAtendimentoHumano = useCallback(() => {
+    if (isHumanSupport || atendimentoNotificado) return;
+    
+    setIsHumanSupport(true);
+    setAtendimentoNotificado(true);
+    
+    const chatId = currentChatId || `T${Math.floor(Math.random() * 10000)}`;
+    if (!currentChatId) setCurrentChatId(chatId);
+    
+    const waitMsg = {
+      role: 'bot',
+      text: '⌛ **Aguardando conexão com psicólogo(a)...**\n\nNossa equipe especializada foi notificada. Um profissional de plantão se conectará a esta conversa em instantes para te oferecer suporte direto.',
+      time: formatTime(),
+    };
+    
+    // Atualiza mensagens locais primeiro para feedback instantâneo
+    setMessages(prev => {
+      const res = [...prev];
+      const last = res[res.length - 1];
+      if (last && last.role === 'bot') {
+        const updatedLast = { ...last };
+        delete updatedLast.options;
+        res[res.length - 1] = updatedLast;
+      }
+      return [...res, waitMsg];
+    });
+
+    // Cria/Atualiza no contexto
+    const updatedMessagesForContext = [
+      ...messages.map((m, idx) => ({
+        id: idx,
+        sender: m.role === 'bot' ? 'bot' : (m.role === 'user' ? 'user' : 'bot'),
+        text: m.text,
+        time: m.time
+      })),
+      {
+        id: messages.length,
+        sender: 'bot',
+        text: waitMsg.text,
+        time: waitMsg.time
+      }
+    ];
+
+    const newChat = {
+      id: chatId,
+      user: `ANÔNIMO • #${chatId.slice(-4)}`,
+      location: 'São José dos Campos, SP',
+      status: 'ativo',
+      risk: riscoAtual || 'medio',
+      messages: updatedMessagesForContext,
+      internalNote: '',
+      unread: true,
+      isTyping: { user: false, prof: false }
+    };
+    
+    upsertChat(newChat);
+
+    setTimeout(() => {
+      setAtendimentoNotificado(false);
+    }, 4500);
+  }, [isHumanSupport, currentChatId, riscoAtual, messages, upsertChat, atendimentoNotificado]);
+
+  // Sincroniza estado de digitação do usuário para o contexto
+  useEffect(() => {
+    if (isHumanSupport && currentChatId) {
+      const isTyping = inputVal.length > 0;
+      setTypingStatus(currentChatId, 'user', isTyping);
+      
+      const timer = setTimeout(() => {
+        setTypingStatus(currentChatId, 'user', false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [inputVal, isHumanSupport, currentChatId]);
+
+  const currentChat = chats.find(c => c.id === currentChatId);
+  const profIsTyping = currentChat?.isTyping?.prof;
+
+  // Sincroniza mensagens do contexto (importante para arquivos e visualização única)
+  useEffect(() => {
+    if (isHumanSupport && currentChatId) {
+      const chatContext = chats.find(c => c.id === currentChatId);
+      if (chatContext && chatContext.messages.length >= messages.length) {
+        const contextMsgs = chatContext.messages.map(m => ({
+          role: m.sender === 'prof' ? 'bot' : (m.sender === 'bot' ? 'bot' : 'user'),
+          text: m.text,
+          time: m.time,
+          type: m.type,
+          id: m.id,
+          burned: m.burned,
+          once: m.once
+        }));
+        setMessages(contextMsgs);
+      }
+    }
+  }, [chats, isHumanSupport, currentChatId]);
+
   function escolherOpcao(opcao, optText) {
+    if (isHumanSupport) return;
     const userMsg = { role: 'user', text: optText, time: formatTime() };
     setMessages(prev => {
       const semBotoes = [...prev];
@@ -737,6 +889,11 @@ export default function TriagemPage() {
 
     const proxStep = FLOW.find(f => f.id === opcao.next);
     if (!proxStep) return;
+
+    if (proxStep.id === 'conectar_humano') {
+      conectarAtendimentoHumano();
+      return;
+    }
 
     if (proxStep.risco) setRiscoAtual(proxStep.risco);
 
@@ -757,6 +914,13 @@ export default function TriagemPage() {
 
   function enviarTexto() {
     if (!inputVal.trim()) return;
+
+    if (isHumanSupport) {
+      addChatMessage(currentChatId, inputVal.trim(), 'user');
+      setInputVal('');
+      return;
+    }
+
     const userMsg = { role: 'user', text: inputVal.trim(), time: formatTime() };
 
     setMessages(prev => {
@@ -801,6 +965,13 @@ export default function TriagemPage() {
   return (
     <>
       <style>{css}</style>
+      
+      {atendimentoNotificado && (
+        <div className="notification-human">
+          <MessageSquare size={20} />
+          <span>Atendimento humano solicitado. Aguardando conexão...</span>
+        </div>
+      )}
       <div className="chat-page">
         <div className="chat-wrap">
 
@@ -876,7 +1047,7 @@ export default function TriagemPage() {
                     <p className="chat-header__name">Assistente Nira</p>
                     <p className="chat-header__status">
                       <span className="chat-header__status-dot" />
-                      Atendimento verificado
+                      {isHumanSupport ? 'Conectando com psicólogo' : 'Atendimento verificado'}
                       {riscoAtual && <span style={{ marginLeft: 8, opacity: .7 }}>· Grau mapeado: <strong>{riscoAtual}</strong></span>}
                     </p>
                   </div>
@@ -885,8 +1056,12 @@ export default function TriagemPage() {
                   <button className="chat-header__btn chat-header__btn--danger" onClick={ativarSOS}>
                     <AlertTriangle size={13} /> Acionar S.O.S.
                   </button>
-                  <button className="chat-header__btn" onClick={() => alert('Conectando com atendente humano...')}>
-                    <MessageSquare size={13} /> Atendimento Humano
+                  <button 
+                    className={`chat-header__btn ${isHumanSupport ? 'chat-header__btn--success' : ''}`} 
+                    onClick={conectarAtendimentoHumano}
+                    disabled={isHumanSupport}
+                  >
+                    <MessageSquare size={13} /> {isHumanSupport ? 'Conexão Iniciada' : 'Atendimento Humano'}
                   </button>
                   <button className="chat-header__btn" onClick={novoChat}><RefreshCcw size={13} /> Atualizar caso</button>
                 </div>
@@ -942,10 +1117,34 @@ export default function TriagemPage() {
                     </div>
 
                     <div className={`chat-msg-col ${msg.role === 'user' ? 'chat-msg-col--user' : ''}`} style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                      <div
-                        className="chat-msg__bubble"
-                        dangerouslySetInnerHTML={{ __html: parseMsg(msg.text) }}
-                      />
+                      {msg.type === 'file' ? (
+                        <div className="chat-msg__bubble flex flex-col gap-3 min-w-[200px]">
+                           <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                              <FileText size={24} className="text-brand-primary" />
+                              <div className="flex-1 overflow-hidden text-left">
+                                 <p className="text-[11px] font-bold truncate">{msg.text}</p>
+                                 <p className="text-[9px] opacity-40 uppercase font-black">Documento Seguro</p>
+                              </div>
+                           </div>
+                           {!msg.burned && (
+                             <button 
+                               onClick={() => {
+                                 alert('Visualizando arquivo seguro...');
+                                 if(msg.once) burnMessage(currentChatId, msg.id);
+                               }}
+                               className="w-full py-2 bg-brand-primary text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all"
+                             >
+                               Visualizar {msg.once ? '(Única vez)' : ''}
+                             </button>
+                           )}
+                           {msg.burned && <p className="text-[9px] text-brand-emergency font-black uppercase text-center mt-1">Arquivo Expirado</p>}
+                        </div>
+                      ) : (
+                        <div
+                          className="chat-msg__bubble"
+                          dangerouslySetInnerHTML={{ __html: parseMsg(msg.text) }}
+                        />
+                      )}
 
                       {msg.role === 'bot' && msg.options && msg.options.length > 0 && i === messages.length - 1 && !digitando && (
 
@@ -954,7 +1153,9 @@ export default function TriagemPage() {
                             <button
                               key={oi}
                               className="chat-option-btn"
-                              onClick={() => escolherOpcao(op, op.text)}
+                              onClick={() => !isHumanSupport && escolherOpcao(op, op.text)}
+                              disabled={isHumanSupport}
+                              style={{ cursor: isHumanSupport ? 'not-allowed' : 'pointer', opacity: isHumanSupport ? 0.5 : 1 }}
                             >
                               {op.text}
                             </button>
@@ -982,7 +1183,7 @@ export default function TriagemPage() {
                   </div>
                 ))}
 
-                {digitando && (
+                {(digitando || (isHumanSupport && profIsTyping)) && (
                   <div className="chat-typing">
                     <div className="chat-typing__avatar"><Shield /></div>
                     <div className="chat-typing__dots">
@@ -990,6 +1191,7 @@ export default function TriagemPage() {
                       <div className="chat-typing__dot" />
                       <div className="chat-typing__dot" />
                     </div>
+                    {(isHumanSupport && profIsTyping) && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 900, opacity: 0.4, textTransform: 'uppercase' }}>Psicólogo digitando...</span>}
                   </div>
                 )}
               </div>
@@ -998,22 +1200,23 @@ export default function TriagemPage() {
 
 
             {chatAtivo && (
-              <div className="chat-input-area">
+              <div className="chat-input-area" style={{ opacity: isHumanSupport ? 0.8 : 1 }}>
                 <div className="chat-quick-diagnostics">
                   {QUICK_DIAGNOSTICS.map((diag, idx) => (
                     <button
                       key={idx}
-                      className={`chat-quick-btn ${diag.type === 'sos' ? 'chat-quick-btn--sos' : ''}`}
-                      onClick={() => escolherOpcao(diag, diag.text)}
+                      className={`chat-quick-btn ${diag.type === 'sos' ? 'chat-quick-btn--sos' : ''} ${isHumanSupport ? 'chat-quick-btn--disabled' : ''}`}
+                      onClick={() => !isHumanSupport && escolherOpcao(diag, diag.text)}
+                      disabled={isHumanSupport}
                     >
                       {diag.text}
                     </button>
                   ))}
                 </div>
-                <div className="chat-input-wrap">
+                <div className={`chat-input-wrap ${isHumanSupport ? 'chat-input--human-active' : ''}`}>
                   <textarea
                     className="chat-input"
-                    placeholder="Digite uma mensagem ou escolha uma opção acima..."
+                    placeholder={isHumanSupport ? "Digite sua mensagem para o psicólogo..." : "Digite uma mensagem ou escolha uma opção acima..."}
                     rows={1}
                     value={inputVal}
                     onChange={e => setInputVal(e.target.value)}
@@ -1029,7 +1232,7 @@ export default function TriagemPage() {
                   </button>
                 </div>
                 <p className="chat-input-hint" style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                  <Lock size={11} /> Conversa anônima · Enter para enviar · Shift+Enter para nova linha
+                  <Lock size={11} /> Conversa anônima · {isHumanSupport ? 'Conectado com Especialista' : 'Enter para enviar · Shift+Enter para nova linha'}
                 </p>
               </div>
             )}

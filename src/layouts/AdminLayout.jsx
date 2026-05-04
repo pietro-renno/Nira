@@ -25,8 +25,8 @@ export default function AdminLayout() {
   const manageLinks = [
     { name: 'Conteúdos', path: '/admin/conteudos', icon: <FileText size={18} />, roles: ['adm', 'ong'] },
     { name: 'Usuários & Profissionais', path: '/admin/usuarios', icon: <Users size={18} />, roles: ['adm'] },
-    { name: 'Mapa / Equipes', path: '/admin/mapa', icon: <MapIcon size={18} />, roles: ['adm', 'funcionario'], espec: ['agente', 'policial'] },
-    { name: 'Atendimentos', path: '/admin/atendimentos-chat', icon: <MessagesSquare size={18} />, roles: ['adm', 'funcionario'], espec: ['psicologo', 'assistente_social'] },
+    { name: 'Mapa / Equipes', path: '/admin/mapa-completo', icon: <MapIcon size={18} />, roles: ['adm', 'funcionario'], espec: ['agente', 'policial'] },
+    { name: 'Atendimentos', path: '/admin/atendimentos-completo', icon: <MessagesSquare size={18} />, roles: ['adm', 'funcionario'], espec: ['psicologo', 'assistente_social'] },
   ];
 
   const filterLinks = (links) => {
@@ -74,8 +74,8 @@ export default function AdminLayout() {
       case '/admin/alertas': return 'Alertas S.O.S.';
       case '/admin/conteudos': return 'Gestão de Conteúdos';
       case '/admin/usuarios': return 'Usuários e profissionais';
-      case '/admin/mapa': return 'Mapa e Equipes';
-      case '/admin/atendimentos-chat': return 'Atendimentos Chat';
+      case '/admin/mapa-completo': return 'Mapa e Equipes';
+      case '/admin/atendimentos-completo': return 'Atendimentos Chat';
       default: return 'Visão Geral';
     }
   };
